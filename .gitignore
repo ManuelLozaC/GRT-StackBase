@@ -1,0 +1,44 @@
+# --- [ Entorno y Seguridad ] ---
+.env
+.env.*
+!.env.example
+auth.json
+*.pem
+*.key
+
+# --- [ Backend (Laravel/PHP) ] ---
+/backend/vendor/
+/backend/storage/*.key
+/backend/storage/framework/cache/data/*
+/backend/storage/framework/sessions/*
+/backend/storage/framework/views/*
+/backend/storage/logs/*
+/backend/bootstrap/cache/*
+/backend/public/storage
+/backend/public/hot
+
+# --- [ Archivos de Usuario (IMPORTANTE) ] ---
+# Nunca subir archivos locales de storage a GitHub
+/backend/storage/app/*
+!/backend/storage/app/.gitignore
+
+# --- [ Frontend (Vue/Node) ] ---
+/frontend/node_modules/
+/frontend/dist/
+/frontend/.pnpm-debug.log*
+
+# --- [ Base de Datos y Cache ] ---
+.docker-data/
+mysql-data/
+redis-data/
+meilisearch-data/
+*.sql
+*.sqlite
+
+# --- [ Sistema Operativo y Editores ] ---
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.log
+/tmp/

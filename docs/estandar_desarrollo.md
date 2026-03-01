@@ -10,8 +10,15 @@
 ## 🏗️ 2. Patrones de Arquitectura
 * **Acciones (`PascalCase`):** Prohibida la lógica en controladores. Cada tarea es una clase única (Ej: `CrearUsuarioAccion`).
 * **API JSON:** Formato único de respuesta: `{ estado, datos, mensaje, meta, errores }`.
-* **Tailwind Only:** Estilos basados puramente en utilidades de TailwindCSS.
 
-## 🤖 3. Guía para IA
+## 📂 3. Gestión de Archivos (Storage)
+Todos los archivos se guardan en **DigitalOcean Spaces** siguiendo esta ruta obligatoria:
+`{año}/{mes}/{entidad}/{id}/{tipo_documento}/{nombre_archivo}`
+
+* **Entidades:** `prospecto`, `cliente`, `factura`, etc.
+* **Tipos:** `comprobante_pago`, `dni`, `logo`, etc.
+* **Ejemplo:** `2024/05/prospecto/150/comprobante_pago/recibo.pdf`
+
+## 🤖 4. Guía para IA
 * **API First**: El Backend solo entrega JSON.
-* **Acciones Desacopladas**: La lógica debe ser independiente del controlador.
+* **Descargas Pesadas:** Los Excel/CSV se generan en `/tmp`, se suben a Spaces y se borran del servidor local inmediatamente. Entrega siempre un "Enlace Firmado" temporal.
