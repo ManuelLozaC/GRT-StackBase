@@ -14,10 +14,7 @@ const asignaciones = computed(() => usuario.value?.asignaciones_laborales ?? [])
             <div class="rounded-3xl border border-slate-200 bg-white p-8 shadow-sm">
                 <div class="text-sm uppercase tracking-[0.3em] text-sky-600 font-semibold mb-3">Stack Base 2026</div>
                 <h1 class="text-3xl font-semibold text-slate-900 mb-2">Bienvenido{{ usuario?.nombre_mostrar ? `, ${usuario.nombre_mostrar}` : '' }}</h1>
-                <p class="text-slate-600 max-w-3xl">
-                    Esta es la base inicial del panel administrativo. Desde aquí vamos a consolidar autenticación,
-                    usuarios, oficinas, asignaciones laborales y permisos por sucursal.
-                </p>
+                <p class="text-slate-600 max-w-3xl">Esta es la base inicial del panel administrativo. Desde aquí vamos a consolidar autenticación, usuarios, oficinas, asignaciones laborales y permisos por sucursal.</p>
             </div>
         </div>
 
@@ -36,9 +33,7 @@ const asignaciones = computed(() => usuario.value?.asignaciones_laborales ?? [])
             <div class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm h-full">
                 <div class="text-sm font-semibold text-slate-500 uppercase mb-4">Asignaciones por oficina</div>
 
-                <div v-if="!asignaciones.length" class="text-slate-500">
-                    El usuario todavía no tiene asignaciones laborales registradas.
-                </div>
+                <div v-if="!asignaciones.length" class="text-slate-500">El usuario todavía no tiene asignaciones laborales registradas.</div>
 
                 <div v-else class="space-y-4">
                     <div v-for="asignacion in asignaciones" :key="asignacion.id" class="rounded-2xl border border-slate-200 p-4">

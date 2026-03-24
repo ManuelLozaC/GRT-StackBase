@@ -51,13 +51,9 @@ async function iniciarSesion() {
 
                         <Message v-if="error" severity="error" :closable="false">{{ error }}</Message>
 
-                        <div class="rounded-2xl bg-slate-50 border border-slate-200 px-4 py-3 text-sm text-slate-600">
-                            Usuario inicial: <strong>mloza@grt.com.bo</strong> o <strong>mloza</strong>
-                        </div>
+                        <div class="rounded-2xl bg-slate-50 border border-slate-200 px-4 py-3 text-sm text-slate-600">Usuario inicial: <strong>mloza@grt.com.bo</strong> o <strong>mloza</strong></div>
 
-                        <div class="rounded-2xl bg-sky-50 border border-sky-200 px-4 py-3 text-sm text-sky-800">
-                            Contraseña inicial: <strong>admin1984!</strong>
-                        </div>
+                        <div class="rounded-2xl bg-sky-50 border border-sky-200 px-4 py-3 text-sm text-sky-800">Contraseña inicial: <strong>admin1984!</strong></div>
 
                         <Button :label="cargando ? 'Ingresando...' : 'Iniciar sesión'" class="w-full" type="submit" :loading="cargando"></Button>
                     </form>

@@ -1,289 +1,421 @@
 <script setup>
-import { ProductService } from '@/service/ProductService';
-import { FilterMatchMode } from '@primevue/core/api';
+import api from '@/service/api';
 import { useToast } from 'primevue/usetoast';
 import { onMounted, ref } from 'vue';
 
-onMounted(() => {
-    ProductService.getProducts().then((data) => (products.value = data));
-});
-
 const toast = useToast();
-const dt = ref();
-const products = ref();
-const productDialog = ref(false);
-const deleteProductDialog = ref(false);
-const deleteProductsDialog = ref(false);
-const product = ref({});
-const selectedProducts = ref();
-const filters = ref({
-    global: { value: null, matchMode: FilterMatchMode.CONTAINS }
+const usuarios = ref([]);
+const cargando = ref(false);
+const guardando = ref(false);
+const dialogoUsuario = ref(false);
+const dialogoPassword = ref(false);
+const errorFormulario = ref('');
+const usuarioActual = ref(null);
+const passwordReset = ref('');
+const catalogos = ref({
+    organizaciones: [],
+    oficinas: [],
+    ciudades: [],
+    divisiones: [],
+    areas: [],
+    cargos: [],
+    roles: []
 });
-const submitted = ref(false);
-const statuses = ref([
-    { label: 'INSTOCK', value: 'instock' },
-    { label: 'LOWSTOCK', value: 'lowstock' },
-    { label: 'OUTOFSTOCK', value: 'outofstock' }
-]);
 
-function formatCurrency(value) {
-    if (value) return value.toLocaleString('en-US', { style: 'currency', currency: 'USD' });
-    return;
+const formulario = ref(crearFormularioBase());
+
+onMounted(async () => {
+    await Promise.all([cargarCatalogos(), cargarUsuarios()]);
+});
+
+function crearAsignacionBase() {
+    return {
+        id: null,
+        oficina_id: null,
+        division_id: null,
+        area_id: null,
+        cargo_id: null,
+        jefe_asignacion_laboral_id: null,
+        aprobador_asignacion_laboral_id: null,
+        es_principal: false,
+        activa: true,
+        fecha_inicio: null,
+        fecha_fin: null,
+        roles: []
+    };
 }
 
-function openNew() {
-    product.value = {};
-    submitted.value = false;
-    productDialog.value = true;
+function crearFormularioBase() {
+    return {
+        id: null,
+        organizacion_id: null,
+        alias: '',
+        nombre_mostrar: '',
+        email: '',
+        telefono: '',
+        password: '',
+        es_superusuario: false,
+        activo: true,
+        persona: {
+            nombres: '',
+            apellido_paterno: '',
+            apellido_materno: '',
+            tipo_documento: 'CI',
+            numero_documento: '',
+            genero: 'masculino',
+            fecha_nacimiento: null,
+            email: '',
+            telefono: '',
+            direccion: '',
+            ciudad_id: null
+        },
+        asignaciones: [crearAsignacionBase()]
+    };
 }
 
-function hideDialog() {
-    productDialog.value = false;
-    submitted.value = false;
+async function cargarCatalogos() {
+    const { data } = await api.get('/catalogos/formulario-usuarios');
+    catalogos.value = data?.datos ?? catalogos.value;
+
+    if (!formulario.value.organizacion_id && catalogos.value.organizaciones.length) {
+        formulario.value.organizacion_id = catalogos.value.organizaciones[0].id;
+    }
 }
 
-function saveProduct() {
-    submitted.value = true;
+async function cargarUsuarios() {
+    cargando.value = true;
 
-    if (product?.value.name?.trim()) {
-        if (product.value.id) {
-            product.value.inventoryStatus = product.value.inventoryStatus.value ? product.value.inventoryStatus.value : product.value.inventoryStatus;
-            products.value[findIndexById(product.value.id)] = product.value;
-            toast.add({ severity: 'success', summary: 'Successful', detail: 'Product Updated', life: 3000 });
+    try {
+        const { data } = await api.get('/usuarios');
+        usuarios.value = data?.datos ?? [];
+    } finally {
+        cargando.value = false;
+    }
+}
+
+function abrirNuevo() {
+    formulario.value = crearFormularioBase();
+    formulario.value.organizacion_id = catalogos.value.organizaciones[0]?.id ?? null;
+    errorFormulario.value = '';
+    dialogoUsuario.value = true;
+}
+
+async function editarUsuario(usuario) {
+    const { data } = await api.get(`/usuarios/${usuario.id}`);
+    const detalle = data?.datos;
+
+    formulario.value = {
+        id: detalle.id,
+        organizacion_id: detalle.organizacion_id,
+        alias: detalle.alias,
+        nombre_mostrar: detalle.nombre_mostrar,
+        email: detalle.email,
+        telefono: detalle.telefono || '',
+        password: '',
+        es_superusuario: detalle.es_superusuario,
+        activo: detalle.activo,
+        persona: {
+            nombres: detalle.persona?.nombres || '',
+            apellido_paterno: detalle.persona?.apellido_paterno || '',
+            apellido_materno: detalle.persona?.apellido_materno || '',
+            tipo_documento: detalle.persona?.tipo_documento || 'CI',
+            numero_documento: detalle.persona?.numero_documento || '',
+            genero: detalle.persona?.genero || 'masculino',
+            fecha_nacimiento: detalle.persona?.fecha_nacimiento || null,
+            email: detalle.persona?.email || '',
+            telefono: detalle.persona?.telefono || '',
+            direccion: detalle.persona?.direccion || '',
+            ciudad_id: detalle.persona?.ciudad_id || null
+        },
+        asignaciones:
+            detalle.asignaciones_laborales?.length > 0
+                ? detalle.asignaciones_laborales.map((asignacion) => ({
+                      id: asignacion.id,
+                      oficina_id: asignacion.oficina_id,
+                      division_id: asignacion.division_id,
+                      area_id: asignacion.area_id,
+                      cargo_id: asignacion.cargo_id,
+                      jefe_asignacion_laboral_id: asignacion.jefe_asignacion_laboral_id,
+                      aprobador_asignacion_laboral_id: asignacion.aprobador_asignacion_laboral_id,
+                      es_principal: asignacion.es_principal,
+                      activa: asignacion.activa,
+                      fecha_inicio: asignacion.fecha_inicio,
+                      fecha_fin: asignacion.fecha_fin,
+                      roles: []
+                  }))
+                : [crearAsignacionBase()]
+    };
+
+    errorFormulario.value = '';
+    dialogoUsuario.value = true;
+}
+
+function agregarAsignacion() {
+    formulario.value.asignaciones.push(crearAsignacionBase());
+}
+
+function quitarAsignacion(index) {
+    if (formulario.value.asignaciones.length === 1) {
+        return;
+    }
+
+    formulario.value.asignaciones.splice(index, 1);
+}
+
+async function guardarUsuario() {
+    guardando.value = true;
+    errorFormulario.value = '';
+
+    try {
+        const payload = {
+            ...formulario.value,
+            persona: {
+                ...formulario.value.persona,
+                email: formulario.value.persona.email || formulario.value.email,
+                telefono: formulario.value.persona.telefono || formulario.value.telefono
+            }
+        };
+
+        if (payload.id) {
+            await api.put(`/usuarios/${payload.id}`, payload);
+            toast.add({ severity: 'success', summary: 'Actualizado', detail: 'Usuario actualizado correctamente.', life: 3000 });
         } else {
-            product.value.id = createId();
-            product.value.code = createId();
-            product.value.image = 'product-placeholder.svg';
-            product.value.inventoryStatus = product.value.inventoryStatus ? product.value.inventoryStatus.value : 'INSTOCK';
-            products.value.push(product.value);
-            toast.add({ severity: 'success', summary: 'Successful', detail: 'Product Created', life: 3000 });
+            await api.post('/usuarios', payload);
+            toast.add({ severity: 'success', summary: 'Creado', detail: 'Usuario creado correctamente.', life: 3000 });
         }
 
-        productDialog.value = false;
-        product.value = {};
+        dialogoUsuario.value = false;
+        await cargarUsuarios();
+    } catch (error) {
+        errorFormulario.value = error?.response?.data?.mensaje || 'No se pudo guardar el usuario.';
+    } finally {
+        guardando.value = false;
     }
 }
 
-function editProduct(prod) {
-    product.value = { ...prod };
-    productDialog.value = true;
+function abrirResetPassword(usuario) {
+    usuarioActual.value = usuario;
+    passwordReset.value = '';
+    dialogoPassword.value = true;
 }
 
-function confirmDeleteProduct(prod) {
-    product.value = prod;
-    deleteProductDialog.value = true;
-}
-
-function deleteProduct() {
-    products.value = products.value.filter((val) => val.id !== product.value.id);
-    deleteProductDialog.value = false;
-    product.value = {};
-    toast.add({ severity: 'success', summary: 'Successful', detail: 'Product Deleted', life: 3000 });
-}
-
-function findIndexById(id) {
-    let index = -1;
-    for (let i = 0; i < products.value.length; i++) {
-        if (products.value[i].id === id) {
-            index = i;
-            break;
-        }
+async function resetearPassword() {
+    if (!usuarioActual.value || !passwordReset.value) {
+        return;
     }
 
-    return index;
+    await api.patch(`/usuarios/${usuarioActual.value.id}/resetear-password`, {
+        password: passwordReset.value,
+        debe_cambiar_password: true
+    });
+
+    toast.add({ severity: 'success', summary: 'Contraseña actualizada', detail: 'El usuario deberá cambiarla al ingresar.', life: 3000 });
+    dialogoPassword.value = false;
 }
 
-function createId() {
-    let id = '';
-    var chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-    for (var i = 0; i < 5; i++) {
-        id += chars.charAt(Math.floor(Math.random() * chars.length));
-    }
-    return id;
-}
-
-function exportCSV() {
-    dt.value.exportCSV();
-}
-
-function confirmDeleteSelected() {
-    deleteProductsDialog.value = true;
-}
-
-function deleteSelectedProducts() {
-    products.value = products.value.filter((val) => !selectedProducts.value.includes(val));
-    deleteProductsDialog.value = false;
-    selectedProducts.value = null;
-    toast.add({ severity: 'success', summary: 'Successful', detail: 'Products Deleted', life: 3000 });
-}
-
-function getStatusLabel(status) {
-    switch (status) {
-        case 'INSTOCK':
-            return 'success';
-
-        case 'LOWSTOCK':
-            return 'warn';
-
-        case 'OUTOFSTOCK':
-            return 'danger';
-
-        default:
-            return null;
-    }
+function etiquetaEstado(usuario) {
+    return usuario.activo ? 'success' : 'danger';
 }
 </script>
 
 <template>
-    <div>
-        <div class="card">
-            <Toolbar class="mb-6">
-                <template #start>
-                    <Button label="New" icon="pi pi-plus" severity="secondary" class="mr-2" @click="openNew" />
-                    <Button label="Delete" icon="pi pi-trash" severity="secondary" @click="confirmDeleteSelected" :disabled="!selectedProducts || !selectedProducts.length" />
-                </template>
+    <div class="space-y-6">
+        <Toast />
 
-                <template #end>
-                    <Button label="Export" icon="pi pi-upload" severity="secondary" @click="exportCSV($event)" />
-                </template>
-            </Toolbar>
+        <div class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+            <div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+                <div>
+                    <div class="text-sm uppercase tracking-[0.3em] text-sky-600 font-semibold mb-2">Administración</div>
+                    <h2 class="text-2xl font-semibold text-slate-900">Usuarios</h2>
+                    <p class="text-slate-500">Gestión base de acceso, persona y asignaciones laborales por oficina.</p>
+                </div>
 
-            <DataTable
-                ref="dt"
-                v-model:selection="selectedProducts"
-                :value="products"
-                dataKey="id"
-                :paginator="true"
-                :rows="10"
-                :filters="filters"
-                paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
-                :rowsPerPageOptions="[5, 10, 25]"
-                currentPageReportTemplate="Showing {first} to {last} of {totalRecords} products"
-            >
-                <template #header>
-                    <div class="flex flex-wrap gap-2 items-center justify-between">
-                        <h4 class="m-0">Manage Products</h4>
-                        <IconField>
-                            <InputIcon>
-                                <i class="pi pi-search" />
-                            </InputIcon>
-                            <InputText v-model="filters['global'].value" placeholder="Search..." />
-                        </IconField>
-                    </div>
-                </template>
+                <Button label="Nuevo usuario" icon="pi pi-plus" @click="abrirNuevo" />
+            </div>
+        </div>
 
-                <Column selectionMode="multiple" style="width: 3rem" :exportable="false"></Column>
-                <Column field="code" header="Code" sortable style="min-width: 12rem"></Column>
-                <Column field="name" header="Name" sortable style="min-width: 16rem"></Column>
-                <Column header="Image">
-                    <template #body="slotProps">
-                        <img :src="`https://primefaces.org/cdn/primevue/images/product/${slotProps.data.image}`" :alt="slotProps.data.image" class="rounded" style="width: 64px" />
+        <div class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+            <DataTable :value="usuarios" :loading="cargando" dataKey="id" paginator :rows="10">
+                <Column field="alias" header="Alias"></Column>
+                <Column field="nombre_mostrar" header="Nombre"></Column>
+                <Column field="email" header="Correo"></Column>
+                <Column header="Estado">
+                    <template #body="{ data }">
+                        <Tag :value="data.activo ? 'Activo' : 'Inactivo'" :severity="etiquetaEstado(data)" />
                     </template>
                 </Column>
-                <Column field="price" header="Price" sortable style="min-width: 8rem">
-                    <template #body="slotProps">
-                        {{ formatCurrency(slotProps.data.price) }}
+                <Column header="Oficinas">
+                    <template #body="{ data }">
+                        {{ data.asignaciones_laborales?.length || 0 }}
                     </template>
                 </Column>
-                <Column field="category" header="Category" sortable style="min-width: 10rem"></Column>
-                <Column field="rating" header="Reviews" sortable style="min-width: 12rem">
-                    <template #body="slotProps">
-                        <Rating :modelValue="slotProps.data.rating" :readonly="true" />
-                    </template>
-                </Column>
-                <Column field="inventoryStatus" header="Status" sortable style="min-width: 12rem">
-                    <template #body="slotProps">
-                        <Tag :value="slotProps.data.inventoryStatus" :severity="getStatusLabel(slotProps.data.inventoryStatus)" />
-                    </template>
-                </Column>
-                <Column :exportable="false" style="min-width: 12rem">
-                    <template #body="slotProps">
-                        <Button icon="pi pi-pencil" outlined rounded class="mr-2" @click="editProduct(slotProps.data)" />
-                        <Button icon="pi pi-trash" outlined rounded severity="danger" @click="confirmDeleteProduct(slotProps.data)" />
+                <Column header="Acciones" style="min-width: 12rem">
+                    <template #body="{ data }">
+                        <div class="flex gap-2">
+                            <Button icon="pi pi-pencil" rounded outlined @click="editarUsuario(data)" />
+                            <Button icon="pi pi-key" rounded outlined severity="contrast" @click="abrirResetPassword(data)" />
+                        </div>
                     </template>
                 </Column>
             </DataTable>
         </div>
 
-        <Dialog v-model:visible="productDialog" :style="{ width: '450px' }" header="Product Details" :modal="true">
-            <div class="flex flex-col gap-6">
-                <img v-if="product.image" :src="`https://primefaces.org/cdn/primevue/images/product/${product.image}`" :alt="product.image" class="block m-auto pb-4" />
-                <div>
-                    <label for="name" class="block font-bold mb-3">Name</label>
-                    <InputText id="name" v-model.trim="product.name" required="true" autofocus :invalid="submitted && !product.name" fluid />
-                    <small v-if="submitted && !product.name" class="text-red-500">Name is required.</small>
-                </div>
-                <div>
-                    <label for="description" class="block font-bold mb-3">Description</label>
-                    <Textarea id="description" v-model="product.description" required="true" rows="3" cols="20" fluid />
-                </div>
-                <div>
-                    <label for="inventoryStatus" class="block font-bold mb-3">Inventory Status</label>
-                    <Select id="inventoryStatus" v-model="product.inventoryStatus" :options="statuses" optionLabel="label" placeholder="Select a Status" fluid></Select>
-                </div>
-
-                <div>
-                    <span class="block font-bold mb-4">Category</span>
-                    <div class="grid grid-cols-12 gap-4">
-                        <div class="flex items-center gap-2 col-span-6">
-                            <RadioButton id="category1" v-model="product.category" name="category" value="Accessories" />
-                            <label for="category1">Accessories</label>
+        <Dialog v-model:visible="dialogoUsuario" modal :style="{ width: '72rem' }" :header="formulario.id ? 'Editar usuario' : 'Nuevo usuario'">
+            <div class="grid grid-cols-12 gap-6">
+                <div class="col-span-12 lg:col-span-6 space-y-4">
+                    <h3 class="text-lg font-semibold text-slate-900">Cuenta</h3>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="col-span-2">
+                            <label class="block mb-2 font-medium">Organización</label>
+                            <Select v-model="formulario.organizacion_id" :options="catalogos.organizaciones" optionLabel="nombre" optionValue="id" class="w-full" />
                         </div>
-                        <div class="flex items-center gap-2 col-span-6">
-                            <RadioButton id="category2" v-model="product.category" name="category" value="Clothing" />
-                            <label for="category2">Clothing</label>
+                        <div>
+                            <label class="block mb-2 font-medium">Alias</label>
+                            <InputText v-model="formulario.alias" class="w-full" />
                         </div>
-                        <div class="flex items-center gap-2 col-span-6">
-                            <RadioButton id="category3" v-model="product.category" name="category" value="Electronics" />
-                            <label for="category3">Electronics</label>
+                        <div>
+                            <label class="block mb-2 font-medium">Nombre a mostrar</label>
+                            <InputText v-model="formulario.nombre_mostrar" class="w-full" />
                         </div>
-                        <div class="flex items-center gap-2 col-span-6">
-                            <RadioButton id="category4" v-model="product.category" name="category" value="Fitness" />
-                            <label for="category4">Fitness</label>
+                        <div>
+                            <label class="block mb-2 font-medium">Correo</label>
+                            <InputText v-model="formulario.email" class="w-full" />
+                        </div>
+                        <div>
+                            <label class="block mb-2 font-medium">Teléfono</label>
+                            <InputText v-model="formulario.telefono" class="w-full" />
+                        </div>
+                        <div class="col-span-2">
+                            <label class="block mb-2 font-medium">{{ formulario.id ? 'Nueva contraseña (opcional)' : 'Contraseña inicial' }}</label>
+                            <Password v-model="formulario.password" :feedback="false" fluid toggleMask />
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <Checkbox v-model="formulario.es_superusuario" binary inputId="superusuario" />
+                            <label for="superusuario">Superusuario</label>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <Checkbox v-model="formulario.activo" binary inputId="activo" />
+                            <label for="activo">Activo</label>
                         </div>
                     </div>
                 </div>
 
-                <div class="grid grid-cols-12 gap-4">
-                    <div class="col-span-6">
-                        <label for="price" class="block font-bold mb-3">Price</label>
-                        <InputNumber id="price" v-model="product.price" mode="currency" currency="USD" locale="en-US" fluid />
+                <div class="col-span-12 lg:col-span-6 space-y-4">
+                    <h3 class="text-lg font-semibold text-slate-900">Persona</h3>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block mb-2 font-medium">Nombres</label>
+                            <InputText v-model="formulario.persona.nombres" class="w-full" />
+                        </div>
+                        <div>
+                            <label class="block mb-2 font-medium">Apellido paterno</label>
+                            <InputText v-model="formulario.persona.apellido_paterno" class="w-full" />
+                        </div>
+                        <div>
+                            <label class="block mb-2 font-medium">Apellido materno</label>
+                            <InputText v-model="formulario.persona.apellido_materno" class="w-full" />
+                        </div>
+                        <div>
+                            <label class="block mb-2 font-medium">Tipo documento</label>
+                            <InputText v-model="formulario.persona.tipo_documento" class="w-full" />
+                        </div>
+                        <div>
+                            <label class="block mb-2 font-medium">Número documento</label>
+                            <InputText v-model="formulario.persona.numero_documento" class="w-full" />
+                        </div>
+                        <div>
+                            <label class="block mb-2 font-medium">Género</label>
+                            <Select v-model="formulario.persona.genero" :options="['masculino', 'femenino', 'otro']" class="w-full" />
+                        </div>
+                        <div>
+                            <label class="block mb-2 font-medium">Fecha nacimiento</label>
+                            <InputText v-model="formulario.persona.fecha_nacimiento" placeholder="YYYY-MM-DD" class="w-full" />
+                        </div>
+                        <div>
+                            <label class="block mb-2 font-medium">Ciudad</label>
+                            <Select v-model="formulario.persona.ciudad_id" :options="catalogos.ciudades" optionLabel="nombre" optionValue="id" class="w-full" />
+                        </div>
+                        <div class="col-span-2">
+                            <label class="block mb-2 font-medium">Dirección</label>
+                            <InputText v-model="formulario.persona.direccion" class="w-full" />
+                        </div>
                     </div>
-                    <div class="col-span-6">
-                        <label for="quantity" class="block font-bold mb-3">Quantity</label>
-                        <InputNumber id="quantity" v-model="product.quantity" integeronly fluid />
+                </div>
+
+                <div class="col-span-12 space-y-4">
+                    <div class="flex items-center justify-between">
+                        <h3 class="text-lg font-semibold text-slate-900">Asignaciones laborales</h3>
+                        <Button label="Agregar asignación" icon="pi pi-plus" outlined @click="agregarAsignacion" />
                     </div>
+
+                    <div v-for="(asignacion, index) in formulario.asignaciones" :key="index" class="rounded-2xl border border-slate-200 p-4 space-y-4">
+                        <div class="flex items-center justify-between">
+                            <div class="font-medium text-slate-800">Asignación {{ index + 1 }}</div>
+                            <Button icon="pi pi-trash" text severity="danger" @click="quitarAsignacion(index)" />
+                        </div>
+
+                        <div class="grid grid-cols-12 gap-4">
+                            <div class="col-span-12 lg:col-span-4">
+                                <label class="block mb-2 font-medium">Oficina</label>
+                                <Select v-model="asignacion.oficina_id" :options="catalogos.oficinas" optionLabel="nombre" optionValue="id" class="w-full" />
+                            </div>
+                            <div class="col-span-12 lg:col-span-4">
+                                <label class="block mb-2 font-medium">División</label>
+                                <Select v-model="asignacion.division_id" :options="catalogos.divisiones" optionLabel="nombre" optionValue="id" class="w-full" />
+                            </div>
+                            <div class="col-span-12 lg:col-span-4">
+                                <label class="block mb-2 font-medium">Área</label>
+                                <Select v-model="asignacion.area_id" :options="catalogos.areas" optionLabel="nombre" optionValue="id" class="w-full" />
+                            </div>
+                            <div class="col-span-12 lg:col-span-4">
+                                <label class="block mb-2 font-medium">Cargo</label>
+                                <Select v-model="asignacion.cargo_id" :options="catalogos.cargos" optionLabel="nombre" optionValue="id" class="w-full" />
+                            </div>
+                            <div class="col-span-12 lg:col-span-4">
+                                <label class="block mb-2 font-medium">Fecha inicio</label>
+                                <InputText v-model="asignacion.fecha_inicio" placeholder="YYYY-MM-DD" class="w-full" />
+                            </div>
+                            <div class="col-span-12 lg:col-span-4">
+                                <label class="block mb-2 font-medium">Fecha fin</label>
+                                <InputText v-model="asignacion.fecha_fin" placeholder="YYYY-MM-DD" class="w-full" />
+                            </div>
+                            <div class="col-span-12">
+                                <label class="block mb-2 font-medium">Roles</label>
+                                <MultiSelect v-model="asignacion.roles" :options="catalogos.roles" optionLabel="name" optionValue="name" display="chip" class="w-full" />
+                            </div>
+                            <div class="col-span-12 flex gap-6">
+                                <div class="flex items-center gap-2">
+                                    <Checkbox v-model="asignacion.es_principal" binary :inputId="`principal-${index}`" />
+                                    <label :for="`principal-${index}`">Principal</label>
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <Checkbox v-model="asignacion.activa" binary :inputId="`activa-${index}`" />
+                                    <label :for="`activa-${index}`">Activa</label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-span-12">
+                    <Message v-if="errorFormulario" severity="error" :closable="false">{{ errorFormulario }}</Message>
                 </div>
             </div>
 
             <template #footer>
-                <Button label="Cancel" icon="pi pi-times" text @click="hideDialog" />
-                <Button label="Save" icon="pi pi-check" @click="saveProduct" />
+                <Button label="Cancelar" text @click="dialogoUsuario = false" />
+                <Button :label="guardando ? 'Guardando...' : 'Guardar'" :loading="guardando" @click="guardarUsuario" />
             </template>
         </Dialog>
 
-        <Dialog v-model:visible="deleteProductDialog" :style="{ width: '450px' }" header="Confirm" :modal="true">
-            <div class="flex items-center gap-4">
-                <i class="pi pi-exclamation-triangle text-3xl!" />
-                <span v-if="product"
-                    >Are you sure you want to delete <b>{{ product.name }}</b
-                    >?</span
-                >
+        <Dialog v-model:visible="dialogoPassword" modal :style="{ width: '32rem' }" header="Resetear contraseña">
+            <div class="space-y-4">
+                <p class="text-slate-600">Define una nueva contraseña. El usuario deberá cambiarla al iniciar sesión.</p>
+                <Password v-model="passwordReset" :feedback="false" fluid toggleMask />
             </div>
             <template #footer>
-                <Button label="No" icon="pi pi-times" text @click="deleteProductDialog = false" />
-                <Button label="Yes" icon="pi pi-check" @click="deleteProduct" />
-            </template>
-        </Dialog>
-
-        <Dialog v-model:visible="deleteProductsDialog" :style="{ width: '450px' }" header="Confirm" :modal="true">
-            <div class="flex items-center gap-4">
-                <i class="pi pi-exclamation-triangle text-3xl!" />
-                <span v-if="product">Are you sure you want to delete the selected products?</span>
-            </div>
-            <template #footer>
-                <Button label="No" icon="pi pi-times" text @click="deleteProductsDialog = false" />
-                <Button label="Yes" icon="pi pi-check" text @click="deleteSelectedProducts" />
+                <Button label="Cancelar" text @click="dialogoPassword = false" />
+                <Button label="Guardar" @click="resetearPassword" />
             </template>
         </Dialog>
     </div>

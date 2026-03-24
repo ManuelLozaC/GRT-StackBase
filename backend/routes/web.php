@@ -3,5 +3,9 @@
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
-    return view('welcome');
+    return response()->json([
+        'estado' => 'ok',
+        'mensaje' => 'GRT StackBase API',
+        'version' => '2026',
+    ]);
 });
