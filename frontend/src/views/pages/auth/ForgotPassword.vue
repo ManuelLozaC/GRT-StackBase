@@ -19,7 +19,7 @@ async function submitForgotPassword() {
             email: email.value
         });
 
-        previewToken.value = response.data.meta?.reset_token_preview ?? '';
+        previewToken.value = response.data.meta?.debug_reset_token_preview ?? '';
 
         toast.add({
             severity: 'success',

@@ -105,7 +105,7 @@ class AuthFlowTest extends TestCase
             ->assertOk()
             ->assertJsonPath('mensaje', 'Si el email existe, se genero un token de recuperacion');
 
-        $token = $forgotResponse->json('meta.reset_token_preview');
+        $token = $forgotResponse->json('meta.debug_reset_token_preview');
 
         $this->postJson('/api/v1/auth/reset-password', [
             'email' => 'reset@stackbase.local',

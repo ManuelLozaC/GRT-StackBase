@@ -106,8 +106,8 @@ class AuthController extends Controller
 
         $meta = [];
 
-        if ($user !== null) {
-            $meta['reset_token_preview'] = Password::broker()->createToken($user);
+        if ($user !== null && app()->environment(['local', 'testing'])) {
+            $meta['debug_reset_token_preview'] = Password::broker()->createToken($user);
         }
 
         return $this->successResponse(

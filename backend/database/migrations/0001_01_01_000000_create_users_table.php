@@ -99,20 +99,13 @@ return new class extends Migration
         Schema::create('users', function (Blueprint $table): void {
             $table->id();
             $table->uuid('uuid')->nullable()->unique();
-            $table->foreignId('organizacion_id')->nullable()->constrained('organizaciones')->nullOnDelete();
             $table->foreignId('organizacion_activa_id')->nullable()->constrained('organizaciones')->nullOnDelete();
-            $table->foreignId('persona_id')->nullable()->constrained('personas')->nullOnDelete();
             $table->string('name');
-            $table->string('alias')->nullable()->unique();
-            $table->string('nombre_mostrar')->nullable();
             $table->string('email')->unique();
             $table->string('telefono', 30)->nullable();
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
-            $table->boolean('es_superusuario')->default(false);
-            $table->boolean('debe_cambiar_password')->default(false);
             $table->boolean('activo')->default(true);
-            $table->timestamp('ultimo_acceso_at')->nullable();
             $table->rememberToken();
             $table->timestamps();
             $table->softDeletes();

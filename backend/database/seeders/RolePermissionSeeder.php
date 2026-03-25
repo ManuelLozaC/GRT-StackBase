@@ -32,10 +32,14 @@ class RolePermissionSeeder extends Seeder
 
         $adminRole->syncPermissions($permissions);
 
-        $admin = User::query()->where('email', 'admin@stackbase.local')->first();
+        $adminCandidates = [
+            'admin@stackbase.local',
+            'cliente.admin@stackbase.local',
+        ];
 
-        if ($admin !== null) {
-            $admin->syncRoles([$adminRole->name]);
-        }
+        User::query()
+            ->whereIn('email', $adminCandidates)
+            ->get()
+            ->each(fn (User $user) => $user->syncRoles([$adminRole->name]));
     }
 }

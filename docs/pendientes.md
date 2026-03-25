@@ -32,6 +32,10 @@
 - [x] Proteccion por permiso sobre administracion de modulos.
 - [x] Integridad base revisada con tests backend y build frontend en verde.
 - [x] Limpieza principal de deuda legacy HTTP/UI del template original.
+- [x] Preview de reset password limitado a `local/testing`.
+- [x] Seeders RBAC iniciales alineados en una sola fuente de verdad.
+- [x] Branding residual del template retirado de metadatos principales.
+- [x] Estructura laboral legacy retirada del runtime activo.
 
 ### Brechas principales
 - [ ] RBAC completo.
@@ -43,7 +47,7 @@
 - [ ] Notificaciones avanzadas y multicanal.
 - [ ] Auditoria y logs avanzados.
 - [ ] Demos funcionales de las capacidades genericas.
-- [ ] Extraer el dominio laboral heredado a un modulo vertical dedicado o redefinir su alcance final.
+- [ ] Definir si catalogos como `oficinas` y `personas` permanecen en el core o migran a un modulo dedicado.
 
 ## Regla transversal del proyecto
 - [x] Toda funcionalidad generica importante debe vivir en el core.
@@ -239,6 +243,7 @@ Estado: Pendiente
 - [ ] Encriptacion de datos sensibles.
 - [ ] Logs de seguridad.
 - [ ] Politicas de contrasenas y sesiones.
+- [x] Restringir previews sensibles de recuperacion de password a entornos de desarrollo/prueba.
 
 ## P14. Internacionalizacion
 Estado: Pendiente
@@ -258,7 +263,18 @@ Estado: Parcial
 - [ ] Preferencias de vistas.
 - [ ] Columnas dinamicas.
 
-## P16. Responsive y soporte movil
+## P16. Higiene tecnica y operativa
+Estado: En progreso
+
+- [x] Resolver conflictos de merge abiertos.
+- [x] Unificar migraciones base duplicadas.
+- [x] Retirar capa HTTP/UI legacy fuera de la arquitectura actual.
+- [x] Unificar seeders iniciales de permisos.
+- [x] Limpiar branding principal heredado del template.
+- [ ] Reducir warning de chunk grande en build de Vite.
+- [ ] Revisar y mitigar vulnerabilidades reportadas por `npm audit`.
+
+## P17. Responsive y soporte movil
 Estado: Parcial
 
 - [x] Base responsive del template.
@@ -266,7 +282,7 @@ Estado: Parcial
 - [ ] PWA si aplica.
 - [ ] Offline basico solo donde aporte valor.
 
-## P17. Manejo de errores
+## P18. Manejo de errores
 Estado: Pendiente
 
 - [ ] Catalogo de errores controlados backend.
@@ -274,7 +290,7 @@ Estado: Pendiente
 - [ ] Correlation IDs.
 - [ ] Fallbacks de UX.
 
-## P18. Metricas internas
+## P19. Metricas internas
 Estado: Pendiente
 
 - [ ] Uso del sistema por tenant.
@@ -287,4 +303,4 @@ Estado: Pendiente
 2. CRUD universal base del core.
 3. Integracion de archivos con Spaces y entidades de negocio.
 4. Export/import demo funcional.
-5. Extraer estructura laboral/usuarios avanzados a un modulo vertical.
+5. Definir el destino final de catalogos base como `oficinas/personas` dentro del modelo modular.

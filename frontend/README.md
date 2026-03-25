@@ -6,6 +6,7 @@ Frontend construido con Vue 3, Vite y PrimeVue.
 - Layout base.
 - Login real conectado al backend.
 - Registro y flujo basico de recuperacion/reset conectados al backend.
+- Helper visual de reset disponible solo cuando backend responde preview en `local/testing`.
 - Router modular `core + modules`.
 - Pantalla de administracion de modulos.
 - Guardas de autenticacion.
@@ -15,6 +16,7 @@ Frontend construido con Vue 3, Vite y PrimeVue.
 - `Demo Module` con landing, `Notifications Demo`, `Files Demo`, `Jobs Demo` y `Audit Demo`.
 - Build de produccion verificado tras saneamiento de conflictos de merge.
 - Navegacion principal limpia de demos del template original.
+- Branding principal alineado a `GRT StackBase`.
 
 ## Pantallas relevantes hoy
 - `/admin/modules`
@@ -39,3 +41,5 @@ npm run build
 La administracion de modulos ya esta conectada a autenticacion real y al permiso `modules.manage`. Para ver jobs en cola procesarse realmente en local, el backend necesita un worker activo con `php artisan queue:work --queue=demo`.
 
 El siguiente paso visible en frontend es construir el nuevo motor CRUD del core, ya sin arrastrar el mantenimiento heredado del template.
+
+Queda pendiente reducir el warning de chunk grande que hoy reporta Vite en el build de produccion.

@@ -13,10 +13,14 @@ Fecha de referencia: `2026-03-25`
 - Respuesta JSON estandar `{ estado, datos, mensaje, meta, errores }`.
 - Autenticacion API inicial con `login / logout / me`.
 - Registro y recuperacion/reset de password ya implementados.
+- Preview de token de recuperacion restringido a entornos `local/testing`.
 - Organizaciones base, membresias y organizacion activa en sesion.
 - RBAC inicial con rol `admin` y permiso `modules.manage`.
 - Integridad base del repositorio saneada: conflictos de merge resueltos, migraciones duplicadas unificadas y suite validada.
 - Capa legacy principal retirada del backend HTTP y del frontend heredado del template.
+- Seeders de permisos y bootstrap inicial unificados sobre una sola fuente de verdad.
+- Branding residual del template limpiado en metadatos principales del frontend.
+- Estructura laboral legacy retirada del runtime activo.
 - Registro modular inicial con `core-platform` y `demo-platform`.
 - Persistencia de modulos en base de datos y toggle por API.
 - Pantalla de administracion de modulos en frontend.
@@ -33,7 +37,7 @@ Fecha de referencia: `2026-03-25`
 - Estructura `core/modules` ya creada, pero el contrato de modulos todavia debe crecer.
 - Tenancy base ya existe, pero falta propagarla de forma consistente a modelos, jobs, archivos y auditoria.
 - `Demo Module` ya existe y ya contiene demos funcionales de archivos, jobs, auditoria y notificaciones. Sigue pendiente export/import.
-- Todavia queda deuda de dominio por modularizar, especialmente estructura laboral/usuarios historicos que deben migrar a un modulo vertical real.
+- Persisten deudas operativas menores: optimizacion del bundle frontend, dependencias con alertas de `npm audit` y definicion final de algunos catalogos base.
 
 ### Aun pendiente
 - Multi-tenant completo.
@@ -124,6 +128,7 @@ El backlog detallado vive en `docs/pendientes.md`.
 
 ## Resumen actual
 - Logrado: kernel modular, auth API, registro, reset de password, RBAC inicial, tenancy base, archivos, jobs, auditoria y notificaciones internas ya funcionan en backend y frontend con demos activables desde `Demo Module`; ademas la integridad del repositorio quedo estabilizada, la capa legacy principal fue retirada y todo quedo verificado con tests/build.
-- Pendiente: completar multi-tenant transversal, CRUD universal, export/import, integraciones de storage y notificaciones multicanal, mas observabilidad y seguridad operativa, y extraer el dominio laboral restante a modulos verticales bien definidos.
+- Pendiente: completar multi-tenant transversal, CRUD universal, export/import, integraciones de storage y notificaciones multicanal, mas observabilidad y seguridad operativa, y cerrar la definicion final de los catalogos base que siguen en evaluacion.
+- Pendiente tecnico residual: optimizar chunks del frontend, revisar vulnerabilidades del arbol `npm`, y decidir si catalogos como `oficinas/personas` permanecen en core o migran a un modulo futuro.
 
-Avance global estimado del roadmap: 60% completado.
+Avance global estimado del roadmap: 65% completado.

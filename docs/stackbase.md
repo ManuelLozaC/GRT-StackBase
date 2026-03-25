@@ -55,8 +55,12 @@ Su objetivo es:
 - Healthcheck.
 - Login, logout y `me`.
 - Registro, recuperacion y reset de password.
+- Preview de recuperacion expuesto solo en `local/testing` para no mezclar helpers de desarrollo con runtime productivo.
 - Integridad base saneada tras resolver conflictos de merge y unificar migraciones clave.
 - Limpieza principal de deuda legacy: backend HTTP fuera de `api/v1` retirado y frontend sin vistas del template en la navegacion principal.
+- Seeders iniciales y RBAC base alineados sin duplicidad de bootstrap.
+- Branding principal del template removido de la shell frontend.
+- Estructura laboral heredada retirada del runtime activo.
 - Organizaciones base y cambio de organizacion activa.
 - Core de archivos con upload, descarga directa, signed URL e historial.
 - Core de jobs con dispatch, ejecucion inmediata demo y trazabilidad basica.
@@ -82,3 +86,4 @@ Su objetivo es:
 - Las funcionalidades genericas importantes deben tener demo.
 - La documentacion debe reflejar estado real del codigo.
 - La deuda legacy fuera del core debe reducirse de forma explicita hasta converger en la arquitectura modular.
+- Las ayudas de desarrollo deben quedar condicionadas por entorno para no contaminar produccion.
