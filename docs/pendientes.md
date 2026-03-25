@@ -144,7 +144,7 @@ Estado: En progreso
 - [x] Migraciones de empresas.
 - [x] Migraciones de sucursales.
 - [x] Migraciones de equipos.
-- [ ] Unificar concepto organizacion / empresa segun modelo final.
+- [ ] Aplicar en codigo y migraciones la decision final `organizacion = empresa`.
 - [ ] Tenant activo por request en todos los servicios backend.
 - [x] Configuracion por tenant.
 - [ ] Scope multi-tenant consistente en modelos, jobs, archivos y auditoria.
@@ -381,8 +381,8 @@ Estado: En progreso
 - [x] Eventos clave de usuario.
 
 ## Siguiente desarrollo recomendado
-1. Scope multi-tenant consistente en modelos, jobs, archivos, auditoria y notificaciones externas.
-2. Integracion de archivos con Spaces, versionado y entidades de negocio.
-3. Completar integraciones reales de API: contratos ejecutables mas profundos y ejemplos de integracion.
-4. Completar el contrato modular con ejecucion real de assets y dashboards por modulo.
-5. Extender el Data Engine con acciones avanzadas, relaciones dependientes y custom fields realmente universales.
+1. Limpiar documentacion legacy y dejar una sola fuente de verdad operativa.
+2. Aplicar la decision `organizacion = empresa` en dominio, backlog y roadmap.
+3. Rehacer el bootstrap oficial con Manuel Loza, GRT SRL y TalentHub.
+4. Cerrar scope multi-tenant consistente en modelos, jobs, archivos, auditoria y notificaciones externas.
+5. Integrar archivos con Spaces, versionado y entidades de negocio.

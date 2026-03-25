@@ -1,160 +1,181 @@
-# MODELO DE DOMINIO Y DATOS
-> Modelo objetivo para una plataforma modular multi-tenant.
+# Modelo de dominio y datos
+
+> Modelo vigente de referencia para el stack base.
+
+## Decisiones cerradas
+
+- `organizacion = empresa`
+- cada cliente de GRT sera un tenant aislado
+- `persona` y `usuario` son entidades separadas
+- una organizacion puede tener multiples oficinas o sucursales
+- una persona o usuario puede tener multiples asignaciones laborales
+- una misma persona puede tener cargos, jefes, aprobadores y permisos distintos por oficina
+
+## Nucleo de dominio objetivo
+
+### Tenancy
+
+- `organizaciones`
+  tenant principal del sistema y razon social operativa
+- `oficinas`
+  sedes o sucursales que pertenecen a una organizacion
+- `equipos`
+  agrupaciones operativas dentro de la organizacion cuando aplique
+
+### Personas e identidad
+
+- `personas`
+  entidad humana base, tenga o no acceso al sistema
+- `usuarios`
+  credenciales y acceso digital asociados opcionalmente a una persona
+- `roles`
+- `permisos`
+- `sesiones` o `tokens`
+
+### Estructura laboral
+
+- `divisiones`
+- `areas`
+- `cargos`
+- `asignaciones_laborales`
+- `historial_asignaciones` o equivalente auditable
+
+La entidad clave sera `asignacion_laboral`, porque es la que permite modelar:
+
+- oficina de trabajo
+- cargo
+- area
+- division
+- jefe inmediato
+- aprobador
+- vigencia
+- permisos operativos por contexto
+
+## Escenario clave que el modelo debe satisfacer
+
+Una misma persona puede ser:
+
+- ejecutiva de ventas en sucursal 1
+- gerente o jefa en sucursal 3
+
+Eso implica que el stack debe soportar, por cada asignacion laboral:
+
+- rol operativo distinto
+- jefe distinto
+- aprobador distinto
+- permisos distintos
+- vigencia distinta
 
 ## Entidades implementadas hoy
-### system_modules
+
+### `system_modules`
+
 Catalogo persistente de modulos instalados.
 
-Campos base:
-- `key`
-- `name`
-- `description`
-- `version`
-- `provider`
-- `is_enabled`
-- `is_demo`
+### `organizaciones`
 
-Uso:
-- sincronizar modulos declarados en configuracion
-- permitir toggles desde administracion
-- habilitar o bloquear acceso a modulos
-
-### organizaciones
-Tenant operativo base del sistema.
-
-Campos base:
-- `nombre`
-- `slug`
-- `metadata`
+Tenant operativo actual del sistema.
 
 Relacionadas con:
+
 - `users.organizacion_activa_id`
 - `organizacion_user`
 
-### core_files
+### `core_files`
+
 Archivo gestionado por el core.
 
-Campos base:
-- `uuid`
-- `organizacion_id`
-- `uploaded_by`
-- `disk`
-- `path`
-- `original_name`
-- `mime_type`
-- `size_bytes`
-- `version`
-- `security_token`
-- `metadata`
+### `core_file_downloads`
 
-Uso:
-- subida y almacenamiento transversal
-- descarga directa autenticada
-- generacion de signed URLs
-- base para versionado y asociacion con entidades futuras
-
-### core_file_downloads
 Historial de descargas por usuario y tenant.
 
-Campos base:
-- `managed_file_id`
-- `organizacion_id`
-- `user_id`
-- `channel`
-- `status`
-- `downloaded_at`
-- `metadata`
+### `core_job_runs`
 
-### core_job_runs
 Registro transversal de ejecuciones asincronas o inmediatas.
 
-Campos base:
-- `uuid`
-- `organizacion_id`
-- `requested_by`
-- `job_key`
-- `queue`
-- `status`
-- `requested_payload`
-- `result_payload`
-- `attempts`
-- `dispatched_at`
-- `started_at`
-- `finished_at`
-- `failed_at`
-- `error_message`
+### `core_audit_logs`
 
-### core_audit_logs
 Registro transversal de actividad funcional del sistema.
 
-Campos base:
-- `organizacion_id`
-- `actor_id`
-- `event_key`
-- `entity_type`
-- `entity_key`
-- `source_module`
-- `summary`
-- `context`
-- `occurred_at`
+### `core_notifications`
 
-### core_notifications
 Registro de notificaciones internas por usuario y tenant.
 
-Campos base:
-- `uuid`
-- `organizacion_id`
-- `recipient_id`
-- `created_by`
-- `channel`
-- `level`
-- `title`
-- `message`
-- `action_url`
-- `metadata`
-- `read_at`
+## Entidades ya presentes de forma parcial o tecnica
 
-## Entidades core planificadas
-### identidad
-- usuarios
-- roles
-- permisos
-- sesiones
+- `users`
+- `organizacion_user`
+- estructuras tenant base como `empresas`, `sucursales` y `equipos` en el runtime actual
 
-### tenancy
-- organizaciones
-- empresas
-- sucursales
-- equipos
-- usuario_empresa
+Nota:
+La documentacion del dominio ya asume la decision final `organizacion = empresa`, pero el codigo todavia debe converger por completo hacia ese modelo.
 
-### configuracion
-- settings_globales
-- settings_por_modulo
-- settings_por_tenant
-- settings_por_usuario
+## Campos base esperados
 
-### archivos
-- core_files
-- versiones_archivo
-- core_file_downloads
+### Persona
 
-### observabilidad
-- auditorias
-- logs_tecnicos
-- eventos_usuario
-- core_job_runs
-- core_audit_logs
-- core_notifications
+- nombres
+- apellido_paterno
+- apellido_materno
+- documento_identidad
+- telefono
+- correo
+- direccion
+- sexo
+- fecha_nacimiento
+- ciudad_id
+- pais_id
+- foto_archivo_id o referencia equivalente
+
+### Usuario
+
+- persona_id
+- alias
+- email
+- password
+- organizacion_activa_id
+- primer_acceso_pendiente
+- expira_password_en
+- estado
+
+### Oficina
+
+- organizacion_id
+- nombre
+- codigo
+- ciudad_id
+- direccion
+- telefono
+- estado
+
+### Asignacion laboral
+
+- organizacion_id
+- oficina_id
+- persona_id
+- usuario_id
+- division_id
+- area_id
+- cargo_id
+- jefe_asignacion_id
+- aprobador_asignacion_id
+- es_principal
+- fecha_inicio
+- fecha_fin
+- estado
+- metadata
 
 ## Reglas de modelado
-- IDs internos numericos.
-- IDs publicos `uuid` cuando expongan entidades sensibles.
-- Soft delete en entidades funcionales donde aplique.
-- Toda entidad core futura debe evaluar impacto multi-tenant.
-- Toda capacidad transversal importante debe poder ser ejercitada desde `Demo Module`.
+
+- IDs internos numericos
+- IDs publicos `uuid` en entidades sensibles o expuestas externamente
+- soft delete donde aporte valor funcional
+- toda entidad del dominio debe evaluar impacto multi-tenant
+- toda decision transversal relevante debe quedar documentada antes de crecer nuevas features
+- los archivos externos permanentes deben vivir en DigitalOcean Spaces
 
 ## Relacion entre core y modulos
-- El core define servicios e infraestructura.
-- Los modulos agregan entidades de negocio.
-- Los modulos no deben duplicar tablas o logica transversal del core.
+
+- el core define servicios, infraestructura y dominio base reutilizable
+- los modulos agregan negocio especifico
+- los modulos no deben duplicar tenancy, auth, archivos, observabilidad ni estructuras basicas del dominio

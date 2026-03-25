@@ -17,25 +17,26 @@ Resolver una sola vez las capacidades transversales del producto y reutilizarlas
 
 ## Estado actual
 
-- Backend Laravel 12 API-first con `api/v1`.
-- Frontend Vue 3 + Vite + PrimeVue.
-- Registro modular con `core-platform` y `demo-platform`.
-- Administracion de modulos con activacion/desactivacion, dependencias operativas y settings por modulo.
-- `Demo Module` para probar capacidades genericas antes de llevarlas a modulos de negocio.
-- Data Engine real con CRUD base tenant-aware, relaciones, custom fields, export/import `CSV / Excel / PDF`, historial y modo `async`.
-- Settings globales, por organizacion y por usuario ya operativos desde UI/API.
-- Multi-rol, administracion de usuarios e impersonacion con auditoria.
-- Estructuras tenant base (`empresas`, `sucursales`, `equipos`) y base multicanal de notificaciones.
-- Request IDs, rate limiting base, security logs y operations overview administrativo.
-- Error logs, usage metrics y formatos locale-aware aplicados desde settings.
-- API tokens personales, webhooks salientes/entrantes administrables, OpenAPI JSON sincronizado, sanitizacion base y preferencias persistidas de Data Engine.
+- backend Laravel 12 API-first con `api/v1`
+- frontend Vue 3 + Vite + PrimeVue
+- decision de dominio vigente: `organizacion = empresa`
+- registro modular con `core-platform` y `demo-platform`
+- administracion de modulos con activacion, desactivacion, dependencias y settings
+- Data Engine tenant-aware con relaciones, custom fields e import/export
+- settings globales, por organizacion y por usuario
+- multi-rol, administracion de usuarios e impersonacion
+- observabilidad base: request IDs, security logs, error logs y metrics
+- webhooks salientes y entrantes, API tokens y OpenAPI JSON
 
-## Documentacion principal
+## Fuente de verdad documental
 
-- [docs/stackbase.md](./docs/stackbase.md)
-- [docs/roadmap.md](./docs/roadmap.md)
-- [docs/pendientes.md](./docs/pendientes.md)
-- [docs/contrato_modulos.md](./docs/contrato_modulos.md)
+- estado y backlog operativo: [docs/pendientes.md](./docs/pendientes.md)
+- diagnostico actual: [docs/revision_estado_actual.md](./docs/revision_estado_actual.md)
+- plan de cierre: [docs/plan_trabajo_finalizacion.md](./docs/plan_trabajo_finalizacion.md)
+- arquitectura base: [docs/stackbase.md](./docs/stackbase.md)
+- dominio vigente: [docs/modelo_dominio.md](./docs/modelo_dominio.md)
+- contrato modular: [docs/contrato_modulos.md](./docs/contrato_modulos.md)
+- decisiones cerradas: [preguntas.md](./preguntas.md)
 
 ## Verificacion rapida
 
@@ -50,8 +51,8 @@ npm run build
 
 ## Siguiente foco
 
+- orden documental y fuente unica de verdad
+- bootstrap real del dominio base
+- cierre del modelo organizacional y laboral
 - tenancy transversal completa
 - storage real con Spaces
-- notificaciones multicanal reales
-- evolucion del Data Engine hacia acciones avanzadas y operaciones masivas
-- sincronizacion API mas profunda y documentacion ejecutable

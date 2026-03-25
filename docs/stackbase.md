@@ -1,12 +1,17 @@
-# STACKBASE
+# StackBase
+
 > Arquitectura maestra del proyecto.
 
 ## Objetivo
+
 Construir una plataforma base reutilizable para multiples sistemas, donde las capacidades genericas vivan en el core y las necesidades de negocio entren como modulos plug-in.
 
 ## Arquitectura general
+
 ### Core Platform
+
 Resuelve capacidades compartidas:
+
 - identidad y acceso
 - tenancy
 - configuracion
@@ -20,7 +25,9 @@ Resuelve capacidades compartidas:
 - UX transversal
 
 ### Modules
+
 Cada modulo puede declarar:
+
 - rutas
 - pantallas
 - menus
@@ -33,15 +40,18 @@ Cada modulo puede declarar:
 - features
 
 ### Demo Module
+
 Modulo especial orientado a pruebas tecnicas del core.
 
 Su objetivo es:
+
 - validar capacidades genericas antes de usarlas en negocio
 - servir para QA tecnico
 - ayudar al onboarding
 - poder activarse o desactivarse desde administracion
 
 ## Stack tecnologico actual
+
 | Capa | Tecnologia |
 | :--- | :--- |
 | Infraestructura | Docker Compose |
@@ -53,75 +63,31 @@ Su objetivo es:
 | Storage | S3 compatible / DigitalOcean Spaces |
 | Documentacion API | L5 Swagger |
 
-## Implementado hoy
-- API `v1` base.
-- Healthcheck.
-- Login, logout y `me`.
-- Registro, recuperacion y reset de password.
-- Preview de recuperacion expuesto solo en `local/testing` para no mezclar helpers de desarrollo con runtime productivo.
-- Integridad base saneada tras resolver conflictos de merge y unificar migraciones clave.
-- Limpieza principal de deuda legacy: backend HTTP fuera de `api/v1` retirado y frontend sin vistas del template en la navegacion principal.
-- Seeders iniciales y RBAC base alineados sin duplicidad de bootstrap.
-- Branding principal del template removido de la shell frontend.
-- Estructura laboral heredada retirada del runtime activo.
-- Toolchain frontend alineado a una version segura de `Vite` con particion de chunks y auditoria `npm` limpia.
-- Base fundacional del core reducida a organizaciones, usuarios, membresias y sesion; los catalogos de ubicacion/personas ya no viven por defecto en el arranque base.
-- Organizaciones base y cambio de organizacion activa.
-- Core de archivos con upload, descarga directa, signed URL e historial.
-- Core de jobs con dispatch, ejecucion inmediata demo y trazabilidad basica.
-- Core de auditoria con eventos transversales y consulta demo.
-- Core de notificaciones internas con bandeja, lectura y contador basico.
-- Base multicanal de notificaciones con preferencias, feature flags y log de entregas por canal.
-- Request IDs propagados en header/respuesta API y rate limiting base por tipo de endpoint.
-- Security logs tenant-aware y operations overview administrativo para troubleshooting del core.
-- Error logs tecnicos y metricas internas base por tenant/modulo/categoria.
-- API tokens personales, webhooks salientes/entrantes tenant-aware con secreto cifrado, OpenAPI JSON, sanitizacion base y preferencias persistidas de Data Engine.
-- Data Engine universal con CRUD base, filtros, busqueda, paginacion, ordenamiento y soft delete sobre recurso demo.
-- Data Engine con relaciones y custom fields sobre recursos reales.
-- Export/import CSV sobre el Data Engine con historial tenant-aware de corridas.
-- Exportaciones `Excel/PDF` y modo `async` sobre el Data Engine, con demo dedicada en el `Demo Module`.
-- Settings globales, por organizacion y por usuario con feature flags base y bootstrap frontend.
-- Multi-rol, administracion de usuarios e impersonacion con auditoria.
-- Estructuras tenant base (`empresas`, `sucursales`, `equipos`) listas para reutilizacion.
-- Registro de modulos.
-- Persistencia de estado de modulos.
-- Admin de modulos.
-- Guard de acceso a modulos deshabilitados.
-- `Demo Module` con landing y demos funcionales de notificaciones, archivos, jobs y auditoria.
-- `Data Engine` con recurso demo operable y transferencias CSV trazables.
-- `Demo Module` con demo especifica para transferencias, formatos `CSV / Excel / PDF` y corridas async.
-- Metadata modular backend consumida por API para construir rutas y menu del `Demo Module`.
-- Frontend modular reducido a registro local de vistas; ya no define metadata duplicada de navegacion.
-- Metadata modular backend ampliada con `dependencies`, `permissions`, `settings`, `features` y `frontend.routes`.
-- Dependencias modulares basicas bloqueadas para no habilitar/deshabilitar modulos en estados invalidos.
-- Stores frontend consumidos directamente por responsabilidad: sesion, tenant y permisos.
-- `TenantContext` backend compartido entre request autenticado, jobs, notificaciones internas y descargas base.
-- Suite automatizada validando aislamiento por tenant en notificaciones, archivos, descargas y auditoria demo.
-- Settings modulares operativos con persistencia, API administrativa y efecto real en el `Demo Module`.
-- Banner global, preferencias persistidas y manejo global de errores HTTP ya forman parte del shell.
+## Decisiones vigentes de dominio
 
-## Contenedores previstos
-- `app`: backend Laravel
-- `web`: nginx
-- `db`: MySQL
-- `redis`: colas y cache
-- `search`: Meilisearch
-- `frontend`: Vite dev server
+- `organizacion = empresa`
+- cada cliente sera un tenant aislado
+- una organizacion puede tener multiples oficinas o sucursales
+- una persona puede tener multiples asignaciones laborales
+- una misma persona puede tener distintos roles, jefes, aprobadores y permisos segun la oficina
+
+## Implementado hoy
+
+- API `v1` base
+- login, logout, `me`, registro y reset de password
+- organizaciones y organizacion activa
+- metadata modular por API
+- Data Engine con CRUD e import/export
+- settings globales, por organizacion y por usuario
+- multi-rol, impersonacion y administracion base de usuarios
+- request IDs, rate limiting, logs de seguridad y metricas
+- webhooks y OpenAPI JSON
 
 ## Principios de crecimiento
-- El core no contiene logica de negocio especifica.
-- Los modulos consumen servicios del core.
-- Las funcionalidades genericas importantes deben tener demo.
-- La documentacion debe reflejar estado real del codigo.
-- La deuda legacy fuera del core debe reducirse de forma explicita hasta converger en la arquitectura modular.
-- Las ayudas de desarrollo deben quedar condicionadas por entorno para no contaminar produccion.
-- Cada modulo debe poder declararse una sola vez por capa y evitar duplicacion de wiring manual.
-- El backend debe ser la fuente de verdad de metadata modular; frontend solo resuelve vistas locales.
-- La administracion no debe permitir activar modulos con dependencias rotas ni desactivar modulos protegidos del core.
-- La experiencia operativa del core debe ser visible mediante demos funcionales, auditoria y estados reutilizables de UX.
-- El runtime debe exponer trazabilidad minima por request y vistas operativas para soporte del tenant activo.
-- Locale, tema y preferencias de presentacion deben poder resolverse desde settings persistidos sin tocar codigo.
-- El acceso API para integraciones debe poder salir del core sin depender de sesiones interactivas del frontend.
-- Los webhooks salientes deben declararse por modulo, persistirse por tenant y dejar trazabilidad de entrega.
-- Los webhooks entrantes deben validarse por firma, quedar aislados por tenant y dejar receipts operativos para troubleshooting.
-- La API debe poder exponer un contrato OpenAPI vivo y headers de seguridad base sin depender de documentacion manual.
+
+- el core no contiene logica de negocio especifica
+- los modulos consumen servicios del core
+- las funcionalidades genericas importantes deben tener demo
+- la documentacion debe reflejar el estado real del codigo
+- el backend debe ser la fuente de verdad de metadata modular
+- la documentacion del repo debe tener una sola fuente de verdad para backlog, diagnostico y plan de cierre

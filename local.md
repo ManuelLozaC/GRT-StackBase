@@ -2,8 +2,8 @@
 
 ## 1. Requisitos
 
-- Docker Desktop iniciado.
-- Puertos libres:
+- Docker Desktop iniciado
+- puertos libres:
   - `8080` para backend/API
   - `5173` para frontend
   - `3306` para MySQL
@@ -11,7 +11,7 @@
 
 ## 2. Archivos de entorno
 
-### Raíz del proyecto
+### Raiz del proyecto
 
 Archivo: `.env`
 
@@ -24,13 +24,13 @@ DB_PASSWORD=secret
 MEILI_MASTER_KEY=grt-meili-local
 ```
 
-También existe `.env.example` con los mismos valores base para referencia.
+Tambien existe `.env.example` con los mismos valores base para referencia.
 
 ### Backend
 
 Archivo: `backend/.env`
 
-Debe quedar así para desarrollo local:
+Debe quedar asi para desarrollo local:
 
 ```env
 APP_NAME=GRT-StackBase
@@ -109,8 +109,8 @@ VITE_APP_NAME="${APP_NAME}"
 
 Notas:
 
-- `APP_KEY` se genera con Artisan.
-- Si todavía no usarás Spaces, puedes dejar `DO_SPACES_*` vacíos.
+- `APP_KEY` se genera con Artisan
+- si todavia no usaras Spaces, puedes dejar `DO_SPACES_*` vacios
 
 ### Frontend
 
@@ -120,11 +120,11 @@ Archivo: `frontend/.env`
 VITE_API_URL=http://localhost:8080/api/v1
 ```
 
-También existe `frontend/.env.example`.
+Tambien existe `frontend/.env.example`.
 
 ## 3. Comandos para levantar el stack
 
-Desde la raíz del proyecto:
+Desde la raiz del proyecto:
 
 ```bash
 docker compose up -d --build
@@ -132,33 +132,16 @@ docker compose up -d --build
 
 ## 4. Inicializar backend
 
-Instalar dependencias:
-
 ```bash
 docker compose exec app composer install
-```
-
-Generar clave de Laravel:
-
-```bash
 docker compose exec app php artisan key:generate
-```
-
-Ejecutar migraciones y seeders:
-
-```bash
 docker compose exec app php artisan migrate:fresh --seed
-```
-
-Opcional: limpiar cachés
-
-```bash
 docker compose exec app php artisan optimize:clear
 ```
 
 ## 5. Inicializar frontend
 
-El contenedor `frontend` ejecuta `npm install` y `npm run dev -- --host` automáticamente.
+El contenedor `frontend` ejecuta `npm install` y `npm run dev -- --host` automaticamente.
 
 Si necesitas reinstalar dependencias:
 
@@ -168,27 +151,25 @@ docker compose exec frontend npm install
 
 ## 6. URLs locales
 
-- Frontend: `http://localhost:5173`
-- Backend/API: `http://localhost:8080`
-- Swagger/OpenAPI: `http://localhost:8080/api/documentation`
+- frontend: `http://localhost:5173`
+- backend/API: `http://localhost:8080`
+- OpenAPI JSON: `http://localhost:8080/api/v1/openapi.json`
 - Meilisearch: `http://localhost:7700`
 
 ## 7. Credenciales por defecto
 
-Usuario inicial:
+Estado actual del codigo:
 
-- Nombre: `Manuel Loza`
-- Alias: `mloza`
-- Correo: `mloza@grt.com.bo`
-- Contraseña: `admin1984!`
-- Organización: `GRT SRL`
-- Oficina principal: `TalentHub`
-- Rol base: `superusuario`
+- el seeder vigente todavia crea un usuario demo y una organizacion demo
+- el bootstrap oficial con `Manuel Loza`, `GRT SRL` y `TalentHub` sigue pendiente de implementacion
 
-Puedes iniciar sesión con:
+Credenciales reales del seeder actual:
 
-- `mloza`
-- `mloza@grt.com.bo`
+- correo: `cliente.admin@stackbase.local`
+- contrasena: `password`
+
+Nota:
+La documentacion del proyecto ya fija como objetivo el bootstrap oficial de Manuel Loza, pero esa semilla aun no esta aplicada en codigo.
 
 ## 8. Validaciones recomendadas
 
@@ -212,7 +193,7 @@ docker compose exec frontend npm run build
 docker compose down
 ```
 
-Para borrar volúmenes y comenzar desde cero:
+Para borrar volumenes y comenzar desde cero:
 
 ```bash
 docker compose down -v
