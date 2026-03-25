@@ -32,6 +32,9 @@ Route::prefix('v1')->group(function (): void {
         Route::get('/data/resources', [DataResourceController::class, 'resources']);
         Route::get('/data/{resourceKey}', [DataResourceController::class, 'index']);
         Route::post('/data/{resourceKey}', [DataResourceController::class, 'store']);
+        Route::get('/data/{resourceKey}/export', [DataResourceController::class, 'export']);
+        Route::post('/data/{resourceKey}/import', [DataResourceController::class, 'import']);
+        Route::get('/data/{resourceKey}/transfers', [DataResourceController::class, 'transfers']);
         Route::get('/data/{resourceKey}/{recordId}', [DataResourceController::class, 'show']);
         Route::match(['put', 'patch'], '/data/{resourceKey}/{recordId}', [DataResourceController::class, 'update']);
         Route::delete('/data/{resourceKey}/{recordId}', [DataResourceController::class, 'destroy']);

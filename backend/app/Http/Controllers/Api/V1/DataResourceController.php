@@ -3,13 +3,14 @@
 namespace App\Http\Controllers\Api\V1;
 
 use App\Core\DataEngine\DataResourceRegistry;
+use App\Core\DataEngine\Services\DataTransferManager;
 use App\Core\Http\Concerns\ApiResponse;
 use App\Http\Controllers\Controller;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Validator;
@@ -20,6 +21,7 @@ class DataResourceController extends Controller
 
     public function __construct(
         protected DataResourceRegistry $resources,
+        protected DataTransferManager $transfers,
     ) {
     }
 
@@ -44,13 +46,7 @@ class DataResourceController extends Controller
             return $this->resourceNotFoundResponse();
         }
 
-        $modelClass = $resource['model'];
-        /** @var Builder $query */
-        $query = $modelClass::query();
-        $this->applySearch($query, $request, $resource);
-        $this->applyFilters($query, $request, $resource);
-        $this->applySorting($query, $request, $resource);
-
+        $query = $this->buildResourceQuery($request, $resource);
         $perPage = min(max($request->integer('per_page', 10), 1), 100);
         $records = $query->paginate($perPage);
 
@@ -93,6 +89,73 @@ class DataResourceController extends Controller
         return $this->successResponse(
             data: $this->transformRecord($record, $resource),
             message: 'Registro encontrado',
+        );
+    }
+
+    public function export(Request $request, string $resourceKey): Response|JsonResponse
+    {
+        $resource = $this->resolveResource($request, $resourceKey);
+
+        if ($resource === null) {
+            return $this->resourceNotFoundResponse();
+        }
+
+        $query = $this->buildResourceQuery($request, $resource);
+        $export = $this->transfers->export($resource, $query, $request->user());
+
+        return response($export['csv'], 200, [
+            'Content-Type' => 'text/csv; charset=UTF-8',
+            'Content-Disposition' => sprintf('attachment; filename="%s"', $export['file_name']),
+        ]);
+    }
+
+    public function import(Request $request, string $resourceKey): JsonResponse
+    {
+        $resource = $this->resolveResource($request, $resourceKey);
+
+        if ($resource === null) {
+            return $this->resourceNotFoundResponse();
+        }
+
+        $validated = Validator::make($request->all(), [
+            'file' => ['required', 'file', 'max:5120'],
+        ])->validate();
+
+        try {
+            $run = $this->transfers->import($resource, $validated['file'], $request->user());
+        } catch (\Throwable $exception) {
+            return $this->errorResponse(
+                message: 'No se pudo importar el archivo CSV',
+                errors: [
+                    'file' => [$exception->getMessage()],
+                ],
+            );
+        }
+
+        return $this->successResponse(
+            data: $this->transfers->serializeRun($run),
+            message: 'Importacion completada',
+        );
+    }
+
+    public function transfers(Request $request, string $resourceKey): JsonResponse
+    {
+        $resource = $this->resolveResource($request, $resourceKey);
+
+        if ($resource === null) {
+            return $this->resourceNotFoundResponse();
+        }
+
+        $runs = $this->transfers->recentRuns($resourceKey)
+            ->map(fn ($run): array => $this->transfers->serializeRun($run))
+            ->all();
+
+        return $this->successResponse(
+            data: $runs,
+            message: 'Historial de transferencias listado',
+            meta: [
+                'total' => count($runs),
+            ],
         );
     }
 
@@ -172,22 +235,37 @@ class DataResourceController extends Controller
         return $modelClass::query()->whereKey($recordId)->first();
     }
 
+    protected function buildResourceQuery(Request $request, array $resource): Builder
+    {
+        $modelClass = $resource['model'];
+        /** @var Builder $query */
+        $query = $modelClass::query();
+        $this->applySearch($query, $request, $resource);
+        $this->applyFilters($query, $request, $resource);
+        $this->applySorting($query, $request, $resource);
+
+        return $query;
+    }
+
     protected function validatePayload(Request $request, array $resource, bool $updating = false): array
     {
-        $rules = [];
+        return Validator::make($request->all(), $this->validationRules($resource, $updating))->validate();
+    }
 
-        foreach ($resource['form_fields'] as $field) {
-            $fieldRules = $field['rules'] ?? [];
+    protected function validationRules(array $resource, bool $updating = false): array
+    {
+        return collect($resource['form_fields'])
+            ->mapWithKeys(function (array $field) use ($updating): array {
+                $fieldRules = $field['rules'] ?? [];
 
-            if ($updating) {
-                $fieldRules = array_values(array_filter($fieldRules, fn (mixed $rule): bool => $rule !== 'required'));
-                array_unshift($fieldRules, 'sometimes');
-            }
+                if ($updating) {
+                    $fieldRules = array_values(array_filter($fieldRules, fn (mixed $rule): bool => $rule !== 'required'));
+                    array_unshift($fieldRules, 'sometimes');
+                }
 
-            $rules[$field['key']] = $fieldRules;
-        }
-
-        return Validator::make($request->all(), $rules)->validate();
+                return [$field['key'] => $fieldRules];
+            })
+            ->all();
     }
 
     protected function applySearch(Builder $query, Request $request, array $resource): void

@@ -3,7 +3,7 @@ import { moduleCatalog } from '@/core/modules/moduleCatalog';
 import api from '@/service/api';
 import { useConfirm } from 'primevue/useconfirm';
 import { useToast } from 'primevue/usetoast';
-import { computed, onMounted, reactive, watch } from 'vue';
+import { computed, onMounted, reactive, ref, watch } from 'vue';
 import { useRouter } from 'vue-router';
 
 const toast = useToast();
@@ -25,9 +25,16 @@ const state = reactive({
     sortDirection: null,
     filters: {},
     dialogVisible: false,
+    importDialogVisible: false,
     editingRecord: null,
-    form: {}
+    form: {},
+    importing: false,
+    exporting: false,
+    loadingTransfers: false,
+    transferRuns: [],
+    importFile: null
 });
+const importInput = ref(null);
 
 const currentResource = computed(() => state.resources.find((resource) => resource.key === state.selectedResourceKey) ?? null);
 const resources = computed(() => state.resources);
@@ -38,6 +45,16 @@ const perPageOptions = computed(() => currentResource.value?.per_page_options ??
 const demoModuleEnabled = computed(() => moduleCatalog.isModuleEnabled('demo-platform'));
 const hasResources = computed(() => state.resources.length > 0);
 const pageFirst = computed(() => (state.page - 1) * state.perPage);
+const resourceCapabilities = computed(
+    () =>
+        currentResource.value?.capabilities ?? {
+            create: true,
+            update: true,
+            delete: true,
+            export: true,
+            import: true
+        }
+);
 
 function humanizeValue(field, value) {
     if (value === null || value === '') {
@@ -132,6 +149,22 @@ async function loadRecords() {
     }
 }
 
+async function loadTransfers() {
+    if (!state.selectedResourceKey) {
+        state.transferRuns = [];
+        return;
+    }
+
+    state.loadingTransfers = true;
+
+    try {
+        const response = await api.get(`/v1/data/${state.selectedResourceKey}/transfers`);
+        state.transferRuns = response.data.datos ?? [];
+    } finally {
+        state.loadingTransfers = false;
+    }
+}
+
 function prepareResourceState() {
     const resource = currentResource.value;
 
@@ -148,6 +181,7 @@ function prepareResourceState() {
     state.page = 1;
     resetFilters();
     resetForm();
+    state.transferRuns = [];
 }
 
 function openCreateDialog() {
@@ -199,6 +233,115 @@ async function saveRecord() {
         });
     } finally {
         state.saving = false;
+    }
+}
+
+function openImportDialog() {
+    state.importFile = null;
+    state.importDialogVisible = true;
+}
+
+function onImportFileChange(event) {
+    state.importFile = event.target.files?.[0] ?? null;
+}
+
+async function exportResource() {
+    if (!state.selectedResourceKey) {
+        return;
+    }
+
+    state.exporting = true;
+
+    try {
+        const filters = Object.fromEntries(Object.entries(state.filters).filter(([, value]) => value));
+        const response = await api.get(`/v1/data/${state.selectedResourceKey}/export`, {
+            params: {
+                q: state.search || undefined,
+                sort_by: state.sortBy || undefined,
+                sort_direction: state.sortDirection || undefined,
+                filters
+            },
+            responseType: 'blob'
+        });
+
+        const disposition = response.headers['content-disposition'] ?? '';
+        const match = disposition.match(/filename="?([^"]+)"?/i);
+        const fileName = match?.[1] ?? `${state.selectedResourceKey}.csv`;
+        const url = window.URL.createObjectURL(new Blob([response.data], { type: 'text/csv' }));
+        const link = document.createElement('a');
+
+        link.href = url;
+        link.setAttribute('download', fileName);
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        window.URL.revokeObjectURL(url);
+
+        await loadTransfers();
+
+        toast.add({
+            severity: 'success',
+            summary: 'Exportacion completada',
+            detail: 'El CSV del recurso actual se descargo correctamente.',
+            life: 3000
+        });
+    } catch (error) {
+        toast.add({
+            severity: 'error',
+            summary: 'No se pudo exportar',
+            detail: error?.response?.data?.mensaje ?? 'No se pudo generar el CSV del recurso actual.',
+            life: 4000
+        });
+    } finally {
+        state.exporting = false;
+    }
+}
+
+async function importResource() {
+    if (!state.selectedResourceKey || !state.importFile) {
+        return;
+    }
+
+    state.importing = true;
+
+    try {
+        const formData = new FormData();
+        formData.append('file', state.importFile);
+
+        const response = await api.post(`/v1/data/${state.selectedResourceKey}/import`, formData, {
+            headers: {
+                'Content-Type': 'multipart/form-data'
+            }
+        });
+
+        state.importDialogVisible = false;
+        state.importFile = null;
+
+        if (importInput.value) {
+            importInput.value.value = '';
+        }
+
+        state.page = 1;
+        await Promise.all([loadRecords(), loadTransfers()]);
+
+        toast.add({
+            severity: response.data.datos?.records_failed > 0 ? 'warn' : 'success',
+            summary: response.data.datos?.records_failed > 0 ? 'Importacion parcial' : 'Importacion completada',
+            detail:
+                response.data.datos?.records_failed > 0
+                    ? `Se procesaron ${response.data.datos.records_processed} filas y ${response.data.datos.records_failed} quedaron con error.`
+                    : `Se procesaron ${response.data.datos?.records_processed ?? 0} filas correctamente.`,
+            life: 4000
+        });
+    } catch (error) {
+        toast.add({
+            severity: 'error',
+            summary: 'No se pudo importar',
+            detail: error?.response?.data?.errores?.file?.[0] ?? error?.response?.data?.mensaje ?? 'Revisa el CSV e intenta de nuevo.',
+            life: 4500
+        });
+    } finally {
+        state.importing = false;
     }
 }
 
@@ -268,7 +411,7 @@ watch(
     () => state.selectedResourceKey,
     async () => {
         prepareResourceState();
-        await loadRecords();
+        await Promise.all([loadRecords(), loadTransfers()]);
     }
 );
 
@@ -319,7 +462,9 @@ onMounted(async () => {
                     <div class="col-span-12 md:col-span-4 flex items-end gap-3">
                         <Button label="Buscar" icon="pi pi-search" @click="applyFilters" />
                         <Button label="Limpiar" severity="secondary" outlined @click="clearSearch" />
-                        <Button label="Nuevo registro" icon="pi pi-plus" @click="openCreateDialog" />
+                        <Button v-if="resourceCapabilities.import" label="Importar CSV" icon="pi pi-upload" severity="secondary" outlined @click="openImportDialog" />
+                        <Button v-if="resourceCapabilities.export" label="Exportar CSV" icon="pi pi-download" severity="secondary" :loading="state.exporting" @click="exportResource" />
+                        <Button v-if="resourceCapabilities.create" label="Nuevo registro" icon="pi pi-plus" @click="openCreateDialog" />
                     </div>
                 </div>
 
@@ -370,6 +515,55 @@ onMounted(async () => {
                     </template>
                 </DataTable>
             </div>
+
+            <div class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+                <div class="flex flex-col gap-3 md:flex-row md:items-center md:justify-between mb-4">
+                    <div>
+                        <h2 class="text-xl font-semibold text-slate-900 mb-1">Historial de transferencias</h2>
+                        <p class="text-sm text-slate-600 m-0">Cada exportacion e importacion queda registrada por tenant para auditar y depurar el recurso actual.</p>
+                    </div>
+                    <Tag severity="contrast" :value="`${state.transferRuns.length} corrida${state.transferRuns.length === 1 ? '' : 's'}`" />
+                </div>
+
+                <DataTable :value="state.transferRuns" dataKey="id" :loading="state.loadingTransfers">
+                    <Column field="type" header="Tipo" style="min-width: 8rem">
+                        <template #body="slotProps">
+                            <Tag :severity="slotProps.data.type === 'export' ? 'info' : 'warning'" :value="slotProps.data.type === 'export' ? 'Export' : 'Import'" />
+                        </template>
+                    </Column>
+                    <Column field="status" header="Estado" style="min-width: 12rem">
+                        <template #body="slotProps">
+                            <Tag
+                                :severity="
+                                    {
+                                        completed: 'success',
+                                        completed_with_errors: 'warning',
+                                        failed: 'danger',
+                                        processing: 'info'
+                                    }[slotProps.data.status] ?? 'contrast'
+                                "
+                                :value="slotProps.data.status"
+                            />
+                        </template>
+                    </Column>
+                    <Column field="file_name" header="Archivo" style="min-width: 14rem" />
+                    <Column field="records_processed" header="Procesados" style="min-width: 9rem" />
+                    <Column field="records_failed" header="Errores" style="min-width: 8rem" />
+                    <Column field="created_at" header="Creado" style="min-width: 14rem">
+                        <template #body="slotProps">
+                            {{ slotProps.data.created_at ? new Date(slotProps.data.created_at).toLocaleString() : 'Sin dato' }}
+                        </template>
+                    </Column>
+                    <Column field="error_summary" header="Resumen" style="min-width: 18rem">
+                        <template #body="slotProps">
+                            {{ slotProps.data.error_summary || 'Sin errores relevantes' }}
+                        </template>
+                    </Column>
+                    <template #empty>
+                        <div class="py-10 text-center text-slate-500">Todavia no hay transferencias registradas para este recurso.</div>
+                    </template>
+                </DataTable>
+            </div>
         </div>
 
         <Dialog v-model:visible="state.dialogVisible" modal :header="state.editingRecord ? 'Editar registro' : 'Nuevo registro'" :style="{ width: '42rem' }">
@@ -384,6 +578,25 @@ onMounted(async () => {
             <template #footer>
                 <Button label="Cancelar" severity="secondary" outlined @click="state.dialogVisible = false" />
                 <Button :label="state.editingRecord ? 'Guardar cambios' : 'Crear registro'" :loading="state.saving" @click="saveRecord" />
+            </template>
+        </Dialog>
+
+        <Dialog v-model:visible="state.importDialogVisible" modal header="Importar CSV" :style="{ width: '34rem' }">
+            <div class="space-y-4">
+                <div class="rounded-2xl border border-slate-200 bg-slate-50 p-4 text-sm text-slate-600">
+                    Usa un archivo CSV con encabezados iguales a las claves del recurso. Para `Demo Contacts` puedes usar: `nombre,email,telefono,empresa,estado,prioridad,notas`.
+                </div>
+                <div>
+                    <label class="block text-sm font-semibold text-slate-600 mb-2">Archivo CSV</label>
+                    <input ref="importInput" type="file" accept=".csv,text/csv" class="block w-full text-sm text-slate-600" @change="onImportFileChange" />
+                    <div class="mt-2 text-sm text-slate-500">
+                        {{ state.importFile ? `Seleccionado: ${state.importFile.name}` : 'Todavia no seleccionaste un archivo.' }}
+                    </div>
+                </div>
+            </div>
+            <template #footer>
+                <Button label="Cancelar" severity="secondary" outlined @click="state.importDialogVisible = false" />
+                <Button label="Importar" icon="pi pi-upload" :disabled="!state.importFile" :loading="state.importing" @click="importResource" />
             </template>
         </Dialog>
     </div>

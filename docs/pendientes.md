@@ -43,6 +43,7 @@
 - [x] Validacion automatizada de aislamiento por tenant en notificaciones, archivos, descargas y auditoria demo.
 - [x] Limpieza de branding residual visible (`README` raiz y restos `SAKAI` del shell/landing).
 - [x] Settings operativos por modulo con persistencia, API y UI administrativa.
+- [x] Export/import CSV sobre el Data Engine con historial tenant-aware de corridas.
 
 ### Brechas principales
 - [ ] RBAC completo.
@@ -207,15 +208,15 @@ Estado: En progreso
 - [ ] Demo funcional de jobs con procesamiento realmente asincrono en entorno local dockerizado.
 
 ## P9. Exportacion e importacion
-Estado: Pendiente
+Estado: En progreso
 
 - [ ] Exportar a Excel.
-- [ ] Exportar a CSV.
+- [x] Exportar a CSV.
 - [ ] Exportar a PDF.
 - [ ] Exportaciones pesadas async.
-- [ ] Importacion masiva.
-- [ ] Validacion previa.
-- [ ] Logs de importacion.
+- [x] Importacion masiva CSV sobre recurso del Data Engine.
+- [x] Validacion previa segun metadata del recurso.
+- [x] Logs de importacion y exportacion por corrida.
 - [ ] Demo funcional de export/import dentro del `Demo Module`.
 
 ## P10. Busqueda y filtros avanzados
@@ -334,7 +335,7 @@ Estado: Pendiente
 
 ## Siguiente desarrollo recomendado
 1. Scope multi-tenant consistente en modelos, jobs, archivos y auditoria.
-2. Export/import demo funcional.
-3. Integracion de archivos con Spaces y entidades de negocio.
-4. Completar el contrato modular con permisos operativos, seeds y assets por modulo.
-5. Extender el Data Engine con relaciones, custom fields y acciones avanzadas.
+2. Integracion de archivos con Spaces y entidades de negocio.
+3. Completar el contrato modular con permisos operativos, seeds y assets por modulo.
+4. Extender el Data Engine con relaciones, custom fields y acciones avanzadas.
+5. Llevar export/import a demo funcional independiente dentro del `Demo Module` y preparar modos async.

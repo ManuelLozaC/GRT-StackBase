@@ -3,10 +3,12 @@
 namespace Tests\Feature\Api\V1;
 
 use App\Core\Auth\Services\AccessTokenService;
+use App\Core\DataEngine\Models\CoreDataTransferRun;
 use App\Core\Modules\ModuleRegistry;
 use App\Models\Organizacion;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\UploadedFile;
 use Tests\TestCase;
 
 class DataResourceFlowTest extends TestCase
@@ -154,6 +156,129 @@ class DataResourceFlowTest extends TestCase
         $this->withHeader('Authorization', 'Bearer '.$token)
             ->getJson('/api/v1/data/demo-contacts/'.$secondaryContactId)
             ->assertStatus(404);
+    }
+
+    public function test_user_can_export_demo_contacts_and_the_transfer_is_logged(): void
+    {
+        [$user, $token] = $this->authenticateUser();
+        app(ModuleRegistry::class)->setEnabled('demo-platform', true);
+
+        $this->withHeader('Authorization', 'Bearer '.$token)
+            ->postJson('/api/v1/data/demo-contacts', [
+                'nombre' => 'Acme Lead',
+                'email' => 'lead@acme.test',
+                'estado' => 'active',
+                'prioridad' => 'medium',
+            ])
+            ->assertOk();
+
+        $response = $this->withHeader('Authorization', 'Bearer '.$token)
+            ->get('/api/v1/data/demo-contacts/export');
+
+        $response->assertOk();
+        $response->assertHeader('content-type', 'text/csv; charset=UTF-8');
+        $content = (string) $response->getContent();
+        $this->assertStringContainsString('nombre,email,telefono,empresa,estado,prioridad,notas', $content);
+        $this->assertStringContainsString('"Acme Lead",lead@acme.test,,,active,medium,', $content);
+
+        $this->assertDatabaseHas('core_data_transfer_runs', [
+            'resource_key' => 'demo-contacts',
+            'type' => 'export',
+            'status' => 'completed',
+            'records_processed' => 1,
+        ]);
+    }
+
+    public function test_user_can_import_demo_contacts_from_csv_and_list_transfer_history(): void
+    {
+        [$user, $token] = $this->authenticateUser();
+        app(ModuleRegistry::class)->setEnabled('demo-platform', true);
+
+        $file = UploadedFile::fake()->createWithContent('demo-contacts.csv', <<<CSV
+nombre,email,telefono,empresa,estado,prioridad,notas
+Import One,import1@test.dev,70000010,Acme,active,high,Primera fila
+Import Two,import2@test.dev,70000011,Beta,lead,medium,Segunda fila
+CSV);
+
+        $this->withHeader('Authorization', 'Bearer '.$token)
+            ->post('/api/v1/data/demo-contacts/import', [
+                'file' => $file,
+            ])
+            ->assertOk()
+            ->assertJsonPath('datos.status', 'completed')
+            ->assertJsonPath('datos.records_processed', 2);
+
+        $this->withHeader('Authorization', 'Bearer '.$token)
+            ->getJson('/api/v1/data/demo-contacts')
+            ->assertOk()
+            ->assertJsonPath('meta.pagination.total', 2)
+            ->assertJsonFragment([
+                'nombre' => 'Import One',
+            ])
+            ->assertJsonFragment([
+                'nombre' => 'Import Two',
+            ]);
+
+        $this->withHeader('Authorization', 'Bearer '.$token)
+            ->getJson('/api/v1/data/demo-contacts/transfers')
+            ->assertOk()
+            ->assertJsonPath('meta.total', 1)
+            ->assertJsonPath('datos.0.type', 'import')
+            ->assertJsonPath('datos.0.records_processed', 2);
+    }
+
+    public function test_transfer_history_is_scoped_by_active_organization(): void
+    {
+        [$user, $token, $primaryOrganization, $secondaryOrganization] = $this->authenticateUserWithTwoOrganizations();
+        app(ModuleRegistry::class)->setEnabled('demo-platform', true);
+
+        CoreDataTransferRun::query()->create([
+            'organizacion_id' => $primaryOrganization->id,
+            'requested_by' => $user->id,
+            'resource_key' => 'demo-contacts',
+            'source_module' => 'demo-platform',
+            'type' => 'export',
+            'status' => 'completed',
+            'records_total' => 1,
+            'records_processed' => 1,
+            'records_failed' => 0,
+            'file_name' => 'primary.csv',
+            'mime_type' => 'text/csv',
+            'finished_at' => now(),
+        ]);
+
+        CoreDataTransferRun::query()->withoutGlobalScopes()->create([
+            'organizacion_id' => $secondaryOrganization->id,
+            'requested_by' => $user->id,
+            'resource_key' => 'demo-contacts',
+            'source_module' => 'demo-platform',
+            'type' => 'import',
+            'status' => 'completed',
+            'records_total' => 1,
+            'records_processed' => 1,
+            'records_failed' => 0,
+            'file_name' => 'secondary.csv',
+            'mime_type' => 'text/csv',
+            'finished_at' => now(),
+        ]);
+
+        $this->withHeader('Authorization', 'Bearer '.$token)
+            ->getJson('/api/v1/data/demo-contacts/transfers')
+            ->assertOk()
+            ->assertJsonPath('meta.total', 1)
+            ->assertJsonPath('datos.0.file_name', 'primary.csv');
+
+        $this->withHeader('Authorization', 'Bearer '.$token)
+            ->patchJson('/api/v1/auth/active-organization', [
+                'organizacion_id' => $secondaryOrganization->id,
+            ])
+            ->assertOk();
+
+        $this->withHeader('Authorization', 'Bearer '.$token)
+            ->getJson('/api/v1/data/demo-contacts/transfers')
+            ->assertOk()
+            ->assertJsonPath('meta.total', 1)
+            ->assertJsonPath('datos.0.file_name', 'secondary.csv');
     }
 
     protected function authenticateUser(): array

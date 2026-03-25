@@ -61,6 +61,8 @@ class DataResourceRegistry
                     'type' => 'text',
                     'table' => true,
                     'form' => true,
+                    'importable' => true,
+                    'exportable' => true,
                     'sortable' => false,
                     'searchable' => false,
                     'filterable' => false,
@@ -86,6 +88,8 @@ class DataResourceRegistry
                 'create' => true,
                 'update' => true,
                 'delete' => true,
+                'export' => true,
+                'import' => true,
             ],
             'fields' => $normalizedFields,
         ], $resource, [

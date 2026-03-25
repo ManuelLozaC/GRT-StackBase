@@ -3,6 +3,7 @@
 namespace App\Providers;
 
 use App\Core\DataEngine\DataResourceRegistry;
+use App\Core\DataEngine\Services\DataTransferManager;
 use App\Core\Modules\ModuleSettingsManager;
 use Illuminate\Support\ServiceProvider;
 
@@ -23,6 +24,13 @@ class AppServiceProvider extends ServiceProvider
         $this->app->singleton(ModuleSettingsManager::class, function ($app): ModuleSettingsManager {
             return new ModuleSettingsManager(
                 $app->make(\App\Core\Modules\ModuleRegistry::class),
+            );
+        });
+
+        $this->app->singleton(DataTransferManager::class, function ($app): DataTransferManager {
+            return new DataTransferManager(
+                $app->make(\App\Core\Tenancy\TenantContext::class),
+                $app->make(\App\Core\Audit\Services\AuditLogger::class),
             );
         });
     }

@@ -35,6 +35,7 @@ Fecha de referencia: `2026-03-25`
 - Tenancy base extendida a notificaciones internas y descargas de archivos para reducir filtros manuales por organizacion.
 - Aislamiento por tenant validado con pruebas automatizadas en notificaciones, archivos, descargas y auditoria demo.
 - Data Engine real implementado con recurso demo, CRUD universal base, filtros, busqueda, paginacion, ordenamiento y soft delete.
+- Export/import CSV ya operativo sobre el Data Engine con historial de corridas tenant-aware.
 - Limpieza residual completada en branding/documentacion raiz y restos visuales del shell legacy.
 - Base de archivos en core con upload, descarga directa, signed URLs e historial.
 - Base de jobs en core con dispatch, estados, logs y demo funcional.
@@ -49,12 +50,12 @@ Fecha de referencia: `2026-03-25`
 - Tenancy base ya existe y se reforzo en notificaciones/descargas, pero falta propagarla de forma consistente a todo el dominio.
 - El frontend ya refresca el catalogo modular completo tras toggles para no conservar estados operativos stale.
 - Los settings modulares ya son operativos, pero todavia faltan permisos operativos, seeds y assets dentro del contrato formal.
-- `Demo Module` ya existe y ya contiene demos funcionales de archivos, jobs, auditoria y notificaciones. Sigue pendiente export/import.
+- `Demo Module` ya existe y ya contiene demos funcionales de archivos, jobs, auditoria y notificaciones. Export/import ya existe en el `Data Engine`, pero aun no se separa como demo propia dentro del modulo demo.
 - Persisten deudas operativas menores ligadas sobre todo a tenancy transversal, UX global y definicion formal del contrato modular.
 
 ### Aun pendiente
 - Multi-tenant completo.
-- Export/import y capacidades avanzadas del Data Engine.
+- Capacidades avanzadas del Data Engine: relaciones, custom fields, Excel/PDF y modos async.
 - Archivos, notificaciones, jobs avanzados, auditoria y seguridad.
 
 ## Fases
@@ -97,10 +98,11 @@ Estado: En progreso
 Estado: En progreso
 
 - CRUD universal y filtros.
+- Export/import CSV base sobre el Data Engine con historial tenant-aware.
 - Archivos base ya implementados; falta Spaces, versionado real y asociaciones de negocio.
 - Jobs base ya implementados; faltan workers supervisados, cron, reintentos operativos y propagacion completa de tenant/actor.
 - Notificaciones internas base ya implementadas; faltan email, WhatsApp/SMS, push y preferencias por usuario.
-- Export/import.
+- Export/import avanzado.
 - Auditoria base ya implementada; faltan logs tecnicos, correlation IDs, vistas operativas y seguridad avanzada.
 - Busqueda e indexacion.
 
@@ -120,7 +122,7 @@ Estado: En progreso
 - Demo de jobs ya implementada.
 - Demo de auditoria ya implementada.
 - Demo de notificaciones ya implementada.
-- Demo de export/import.
+- Export/import CSV ya validado en `Data Engine`; falta demo independiente dentro de `Demo Module`.
 - Demo de auditoria y logs.
 
 Cada demo debe permitir validar la capacidad tecnica antes de usarla en modulos de negocio.
@@ -143,8 +145,8 @@ Un nuevo sistema debe poder ensamblarse con:
 El backlog detallado vive en `docs/pendientes.md`.
 
 ## Resumen actual
-- Logrado: kernel modular, auth API, registro, reset de password, RBAC inicial, tenancy base, archivos, jobs, auditoria y notificaciones internas ya funcionan en backend y frontend con demos activables desde `Demo Module`; ademas la integridad del repositorio quedo estabilizada, la capa legacy principal fue retirada, el contrato modular ya evita estados invalidos y el aislamiento por tenant quedo cubierto con pruebas automatizadas.
-- Pendiente: completar multi-tenant transversal, export/import, integraciones de storage y notificaciones multicanal, mas observabilidad y seguridad operativa, y generalizar el contrato `core + modules` para nuevos modulos.
-- Pendiente tecnico residual: seguir endureciendo el core en tenancy transversal, ampliar el CRUD generico hacia relaciones/custom fields, permisos operativos por modulo y catalogos universales realmente necesarios.
+- Logrado: kernel modular, auth API, registro, reset de password, RBAC inicial, tenancy base, archivos, jobs, auditoria y notificaciones internas ya funcionan en backend y frontend con demos activables desde `Demo Module`; ademas la integridad del repositorio quedo estabilizada, la capa legacy principal fue retirada, el contrato modular ya evita estados invalidos, el aislamiento por tenant quedo cubierto con pruebas automatizadas y el `Data Engine` ya soporta export/import CSV con historial de corridas.
+- Pendiente: completar multi-tenant transversal, integraciones de storage y notificaciones multicanal, mas observabilidad y seguridad operativa, y generalizar el contrato `core + modules` para nuevos modulos.
+- Pendiente tecnico residual: seguir endureciendo el core en tenancy transversal, ampliar el CRUD generico hacia relaciones/custom fields, llevar export/import a Excel/PDF/async y a una demo dedicada, permisos operativos por modulo y catalogos universales realmente necesarios.
 
-Avance global estimado del roadmap: 93% completado.
+Avance global estimado del roadmap: 95% completado.

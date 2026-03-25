@@ -17,6 +17,8 @@ return [
             'create' => true,
             'update' => true,
             'delete' => true,
+            'export' => true,
+            'import' => true,
         ],
         'fields' => [
             [
@@ -28,6 +30,8 @@ return [
                 'searchable' => true,
                 'table' => true,
                 'form' => true,
+                'importable' => true,
+                'exportable' => true,
             ],
             [
                 'key' => 'email',
@@ -38,6 +42,8 @@ return [
                 'searchable' => true,
                 'table' => true,
                 'form' => true,
+                'importable' => true,
+                'exportable' => true,
             ],
             [
                 'key' => 'telefono',
@@ -47,6 +53,8 @@ return [
                 'searchable' => true,
                 'table' => true,
                 'form' => true,
+                'importable' => true,
+                'exportable' => true,
             ],
             [
                 'key' => 'empresa',
@@ -57,6 +65,8 @@ return [
                 'searchable' => true,
                 'table' => true,
                 'form' => true,
+                'importable' => true,
+                'exportable' => true,
             ],
             [
                 'key' => 'estado',
@@ -67,6 +77,8 @@ return [
                 'filterable' => true,
                 'table' => true,
                 'form' => true,
+                'importable' => true,
+                'exportable' => true,
                 'options' => [
                     ['label' => 'Lead', 'value' => 'lead'],
                     ['label' => 'Activo', 'value' => 'active'],
@@ -82,6 +94,8 @@ return [
                 'filterable' => true,
                 'table' => true,
                 'form' => true,
+                'importable' => true,
+                'exportable' => true,
                 'options' => [
                     ['label' => 'Baja', 'value' => 'low'],
                     ['label' => 'Media', 'value' => 'medium'],
@@ -95,6 +109,8 @@ return [
                 'rules' => ['nullable', 'string', 'max:500'],
                 'table' => false,
                 'form' => true,
+                'importable' => true,
+                'exportable' => true,
             ],
         ],
     ],
