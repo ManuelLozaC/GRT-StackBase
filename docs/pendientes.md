@@ -41,6 +41,8 @@
 - [x] Retiro de la fachada `authStore`; frontend ya consume stores separados directamente.
 - [x] Tenancy mas consistente en notificaciones internas y descargas de archivos base.
 - [x] Validacion automatizada de aislamiento por tenant en notificaciones, archivos, descargas y auditoria demo.
+- [x] Limpieza de branding residual visible (`README` raiz y restos `SAKAI` del shell/landing).
+- [x] Settings operativos por modulo con persistencia, API y UI administrativa.
 
 ### Brechas principales
 - [ ] RBAC completo.
@@ -120,14 +122,14 @@ Estado: En progreso
 - [x] `TenantContext` compartido para request autenticado y jobs base.
 
 ## P3. Configuracion del sistema
-Estado: Pendiente
+Estado: En progreso
 
 - [ ] Variables globales persistentes.
-- [ ] Configuracion por modulo.
+- [x] Configuracion por modulo.
 - [ ] Feature flags.
 - [ ] Parametros dinamicos sin deploy.
 - [ ] Configuracion por usuario.
-- [ ] UI administrativa de settings.
+- [x] UI administrativa de settings.
 
 ## P4. Motor de datos y CRUD universal
 Estado: En progreso
@@ -334,5 +336,5 @@ Estado: Pendiente
 1. Scope multi-tenant consistente en modelos, jobs, archivos y auditoria.
 2. Export/import demo funcional.
 3. Integracion de archivos con Spaces y entidades de negocio.
-4. Completar el contrato modular con settings, permisos operativos, seeds y assets por modulo.
+4. Completar el contrato modular con permisos operativos, seeds y assets por modulo.
 5. Extender el Data Engine con relaciones, custom fields y acciones avanzadas.

@@ -7,6 +7,7 @@ use App\Core\Files\Models\FileDownload;
 use App\Core\Files\Models\ManagedFile;
 use App\Core\Files\Services\FileManager;
 use App\Core\Http\Concerns\ApiResponse;
+use App\Core\Modules\ModuleSettingsManager;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\V1\Demo\CreateTemporaryFileLinkRequest;
 use App\Http\Requests\Api\V1\Demo\StoreDemoFileRequest;
@@ -22,6 +23,7 @@ class DemoFileController extends Controller
     public function __construct(
         protected FileManager $fileManager,
         protected AuditLogger $auditLogger,
+        protected ModuleSettingsManager $moduleSettings,
     ) {
     }
 
@@ -104,9 +106,14 @@ class DemoFileController extends Controller
 
     public function temporaryLink(CreateTemporaryFileLinkRequest $request, ManagedFile $file): JsonResponse
     {
+        $ttlMinutes = $request->integer(
+            'ttl_minutes',
+            (int) $this->moduleSettings->get('demo-platform', 'default_file_ttl_minutes', 30),
+        );
+
         $payload = $this->fileManager->createTemporaryDownloadUrl(
             file: $file,
-            ttlMinutes: $request->integer('ttl_minutes', 30),
+            ttlMinutes: $ttlMinutes,
         );
 
         $this->auditLogger->record(
@@ -117,7 +124,7 @@ class DemoFileController extends Controller
             summary: 'Se genero un link temporal de archivo',
             sourceModule: 'demo-platform',
             context: [
-                'ttl_minutes' => $request->integer('ttl_minutes', 30),
+                'ttl_minutes' => $ttlMinutes,
             ],
         );
 

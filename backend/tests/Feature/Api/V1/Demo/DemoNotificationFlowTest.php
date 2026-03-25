@@ -2,6 +2,7 @@
 
 namespace Tests\Feature\Api\V1\Demo;
 
+use App\Core\Modules\ModuleSettingsManager;
 use App\Core\Notifications\Services\NotificationCenter;
 use App\Models\Organizacion;
 use App\Models\User;
@@ -133,6 +134,22 @@ class DemoNotificationFlowTest extends TestCase
             ->assertJsonMissing([
                 'title' => 'Primary notification',
             ]);
+    }
+
+    public function test_demo_notification_uses_module_default_level_setting(): void
+    {
+        [$user, $token] = $this->authenticateUser();
+        app(ModuleSettingsManager::class)->update('demo-platform', [
+            'notification_default_level' => 'warning',
+        ]);
+
+        $this->withHeader('Authorization', 'Bearer '.$token)
+            ->postJson('/api/v1/demo/notifications', [
+                'title' => 'Sin nivel explicito',
+                'message' => 'Debe usar setting por defecto.',
+            ])
+            ->assertOk()
+            ->assertJsonPath('datos.level', 'warning');
     }
 
     protected function authenticateUser(): array

@@ -23,6 +23,7 @@ Frontend construido con Vue 3, Vite y PrimeVue.
 - Pantalla de modulos informa dependencias, features y bloqueos operativos antes de togglear.
 - El catalogo modular frontend se refresca completo tras togglear para no dejar estados derivados desactualizados.
 - `Data Engine` ya consume metadata de recursos y opera CRUD real sobre el recurso demo.
+- La administracion de modulos ya permite editar settings persistidos por modulo.
 
 ## Pantallas relevantes hoy
 - `/admin/modules`

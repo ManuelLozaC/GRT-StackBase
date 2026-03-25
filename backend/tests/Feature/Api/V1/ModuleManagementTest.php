@@ -84,6 +84,39 @@ class ModuleManagementTest extends TestCase
             ->assertJsonPath('estado', 'error');
     }
 
+    public function test_it_can_read_and_update_module_settings(): void
+    {
+        $token = $this->issueToken(true);
+
+        $this
+            ->withHeader('Authorization', 'Bearer '.$token)
+            ->getJson('/api/v1/modules/demo-platform/settings')
+            ->assertOk()
+            ->assertJsonPath('meta.total', 2)
+            ->assertJsonFragment([
+                'key' => 'default_file_ttl_minutes',
+                'value' => 30,
+            ]);
+
+        $this
+            ->withHeader('Authorization', 'Bearer '.$token)
+            ->patchJson('/api/v1/modules/demo-platform/settings', [
+                'settings' => [
+                    'default_file_ttl_minutes' => 45,
+                    'notification_default_level' => 'warning',
+                ],
+            ])
+            ->assertOk()
+            ->assertJsonFragment([
+                'key' => 'default_file_ttl_minutes',
+                'value' => 45,
+            ])
+            ->assertJsonFragment([
+                'key' => 'notification_default_level',
+                'value' => 'warning',
+            ]);
+    }
+
     protected function issueToken(bool $withPermission = true): string
     {
         $user = User::factory()->create();

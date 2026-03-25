@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api\V1\Demo;
 
 use App\Core\Audit\Services\AuditLogger;
 use App\Core\Http\Concerns\ApiResponse;
+use App\Core\Modules\ModuleSettingsManager;
 use App\Core\Notifications\Services\NotificationCenter;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\V1\Demo\StoreDemoNotificationRequest;
@@ -17,6 +18,7 @@ class DemoNotificationController extends Controller
     public function __construct(
         protected NotificationCenter $notifications,
         protected AuditLogger $auditLogger,
+        protected ModuleSettingsManager $moduleSettings,
     ) {
     }
 
@@ -28,7 +30,8 @@ class DemoNotificationController extends Controller
             recipient: $user,
             title: $request->string('title')->toString(),
             message: $request->string('message')->toString(),
-            level: $request->string('level')->toString() ?: 'info',
+            level: $request->string('level')->toString()
+                ?: (string) $this->moduleSettings->get('demo-platform', 'notification_default_level', 'info'),
             creator: $user,
             actionUrl: $request->string('action_url')->toString() ?: null,
             metadata: [

@@ -5,6 +5,7 @@ namespace Tests\Feature\Api\V1\Demo;
 use App\Core\Auth\Services\AccessTokenService;
 use App\Core\Files\Models\ManagedFile;
 use App\Core\Files\Services\FileManager;
+use App\Core\Modules\ModuleSettingsManager;
 use App\Models\Organizacion;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -216,6 +217,33 @@ class DemoFileFlowTest extends TestCase
             ->assertJsonMissing([
                 'original_name' => 'primary-tenant.txt',
             ]);
+    }
+
+    public function test_temporary_link_uses_module_default_ttl_setting_when_not_provided(): void
+    {
+        Storage::fake('local');
+        config(['filesystems.default' => 'local']);
+
+        [$user, $token] = $this->authenticateUser();
+        app(ModuleSettingsManager::class)->update('demo-platform', [
+            'default_file_ttl_minutes' => 45,
+        ]);
+
+        $file = app(FileManager::class)->storeUploadedFile(
+            UploadedFile::fake()->createWithContent('ttl-demo.txt', 'ttl content'),
+            $user,
+            ['source' => 'phpunit'],
+        );
+
+        $response = $this->withHeader('Authorization', 'Bearer '.$token)
+            ->postJson('/api/v1/demo/files/'.$file->uuid.'/temporary-link', []);
+
+        $response
+            ->assertOk()
+            ->assertJsonPath('mensaje', 'Link temporal generado');
+
+        $expires = (int) parse_url($response->json('datos.url'), PHP_URL_QUERY);
+        $this->assertNotEmpty($response->json('datos.url'));
     }
 
     protected function authenticateUser(): array

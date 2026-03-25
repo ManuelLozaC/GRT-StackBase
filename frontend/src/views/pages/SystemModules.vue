@@ -1,9 +1,18 @@
 <script setup>
 import { moduleCatalog } from '@/core/modules/moduleCatalog';
+import api from '@/service/api';
 import { useToast } from 'primevue/usetoast';
-import { computed, onMounted } from 'vue';
+import { computed, onMounted, reactive } from 'vue';
 
 const toast = useToast();
+const state = reactive({
+    settingsDialogVisible: false,
+    settingsLoading: false,
+    settingsSaving: false,
+    selectedModule: null,
+    settings: [],
+    form: {}
+});
 
 onMounted(async () => {
     await moduleCatalog.loadModules();
@@ -54,6 +63,76 @@ function isToggleDisabled(moduleItem) {
     }
 
     return !moduleItem.can_enable;
+}
+
+function hasSettings(moduleItem) {
+    return (moduleItem.settings ?? []).length > 0;
+}
+
+function resetSettingsState() {
+    state.settingsDialogVisible = false;
+    state.settingsLoading = false;
+    state.settingsSaving = false;
+    state.selectedModule = null;
+    state.settings = [];
+    state.form = {};
+}
+
+async function openSettings(moduleItem) {
+    state.settingsDialogVisible = true;
+    state.settingsLoading = true;
+    state.selectedModule = moduleItem;
+
+    try {
+        const response = await api.get(`/v1/modules/${moduleItem.key}/settings`);
+        state.settings = response.data.datos ?? [];
+        state.form = Object.fromEntries(state.settings.map((setting) => [setting.key, setting.value]));
+    } catch (error) {
+        toast.add({
+            severity: 'error',
+            summary: 'No se pudieron cargar los settings',
+            detail: error?.response?.data?.mensaje ?? 'Ocurrio un error al cargar la configuracion del modulo.',
+            life: 4000
+        });
+        resetSettingsState();
+    } finally {
+        state.settingsLoading = false;
+    }
+}
+
+async function saveSettings() {
+    if (!state.selectedModule) {
+        return;
+    }
+
+    state.settingsSaving = true;
+
+    try {
+        const response = await api.patch(`/v1/modules/${state.selectedModule.key}/settings`, {
+            settings: state.form
+        });
+
+        state.settings = response.data.datos ?? [];
+        state.form = Object.fromEntries(state.settings.map((setting) => [setting.key, setting.value]));
+
+        toast.add({
+            severity: 'success',
+            summary: 'Settings actualizados',
+            detail: `La configuracion de ${state.selectedModule.name} se guardo correctamente.`,
+            life: 3000
+        });
+
+        state.settingsDialogVisible = false;
+    } catch (error) {
+        toast.add({
+            severity: 'error',
+            summary: 'No se pudieron guardar los settings',
+            detail: error?.response?.data?.mensaje ?? 'Revisa los valores enviados al modulo.',
+            life: 4000
+        });
+    } finally {
+        state.settingsSaving = false;
+    }
 }
 
 async function onToggle(moduleItem) {
@@ -143,6 +222,31 @@ async function onToggle(moduleItem) {
                     </div>
                 </template>
             </Column>
+            <Column header="Configuracion" style="min-width: 11rem">
+                <template #body="slotProps">
+                    <Button v-if="hasSettings(slotProps.data)" label="Settings" icon="pi pi-sliders-h" text @click="openSettings(slotProps.data)" />
+                    <span v-else class="text-sm text-color-secondary">Sin settings</span>
+                </template>
+            </Column>
         </DataTable>
+
+        <Dialog v-model:visible="state.settingsDialogVisible" modal :header="state.selectedModule ? `Settings de ${state.selectedModule.name}` : 'Settings'" :style="{ width: '42rem' }" @hide="resetSettingsState">
+            <div v-if="state.settingsLoading" class="py-8 text-center text-color-secondary">Cargando settings del modulo...</div>
+            <div v-else-if="!state.settings.length" class="py-8 text-center text-color-secondary">Este modulo no expone settings configurables.</div>
+            <div v-else class="grid grid-cols-12 gap-4">
+                <div v-for="setting in state.settings" :key="setting.key" class="col-span-12">
+                    <label class="block text-sm font-semibold mb-2">{{ setting.label }}</label>
+                    <small v-if="setting.help" class="block mb-2 text-color-secondary">{{ setting.help }}</small>
+                    <ToggleSwitch v-if="setting.type === 'toggle'" v-model="state.form[setting.key]" />
+                    <InputNumber v-else-if="setting.type === 'number'" v-model="state.form[setting.key]" class="w-full" :useGrouping="false" fluid />
+                    <Select v-else-if="setting.type === 'select'" v-model="state.form[setting.key]" :options="setting.options" optionLabel="label" optionValue="value" class="w-full" />
+                    <InputText v-else v-model="state.form[setting.key]" class="w-full" />
+                </div>
+            </div>
+            <template #footer>
+                <Button label="Cerrar" severity="secondary" outlined @click="state.settingsDialogVisible = false" />
+                <Button label="Guardar settings" :loading="state.settingsSaving" @click="saveSettings" />
+            </template>
+        </Dialog>
     </div>
 </template>

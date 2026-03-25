@@ -49,9 +49,10 @@ La metadata que llega por API declara:
 - `moduleCatalog` ya construye menu y rutas desde la respuesta de `GET /api/v1/modules`.
 - `ModuleRegistry` ya normaliza metadata modular en backend, conserva metadata al togglear y bloquea dependencias invalidas.
 - La metadata expuesta ya incluye estado operativo basico: `dependency_status`, `blocking_dependents`, `can_enable`, `can_disable` e `is_protected`.
+- Los `settings` ya son operativos: se persisten, se administran por API/UI y pueden afectar comportamiento real del modulo.
 
 ## Deuda restante del contrato
 - generalizar el contrato para futuros modulos sin wiring adicional
-- soportar permisos y settings por modulo de forma operativa, no solo descriptiva
+- soportar permisos por modulo de forma operativa, no solo descriptiva
 - soportar seeds, assets, dashboards y hooks por modulo
 - reducir aun mas el registro local frontend a solo vistas realmente necesarias

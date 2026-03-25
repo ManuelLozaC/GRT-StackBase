@@ -12,7 +12,15 @@ return [
             'provider' => App\Modules\CorePlatform\CorePlatformServiceProvider::class,
             'dependencies' => [],
             'permissions' => [],
-            'settings' => [],
+            'settings' => [
+                [
+                    'key' => 'support_email',
+                    'label' => 'Email de soporte',
+                    'type' => 'text',
+                    'default' => 'soporte@stackbase.local',
+                    'help' => 'Contacto base del core para mensajes operativos y soporte.',
+                ],
+            ],
             'features' => [
                 'auth',
                 'tenancy',
@@ -38,7 +46,28 @@ return [
                 'core-platform',
             ],
             'permissions' => [],
-            'settings' => [],
+            'settings' => [
+                [
+                    'key' => 'default_file_ttl_minutes',
+                    'label' => 'TTL por defecto para links temporales',
+                    'type' => 'number',
+                    'default' => 30,
+                    'help' => 'Minutos usados por defecto al generar signed URLs demo.',
+                ],
+                [
+                    'key' => 'notification_default_level',
+                    'label' => 'Nivel por defecto de notificaciones demo',
+                    'type' => 'select',
+                    'default' => 'info',
+                    'help' => 'Nivel usado si el usuario no envia uno al crear una notificacion demo.',
+                    'options' => [
+                        ['label' => 'Info', 'value' => 'info'],
+                        ['label' => 'Success', 'value' => 'success'],
+                        ['label' => 'Warning', 'value' => 'warning'],
+                        ['label' => 'Error', 'value' => 'danger'],
+                    ],
+                ],
+            ],
             'features' => [
                 'demo.notifications',
                 'demo.files',

@@ -26,6 +26,7 @@ Fecha de referencia: `2026-03-25`
 - Primer paso del contrato modular formal: metadata backend ampliada y manifest unica del `Demo Module` en frontend.
 - Contrato modular consumido por API para bootstrap del `Demo Module`, stores de auth separados y tenancy base reforzada con `TenantContext`.
 - Contrato modular endurecido con dependencias operativas, modulos protegidos del core y feedback explicito en administracion.
+- Settings por modulo ya operativos con persistencia, API administrativa y uso real dentro del `Demo Module`.
 - Registro modular inicial con `core-platform` y `demo-platform`.
 - Persistencia de modulos en base de datos y toggle por API.
 - Pantalla de administracion de modulos en frontend.
@@ -34,6 +35,7 @@ Fecha de referencia: `2026-03-25`
 - Tenancy base extendida a notificaciones internas y descargas de archivos para reducir filtros manuales por organizacion.
 - Aislamiento por tenant validado con pruebas automatizadas en notificaciones, archivos, descargas y auditoria demo.
 - Data Engine real implementado con recurso demo, CRUD universal base, filtros, busqueda, paginacion, ordenamiento y soft delete.
+- Limpieza residual completada en branding/documentacion raiz y restos visuales del shell legacy.
 - Base de archivos en core con upload, descarga directa, signed URLs e historial.
 - Base de jobs en core con dispatch, estados, logs y demo funcional.
 - Base de auditoria transversal con eventos para modulos, archivos y jobs.
@@ -46,6 +48,7 @@ Fecha de referencia: `2026-03-25`
 - Estructura `core/modules` ya creada y el `Demo Module` ya usa bootstrap por API; el contrato de modulos ya bloquea dependencias basicas, pero todavia debe crecer para futuros modulos.
 - Tenancy base ya existe y se reforzo en notificaciones/descargas, pero falta propagarla de forma consistente a todo el dominio.
 - El frontend ya refresca el catalogo modular completo tras toggles para no conservar estados operativos stale.
+- Los settings modulares ya son operativos, pero todavia faltan permisos operativos, seeds y assets dentro del contrato formal.
 - `Demo Module` ya existe y ya contiene demos funcionales de archivos, jobs, auditoria y notificaciones. Sigue pendiente export/import.
 - Persisten deudas operativas menores ligadas sobre todo a tenancy transversal, UX global y definicion formal del contrato modular.
 
@@ -142,6 +145,6 @@ El backlog detallado vive en `docs/pendientes.md`.
 ## Resumen actual
 - Logrado: kernel modular, auth API, registro, reset de password, RBAC inicial, tenancy base, archivos, jobs, auditoria y notificaciones internas ya funcionan en backend y frontend con demos activables desde `Demo Module`; ademas la integridad del repositorio quedo estabilizada, la capa legacy principal fue retirada, el contrato modular ya evita estados invalidos y el aislamiento por tenant quedo cubierto con pruebas automatizadas.
 - Pendiente: completar multi-tenant transversal, export/import, integraciones de storage y notificaciones multicanal, mas observabilidad y seguridad operativa, y generalizar el contrato `core + modules` para nuevos modulos.
-- Pendiente tecnico residual: seguir endureciendo el core en tenancy transversal, ampliar el CRUD generico hacia relaciones/custom fields, settings/permisos operativos por modulo y catalogos universales realmente necesarios.
+- Pendiente tecnico residual: seguir endureciendo el core en tenancy transversal, ampliar el CRUD generico hacia relaciones/custom fields, permisos operativos por modulo y catalogos universales realmente necesarios.
 
-Avance global estimado del roadmap: 91% completado.
+Avance global estimado del roadmap: 93% completado.

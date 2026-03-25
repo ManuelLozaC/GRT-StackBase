@@ -19,7 +19,7 @@ onMounted(async () => {
 </template>
 
 <style lang="scss">
-/* Sakai usa algunas clases globales que no están en Tailwind */
+/* El shell visual hereda algunas clases globales del kit base fuera de Tailwind */
 html {
     font-size: 14px;
 }

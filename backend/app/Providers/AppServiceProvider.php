@@ -3,6 +3,7 @@
 namespace App\Providers;
 
 use App\Core\DataEngine\DataResourceRegistry;
+use App\Core\Modules\ModuleSettingsManager;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -15,6 +16,12 @@ class AppServiceProvider extends ServiceProvider
         $this->app->singleton(DataResourceRegistry::class, function ($app): DataResourceRegistry {
             return new DataResourceRegistry(
                 config('data_resources', []),
+                $app->make(\App\Core\Modules\ModuleRegistry::class),
+            );
+        });
+
+        $this->app->singleton(ModuleSettingsManager::class, function ($app): ModuleSettingsManager {
+            return new ModuleSettingsManager(
                 $app->make(\App\Core\Modules\ModuleRegistry::class),
             );
         });

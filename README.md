@@ -1,60 +1,51 @@
-# 🚀 StackBase Enterprise v2.0
+# StackBase
 
-Soporte base para sistemas empresariales multi-inquilino (Multi-tenant) diseñado para alta escalabilidad, con procesamiento en segundo plano y una arquitectura de frontend ultra rápida.
+Base reusable para construir multiples sistemas sobre una sola `Core Platform + Modules`.
 
-## 🛠️ Tech Stack Core
+## Objetivo
 
-### Backend (API)
-- **Framework:** Laravel 11 (PHP 8.3).
-- **Seguridad:** Laravel Sanctum (Auth API) & Spatie Permissions (RBAC).
-- **Procesamiento:** Redis para colas (Queues) y tareas pesadas en segundo plano.
-- **Arquitectura:** Modelos abstractos (`BaseModel`) con Soft Deletes y Auditoría.
+Resolver una sola vez las capacidades transversales del producto y reutilizarlas desde modulos plug-in:
 
-### Frontend (SPA)
-- **Tooling:** **Vite** - Servidor de desarrollo de última generación con Hot Module Replacement (HMR).
-- **Framework:** Vue 3 (Composition API).
-- **UI Kit:** Sakai Vue (PrimeVue 4) + Tailwind CSS 4.
-- **Estado:** Pinia para gestión de estado global.
+- identidad y acceso
+- tenancy
+- archivos
+- jobs
+- auditoria
+- notificaciones
+- data engine / CRUD universal
+- shell administrativa
 
-### Infraestructura (DevOps)
-- **Docker:** Orquestación completa (App, Web, DB, Redis).
-- **Servidor Web:** Nginx optimizado para SPA y API.
-- **Base de Datos:** MySQL 8.0.
+## Estado actual
 
-## 🔑 Características Principales
+- Backend Laravel 12 API-first con `api/v1`.
+- Frontend Vue 3 + Vite + PrimeVue.
+- Registro modular con `core-platform` y `demo-platform`.
+- Administracion de modulos con activacion/desactivacion, dependencias operativas y settings por modulo.
+- `Demo Module` para probar capacidades genericas antes de llevarlas a modulos de negocio.
+- Data Engine real con CRUD base tenant-aware sobre un recurso demo.
 
-### 1. Multi-Tenancy Nativo
-Aislamiento de datos a nivel de base de datos mediante el trait `MultiTenantable`. El sistema aplica un **Global Scope** automático basado en el `organizacion_id` del usuario autenticado, garantizando que ninguna organización pueda acceder a datos ajenos.
+## Documentacion principal
 
-### 2. Seguridad Avanzada
-- **Autenticación:** Tokens persistentes con Sanctum.
-- **Autorización:** Control de acceso basado en roles (RBAC).
-- **Protección de Datos:** Todos los modelos de negocio extienden de `BaseModel`, heredando aislamiento tenant y eliminación lógica (Soft Deletes).
+- [docs/stackbase.md](./docs/stackbase.md)
+- [docs/roadmap.md](./docs/roadmap.md)
+- [docs/pendientes.md](./docs/pendientes.md)
+- [docs/contrato_modulos.md](./docs/contrato_modulos.md)
 
-### 3. Rendimiento con Vite & Redis
-- **Vite:** Configurado con `usePolling: true` para sincronización perfecta en entornos Docker sobre Windows.
-- **Redis:** Gestión de colas para envío de correos, reportes pesados y procesamiento asíncrono.
+## Verificacion rapida
 
-## 🚀 Instalación y Despliegue
+```bash
+cd backend
+php artisan test
 
-1. **Clonar con Submódulos (Crítico para Assets):**
-   ```bash
-   git clone --recursive [URL_DEL_REPOSITORIO]
+cd ../frontend
+npm run lint
+npm run build
+```
 
-2. **Configurar Entorno:**
-   ```bash
-   cp .env.example .env
+## Siguiente foco
 
-3. **Levantar Infraestructura:**
-   ```bash
-   docker compose up -d --build
-
-4. **Inicializar Backend:**
-   ```bash
-   docker exec -it pj-backend composer install
-   docker exec -it pj-backend php artisan migrate --seed
-
-5. **Inicializar Frontend:**
-   ```bash
-   docker exec -it pj-frontend npm install
-   Acceso: http://localhost:5173
+- tenancy transversal completa
+- export/import
+- storage real con Spaces
+- notificaciones multicanal
+- evolucion del Data Engine hacia relaciones, custom fields y acciones avanzadas

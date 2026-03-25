@@ -16,6 +16,7 @@ Backend API-first construido con Laravel 12.
 - Metadata modular ampliada en `config/modules.php` con dependencias, permisos, settings y features.
 - Dependencias modulares basicas bloqueadas al activar/desactivar; `core-platform` queda protegido.
 - Listado de modulos disponible para cualquier usuario autenticado; el toggle sigue protegido por permiso.
+- Settings por modulo persistidos y administrables por API.
 - `TenantContext` compartido para request autenticado, jobs base, notificaciones internas y descargas base.
 - Aislamiento por tenant cubierto con tests para notificaciones, archivos, descargas y auditoria demo.
 - Migraciones fundacionales separadas por responsabilidad.
@@ -58,6 +59,8 @@ Backend API-first construido con Laravel 12.
 - `POST /api/v1/demo/notifications`
 - `GET /api/v1/modules`
 - `PATCH /api/v1/modules/{moduleKey}`
+- `GET /api/v1/modules/{moduleKey}/settings`
+- `PATCH /api/v1/modules/{moduleKey}/settings`
 
 ## Comandos utiles
 ```bash
@@ -68,7 +71,7 @@ php artisan config:clear
 ```
 
 ## Verificacion reciente
-- `php artisan test` pasando con 32 tests.
+- `php artisan test` pasando con 35 tests.
 - Integridad de migraciones corregida para evitar duplicados y desalineacion del esquema base.
 - Arbol HTTP legacy no enroutado eliminado para reducir deriva arquitectonica.
 - Bootstrap RBAC inicial sin duplicidad de seeders.

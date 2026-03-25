@@ -8,6 +8,7 @@ use App\Http\Controllers\Api\V1\Demo\DemoJobController;
 use App\Http\Controllers\Api\V1\Demo\DemoNotificationController;
 use App\Http\Controllers\Api\V1\HealthCheckController;
 use App\Http\Controllers\Api\V1\ModuleController;
+use App\Http\Controllers\Api\V1\ModuleSettingController;
 use App\Http\Controllers\Api\V1\NotificationController;
 use Illuminate\Support\Facades\Route;
 
@@ -55,6 +56,8 @@ Route::prefix('v1')->group(function (): void {
 
         Route::middleware('permission:modules.manage')->group(function (): void {
             Route::patch('/modules/{moduleKey}', [ModuleController::class, 'updateStatus']);
+            Route::get('/modules/{moduleKey}/settings', [ModuleSettingController::class, 'show']);
+            Route::patch('/modules/{moduleKey}/settings', [ModuleSettingController::class, 'update']);
         });
     });
 
