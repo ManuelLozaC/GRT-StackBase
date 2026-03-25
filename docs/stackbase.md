@@ -62,6 +62,7 @@ Su objetivo es:
 - Branding principal del template removido de la shell frontend.
 - Estructura laboral heredada retirada del runtime activo.
 - Toolchain frontend alineado a una version segura de `Vite` con particion de chunks y auditoria `npm` limpia.
+- Base fundacional del core reducida a organizaciones, usuarios, membresias y sesion; los catalogos de ubicacion/personas ya no viven por defecto en el arranque base.
 - Organizaciones base y cambio de organizacion activa.
 - Core de archivos con upload, descarga directa, signed URL e historial.
 - Core de jobs con dispatch, ejecucion inmediata demo y trazabilidad basica.

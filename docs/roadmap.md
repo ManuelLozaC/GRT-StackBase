@@ -22,6 +22,7 @@ Fecha de referencia: `2026-03-25`
 - Branding residual del template limpiado en metadatos principales del frontend.
 - Estructura laboral legacy retirada del runtime activo.
 - Toolchain frontend endurecido: `Vite 6.4.1`, auditoria `npm` limpia y build chunked sin warnings por tamano excesivo.
+- Base fundacional del core adelgazada: catalogos y modelos inactivos de ubicacion/personas retirados del arranque modular.
 - Registro modular inicial con `core-platform` y `demo-platform`.
 - Persistencia de modulos en base de datos y toggle por API.
 - Pantalla de administracion de modulos en frontend.
@@ -38,7 +39,7 @@ Fecha de referencia: `2026-03-25`
 - Estructura `core/modules` ya creada, pero el contrato de modulos todavia debe crecer.
 - Tenancy base ya existe, pero falta propagarla de forma consistente a modelos, jobs, archivos y auditoria.
 - `Demo Module` ya existe y ya contiene demos funcionales de archivos, jobs, auditoria y notificaciones. Sigue pendiente export/import.
- - Persisten deudas operativas menores ligadas sobre todo a decisiones de alcance del core y a mejoras incrementales de UX/tenancy.
+- Persisten deudas operativas menores ligadas sobre todo a tenancy transversal, UX global y definicion formal del contrato modular.
 
 ### Aun pendiente
 - Multi-tenant completo.
@@ -129,7 +130,7 @@ El backlog detallado vive en `docs/pendientes.md`.
 
 ## Resumen actual
 - Logrado: kernel modular, auth API, registro, reset de password, RBAC inicial, tenancy base, archivos, jobs, auditoria y notificaciones internas ya funcionan en backend y frontend con demos activables desde `Demo Module`; ademas la integridad del repositorio quedo estabilizada, la capa legacy principal fue retirada y todo quedo verificado con tests/build.
-- Pendiente: completar multi-tenant transversal, CRUD universal, export/import, integraciones de storage y notificaciones multicanal, mas observabilidad y seguridad operativa, y cerrar la definicion final de los catalogos base que siguen en evaluacion.
-- Pendiente tecnico residual: seguir endureciendo el core en tenancy transversal, CRUD generico y delimitacion final de catalogos como `oficinas/personas`.
+- Pendiente: completar multi-tenant transversal, CRUD universal, export/import, integraciones de storage y notificaciones multicanal, mas observabilidad y seguridad operativa, y cerrar la definicion formal del contrato `core + modules`.
+- Pendiente tecnico residual: seguir endureciendo el core en tenancy transversal, CRUD generico y catalogos universales realmente necesarios.
 
-Avance global estimado del roadmap: 70% completado.
+Avance global estimado del roadmap: 74% completado.

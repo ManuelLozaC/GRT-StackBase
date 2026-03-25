@@ -36,6 +36,7 @@
 - [x] Seeders RBAC iniciales alineados en una sola fuente de verdad.
 - [x] Branding residual del template retirado de metadatos principales.
 - [x] Estructura laboral legacy retirada del runtime activo.
+- [x] Catalogos y modelos inactivos (`paises/ciudades/oficinas/personas`) retirados de la base fundacional del core.
 
 ### Brechas principales
 - [ ] RBAC completo.
@@ -47,7 +48,7 @@
 - [ ] Notificaciones avanzadas y multicanal.
 - [ ] Auditoria y logs avanzados.
 - [ ] Demos funcionales de las capacidades genericas.
-- [ ] Definir si catalogos como `oficinas` y `personas` permanecen en el core o migran a un modulo dedicado.
+- [ ] Definir los catalogos universales reales que el core soportara de forma explicita.
 
 ## Regla transversal del proyecto
 - [x] Toda funcionalidad generica importante debe vivir en el core.
@@ -104,6 +105,7 @@ Estado: En progreso
 - [ ] Tenant activo por request en todos los servicios backend.
 - [ ] Configuracion por tenant.
 - [ ] Scope multi-tenant consistente en modelos, jobs, archivos y auditoria.
+- [x] Base fundacional de tenancy adelgazada para no mezclar catalogos de ubicacion o personas no usados por el core.
 
 ## P3. Configuracion del sistema
 Estado: Pendiente
@@ -275,6 +277,7 @@ Estado: En progreso
 - [x] Reducir warning de chunk grande en build de Vite con `manualChunks`.
 - [x] Revisar y mitigar vulnerabilidades reportadas por `npm audit`.
 - [x] Recuperar `lint` frontend en verde.
+- [x] Retirar modelos, tablas y seeders inactivos que no pertenecian al contrato modular actual.
 
 ## P17. Responsive y soporte movil
 Estado: Parcial
@@ -305,4 +308,4 @@ Estado: Pendiente
 2. CRUD universal base del core.
 3. Integracion de archivos con Spaces y entidades de negocio.
 4. Export/import demo funcional.
-5. Definir el destino final de catalogos base como `oficinas/personas` dentro del modelo modular.
+5. Definir el set final de catalogos universales y mover cualquier dominio extra a modulos verticales.

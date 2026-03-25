@@ -10,6 +10,7 @@ Backend API-first construido con Laravel 12.
 - Preview del token de reset disponible solo en `local/testing`.
 - Organizaciones y organizacion activa por usuario.
 - Migraciones base unificadas y verificadas en test suite.
+- Base fundacional adelgazada para no sembrar catalogos de ubicacion/personas que no forman parte del core actual.
 - Solo se mantiene activa la capa HTTP alineada a `api/v1`; el API legacy previo fue retirado.
 - Seeders iniciales de permisos alineados en un solo flujo (`RolePermissionSeeder`).
 - Registro de modulos.
@@ -58,6 +59,7 @@ php artisan config:clear
 - Integridad de migraciones corregida para evitar duplicados y desalineacion del esquema base.
 - Arbol HTTP legacy no enroutado eliminado para reducir deriva arquitectonica.
 - Bootstrap RBAC inicial sin duplicidad de seeders.
+- Esquema fundacional reducido a entidades realmente usadas por el core modular actual.
 
 ## Documentacion relacionada
 - `docs/stackbase.md`

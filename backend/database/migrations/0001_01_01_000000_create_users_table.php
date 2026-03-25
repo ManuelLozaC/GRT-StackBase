@@ -10,88 +10,13 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('paises', function (Blueprint $table): void {
-            $table->id();
-            $table->uuid('uuid')->nullable()->unique();
-            $table->string('nombre');
-            $table->string('codigo_iso2', 2)->nullable()->unique();
-            $table->string('codigo_iso3', 3)->nullable()->unique();
-            $table->string('gentilicio')->nullable();
-            $table->boolean('activo')->default(true);
-            $table->timestamps();
-            $table->softDeletes();
-        });
-
-        Schema::create('ciudades', function (Blueprint $table): void {
-            $table->id();
-            $table->uuid('uuid')->nullable()->unique();
-            $table->foreignId('pais_id')->nullable()->constrained('paises')->nullOnDelete();
-            $table->string('nombre');
-            $table->string('codigo', 50)->nullable();
-            $table->boolean('activo')->default(true);
-            $table->timestamps();
-            $table->softDeletes();
-        });
-
         Schema::create('organizaciones', function (Blueprint $table): void {
             $table->id();
             $table->uuid('uuid')->nullable()->unique();
             $table->string('nombre');
             $table->string('slug')->unique();
             $table->json('metadata')->nullable();
-            $table->string('nombre_comercial')->nullable();
-            $table->string('nit', 50)->nullable();
-            $table->string('email')->nullable();
-            $table->string('telefono', 30)->nullable();
-            $table->string('direccion')->nullable();
-            $table->foreignId('pais_id')->nullable()->constrained('paises')->nullOnDelete();
-            $table->foreignId('ciudad_id')->nullable()->constrained('ciudades')->nullOnDelete();
             $table->boolean('activa')->default(true);
-            $table->unsignedBigInteger('created_by')->nullable();
-            $table->unsignedBigInteger('updated_by')->nullable();
-            $table->unsignedBigInteger('deleted_by')->nullable();
-            $table->timestamps();
-            $table->softDeletes();
-        });
-
-        Schema::create('oficinas', function (Blueprint $table): void {
-            $table->id();
-            $table->uuid('uuid')->nullable()->unique();
-            $table->foreignId('organizacion_id')->constrained('organizaciones')->cascadeOnDelete();
-            $table->foreignId('ciudad_id')->nullable()->constrained('ciudades')->nullOnDelete();
-            $table->string('nombre');
-            $table->string('codigo', 50)->nullable();
-            $table->string('direccion')->nullable();
-            $table->string('telefono', 30)->nullable();
-            $table->boolean('es_principal')->default(false);
-            $table->boolean('activa')->default(true);
-            $table->unsignedBigInteger('created_by')->nullable();
-            $table->unsignedBigInteger('updated_by')->nullable();
-            $table->unsignedBigInteger('deleted_by')->nullable();
-            $table->timestamps();
-            $table->softDeletes();
-        });
-
-        Schema::create('personas', function (Blueprint $table): void {
-            $table->id();
-            $table->uuid('uuid')->nullable()->unique();
-            $table->foreignId('organizacion_id')->nullable()->constrained('organizaciones')->nullOnDelete();
-            $table->foreignId('ciudad_id')->nullable()->constrained('ciudades')->nullOnDelete();
-            $table->string('tipo_documento', 50)->nullable();
-            $table->string('numero_documento', 50)->nullable();
-            $table->string('nombres');
-            $table->string('apellido_paterno')->nullable();
-            $table->string('apellido_materno')->nullable();
-            $table->string('genero', 20)->nullable();
-            $table->date('fecha_nacimiento')->nullable();
-            $table->string('email')->nullable();
-            $table->string('telefono', 30)->nullable();
-            $table->string('direccion')->nullable();
-            $table->string('foto_path')->nullable();
-            $table->boolean('activo')->default(true);
-            $table->unsignedBigInteger('created_by')->nullable();
-            $table->unsignedBigInteger('updated_by')->nullable();
-            $table->unsignedBigInteger('deleted_by')->nullable();
             $table->timestamps();
             $table->softDeletes();
         });
@@ -142,10 +67,6 @@ return new class extends Migration
         Schema::dropIfExists('password_reset_tokens');
         Schema::dropIfExists('organizacion_user');
         Schema::dropIfExists('users');
-        Schema::dropIfExists('personas');
-        Schema::dropIfExists('oficinas');
         Schema::dropIfExists('organizaciones');
-        Schema::dropIfExists('ciudades');
-        Schema::dropIfExists('paises');
     }
 };
