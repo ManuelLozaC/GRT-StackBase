@@ -12,7 +12,7 @@ return new class extends Migration
     {
         Schema::create('paises', function (Blueprint $table): void {
             $table->id();
-            $table->uuid('uuid')->unique();
+            $table->uuid('uuid')->nullable()->unique();
             $table->string('nombre');
             $table->string('codigo_iso2', 2)->nullable()->unique();
             $table->string('codigo_iso3', 3)->nullable()->unique();
@@ -24,8 +24,8 @@ return new class extends Migration
 
         Schema::create('ciudades', function (Blueprint $table): void {
             $table->id();
-            $table->uuid('uuid')->unique();
-            $table->foreignId('pais_id')->constrained('paises');
+            $table->uuid('uuid')->nullable()->unique();
+            $table->foreignId('pais_id')->nullable()->constrained('paises')->nullOnDelete();
             $table->string('nombre');
             $table->string('codigo', 50)->nullable();
             $table->boolean('activo')->default(true);
@@ -35,15 +35,17 @@ return new class extends Migration
 
         Schema::create('organizaciones', function (Blueprint $table): void {
             $table->id();
-            $table->uuid('uuid')->unique();
+            $table->uuid('uuid')->nullable()->unique();
             $table->string('nombre');
+            $table->string('slug')->unique();
+            $table->json('metadata')->nullable();
             $table->string('nombre_comercial')->nullable();
             $table->string('nit', 50)->nullable();
             $table->string('email')->nullable();
             $table->string('telefono', 30)->nullable();
             $table->string('direccion')->nullable();
-            $table->foreignId('pais_id')->nullable()->constrained('paises');
-            $table->foreignId('ciudad_id')->nullable()->constrained('ciudades');
+            $table->foreignId('pais_id')->nullable()->constrained('paises')->nullOnDelete();
+            $table->foreignId('ciudad_id')->nullable()->constrained('ciudades')->nullOnDelete();
             $table->boolean('activa')->default(true);
             $table->unsignedBigInteger('created_by')->nullable();
             $table->unsignedBigInteger('updated_by')->nullable();
@@ -54,9 +56,9 @@ return new class extends Migration
 
         Schema::create('oficinas', function (Blueprint $table): void {
             $table->id();
-            $table->uuid('uuid')->unique();
-            $table->foreignId('organizacion_id')->constrained('organizaciones');
-            $table->foreignId('ciudad_id')->nullable()->constrained('ciudades');
+            $table->uuid('uuid')->nullable()->unique();
+            $table->foreignId('organizacion_id')->constrained('organizaciones')->cascadeOnDelete();
+            $table->foreignId('ciudad_id')->nullable()->constrained('ciudades')->nullOnDelete();
             $table->string('nombre');
             $table->string('codigo', 50)->nullable();
             $table->string('direccion')->nullable();
@@ -72,9 +74,9 @@ return new class extends Migration
 
         Schema::create('personas', function (Blueprint $table): void {
             $table->id();
-            $table->uuid('uuid')->unique();
-            $table->foreignId('organizacion_id')->nullable()->constrained('organizaciones');
-            $table->foreignId('ciudad_id')->nullable()->constrained('ciudades');
+            $table->uuid('uuid')->nullable()->unique();
+            $table->foreignId('organizacion_id')->nullable()->constrained('organizaciones')->nullOnDelete();
+            $table->foreignId('ciudad_id')->nullable()->constrained('ciudades')->nullOnDelete();
             $table->string('tipo_documento', 50)->nullable();
             $table->string('numero_documento', 50)->nullable();
             $table->string('nombres');
@@ -96,22 +98,33 @@ return new class extends Migration
 
         Schema::create('users', function (Blueprint $table): void {
             $table->id();
-            $table->uuid('uuid')->unique();
-            $table->foreignId('organizacion_id')->nullable()->constrained('organizaciones');
-            $table->foreignId('persona_id')->nullable()->constrained('personas');
-            $table->string('alias')->unique();
-            $table->string('nombre_mostrar');
+            $table->uuid('uuid')->nullable()->unique();
+            $table->foreignId('organizacion_id')->nullable()->constrained('organizaciones')->nullOnDelete();
+            $table->foreignId('organizacion_activa_id')->nullable()->constrained('organizaciones')->nullOnDelete();
+            $table->foreignId('persona_id')->nullable()->constrained('personas')->nullOnDelete();
+            $table->string('name');
+            $table->string('alias')->nullable()->unique();
+            $table->string('nombre_mostrar')->nullable();
             $table->string('email')->unique();
             $table->string('telefono', 30)->nullable();
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
             $table->boolean('es_superusuario')->default(false);
-            $table->boolean('debe_cambiar_password')->default(true);
+            $table->boolean('debe_cambiar_password')->default(false);
             $table->boolean('activo')->default(true);
             $table->timestamp('ultimo_acceso_at')->nullable();
             $table->rememberToken();
             $table->timestamps();
             $table->softDeletes();
+        });
+
+        Schema::create('organizacion_user', function (Blueprint $table): void {
+            $table->id();
+            $table->foreignId('organizacion_id')->constrained('organizaciones')->cascadeOnDelete();
+            $table->foreignId('user_id')->constrained()->cascadeOnDelete();
+            $table->timestamps();
+
+            $table->unique(['organizacion_id', 'user_id']);
         });
 
         Schema::create('password_reset_tokens', function (Blueprint $table): void {
@@ -134,6 +147,7 @@ return new class extends Migration
     {
         Schema::dropIfExists('sessions');
         Schema::dropIfExists('password_reset_tokens');
+        Schema::dropIfExists('organizacion_user');
         Schema::dropIfExists('users');
         Schema::dropIfExists('personas');
         Schema::dropIfExists('oficinas');

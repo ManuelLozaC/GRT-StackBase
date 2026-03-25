@@ -1,5 +1,4 @@
 <script setup>
-<<<<<<< HEAD
 import { authStore } from '@/core/auth/authStore';
 import { notificationStore } from '@/core/notifications/notificationStore';
 import { useLayout } from '@/layout/composables/layout';
@@ -53,22 +52,6 @@ async function openNotifications() {
     await router.push({
         name: 'demo-notifications'
     });
-=======
-import { useAuthStore } from '@/stores/auth';
-import { useLayout } from '@/layout/composables/layout';
-import { computed } from 'vue';
-import { useRouter } from 'vue-router';
-
-const router = useRouter();
-const authStore = useAuthStore();
-const { toggleMenu, toggleDarkMode, isDarkTheme } = useLayout();
-
-const nombreUsuario = computed(() => authStore.usuario?.nombre_mostrar || 'Usuario');
-
-async function cerrarSesion() {
-    await authStore.cerrarSesion();
-    router.push({ name: 'login' });
->>>>>>> 7e73f0a9cd3fbae4dc50a3da8e769c2a38178ab3
 }
 </script>
 
@@ -84,7 +67,6 @@ async function cerrarSesion() {
         </div>
 
         <div class="layout-topbar-actions">
-<<<<<<< HEAD
             <div class="layout-config-menu">
                 <button type="button" class="layout-topbar-action topbar-bell-button" @click="openNotifications">
                     <i class="pi pi-bell"></i>
@@ -110,15 +92,10 @@ async function cerrarSesion() {
                 v-styleclass="{ selector: '@next', enterFromClass: 'hidden', enterActiveClass: 'p-anchored-overlay-enter-active', leaveToClass: 'hidden', leaveActiveClass: 'p-anchored-overlay-leave-active', hideOnOutsideClick: true }"
             >
                 <i class="pi pi-ellipsis-v"></i>
-=======
-            <button type="button" class="layout-topbar-action" @click="toggleDarkMode">
-                <i :class="['pi', { 'pi-moon': isDarkTheme, 'pi-sun': !isDarkTheme }]"></i>
->>>>>>> 7e73f0a9cd3fbae4dc50a3da8e769c2a38178ab3
             </button>
 
             <div class="layout-topbar-menu lg:block">
                 <div class="layout-topbar-menu-content">
-<<<<<<< HEAD
                     <label v-if="organizations.length > 0" class="topbar-organization-switcher">
                         <span>Organizacion</span>
                         <select :value="activeOrganizationId" :disabled="authStore.state.switchingOrganization" @change="switchOrganization">
@@ -138,15 +115,6 @@ async function cerrarSesion() {
                     <button type="button" class="layout-topbar-action" @click="logout">
                         <i class="pi pi-sign-out"></i>
                         <span>Logout</span>
-=======
-                    <button type="button" class="layout-topbar-action">
-                        <i class="pi pi-user"></i>
-                        <span>{{ nombreUsuario }}</span>
-                    </button>
-                    <button type="button" class="layout-topbar-action" @click="cerrarSesion">
-                        <i class="pi pi-sign-out"></i>
-                        <span>Salir</span>
->>>>>>> 7e73f0a9cd3fbae4dc50a3da8e769c2a38178ab3
                     </button>
                 </div>
             </div>

@@ -8,6 +8,7 @@ Backend API-first construido con Laravel 12.
 - Login, logout y `me`.
 - Registro y reset de password.
 - Organizaciones y organizacion activa por usuario.
+- Migraciones base unificadas y verificadas en test suite.
 - Registro de modulos.
 - Persistencia de modulos en `system_modules`.
 - Toggle de modulos por API.
@@ -48,6 +49,10 @@ php artisan test
 php artisan queue:work --queue=demo
 php artisan config:clear
 ```
+
+## Verificacion reciente
+- `php artisan test` pasando con 24 tests.
+- Integridad de migraciones corregida para evitar duplicados y desalineacion del esquema base.
 
 ## Documentacion relacionada
 - `docs/stackbase.md`

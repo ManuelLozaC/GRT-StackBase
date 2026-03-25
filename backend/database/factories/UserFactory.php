@@ -25,9 +25,12 @@ class UserFactory extends Factory
      */
     public function definition(): array
     {
+        $name = fake()->name();
+
         return [
+            'name' => $name,
             'alias' => fake()->unique()->userName(),
-            'nombre_mostrar' => fake()->name(),
+            'nombre_mostrar' => $name,
             'email' => fake()->unique()->safeEmail(),
             'telefono' => fake()->phoneNumber(),
             'email_verified_at' => now(),
