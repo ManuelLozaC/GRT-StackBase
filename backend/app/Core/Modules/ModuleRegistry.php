@@ -17,10 +17,7 @@ class ModuleRegistry
     public function all(): Collection
     {
         $defaults = collect($this->modules)
-            ->map(fn (array $module, string $key): array => array_merge([
-                'key' => $key,
-                'enabled' => false,
-            ], $module))
+            ->map(fn (array $module, string $key): array => $this->normalizeModule($key, $module))
             ->keyBy('key');
 
         if (! $this->canUsePersistence()) {
@@ -90,7 +87,10 @@ class ModuleRegistry
         ]);
         $record->save();
 
-        return $record->toRegistryArray();
+        return array_merge(
+            $this->normalizeModule($key, $this->modules[$key] ?? []),
+            $record->toRegistryArray(),
+        );
     }
 
     protected function syncDefaults(): void
@@ -114,6 +114,18 @@ class ModuleRegistry
 
             $record->save();
         }
+    }
+
+    protected function normalizeModule(string $key, array $module): array
+    {
+        return array_merge([
+            'key' => $key,
+            'enabled' => false,
+            'dependencies' => [],
+            'permissions' => [],
+            'settings' => [],
+            'features' => [],
+        ], $module);
     }
 
     protected function canUsePersistence(): bool

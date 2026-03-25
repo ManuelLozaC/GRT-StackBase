@@ -49,6 +49,7 @@
 - [ ] Auditoria y logs avanzados.
 - [ ] Demos funcionales de las capacidades genericas.
 - [ ] Definir los catalogos universales reales que el core soportara de forma explicita.
+- [ ] Unificar contrato modular backend/frontend en una sola fuente de verdad consumible por API.
 
 ## Regla transversal del proyecto
 - [x] Toda funcionalidad generica importante debe vivir en el core.
@@ -72,8 +73,11 @@ Estado: En progreso
 - [x] `Demo Module` inicial.
 - [ ] Contrato formal de un modulo: permisos, menus, rutas, migraciones, settings, jobs, webhooks, dashboards.
 - [ ] Contrato formal de una demo por capacidad transversal.
-- [ ] Carga de menus y rutas por modulo desde metadata declarativa.
+- [x] Carga de menus y rutas del `Demo Module` desde manifest declarativa frontend.
+- [ ] Carga de menus y rutas por modulo desde metadata declarativa backend/frontend unificada.
 - [ ] Orden de carga y dependencias entre modulos.
+- [ ] Bloqueo operativo de dependencias entre modulos al activar/desactivar.
+- [ ] Exponer metadata modular extendida por API para bootstrap frontend.
 
 ## P1. Identidad y acceso
 Estado: En progreso
@@ -265,7 +269,18 @@ Estado: Parcial
 - [ ] Preferencias de vistas.
 - [ ] Columnas dinamicas.
 
-## P16. Higiene tecnica y operativa
+## P16. Reorganizacion del core modular
+Estado: En progreso
+
+- [x] Retirar catalogos y modelos inactivos del arranque base.
+- [x] Manifest unica del `Demo Module` en frontend para evitar duplicacion de rutas/menu.
+- [x] Metadata modular backend ampliada con `dependencies`, `permissions`, `settings` y `features`.
+- [ ] Separar `authStore` en contexto de sesion, tenant y permisos si el crecimiento del core lo exige.
+- [ ] Separar migraciones fundacionales por responsabilidad (`organizaciones`, `users`, `organizacion_user`).
+- [ ] Depurar `core-menu` para dejar solo shell realmente transversal del producto.
+- [ ] Convertir manifests frontend a bootstrap desde API/modulo registrado.
+
+## P17. Higiene tecnica y operativa
 Estado: En progreso
 
 - [x] Resolver conflictos de merge abiertos.
@@ -279,7 +294,7 @@ Estado: En progreso
 - [x] Recuperar `lint` frontend en verde.
 - [x] Retirar modelos, tablas y seeders inactivos que no pertenecian al contrato modular actual.
 
-## P17. Responsive y soporte movil
+## P18. Responsive y soporte movil
 Estado: Parcial
 
 - [x] Base responsive del template.
@@ -287,7 +302,7 @@ Estado: Parcial
 - [ ] PWA si aplica.
 - [ ] Offline basico solo donde aporte valor.
 
-## P18. Manejo de errores
+## P19. Manejo de errores
 Estado: Pendiente
 
 - [ ] Catalogo de errores controlados backend.
@@ -295,7 +310,7 @@ Estado: Pendiente
 - [ ] Correlation IDs.
 - [ ] Fallbacks de UX.
 
-## P19. Metricas internas
+## P20. Metricas internas
 Estado: Pendiente
 
 - [ ] Uso del sistema por tenant.
@@ -305,7 +320,7 @@ Estado: Pendiente
 
 ## Siguiente desarrollo recomendado
 1. Scope multi-tenant consistente en modelos, jobs, archivos y auditoria.
-2. CRUD universal base del core.
-3. Integracion de archivos con Spaces y entidades de negocio.
-4. Export/import demo funcional.
-5. Definir el set final de catalogos universales y mover cualquier dominio extra a modulos verticales.
+2. Unificar contrato modular backend/frontend con bootstrap por API.
+3. CRUD universal base del core.
+4. Integracion de archivos con Spaces y entidades de negocio.
+5. Export/import demo funcional.
