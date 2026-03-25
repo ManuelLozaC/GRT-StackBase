@@ -49,6 +49,8 @@ class AuthFlowTest extends TestCase
             ->assertOk()
             ->assertJsonPath('datos.email', 'admin@stackbase.local')
             ->assertJsonPath('datos.organizacion_activa.nombre', 'Acme Central')
+            ->assertJsonPath('datos.empresa_activa.nombre', 'Acme Central')
+            ->assertJsonPath('datos.empresas.0.slug', 'acme-central')
             ->assertJsonFragment([
                 'slug' => 'acme-central',
             ]);

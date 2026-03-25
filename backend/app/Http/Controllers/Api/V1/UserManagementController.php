@@ -467,7 +467,12 @@ class UserManagementController extends Controller
                 'correo' => $user->persona->correo,
             ] : null,
             'organizacion_activa' => $this->transformOrganization($user->organizacionActiva),
+            'empresa_activa' => $this->transformOrganization($user->organizacionActiva),
             'organizaciones' => $user->organizaciones
+                ->map(fn (Organizacion $organizacion): array => $this->transformOrganization($organizacion))
+                ->values()
+                ->all(),
+            'empresas' => $user->organizaciones
                 ->map(fn (Organizacion $organizacion): array => $this->transformOrganization($organizacion))
                 ->values()
                 ->all(),

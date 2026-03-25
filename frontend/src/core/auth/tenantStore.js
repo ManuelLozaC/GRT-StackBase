@@ -43,8 +43,8 @@ async function switchActiveWorkAssignment(workAssignmentId) {
 
 export const tenantStore = {
     state,
-    organizations: computed(() => sessionStore.state.user?.organizaciones ?? []),
-    activeOrganization: computed(() => sessionStore.state.user?.organizacion_activa ?? null),
+    organizations: computed(() => sessionStore.state.user?.empresas ?? sessionStore.state.user?.organizaciones ?? []),
+    activeOrganization: computed(() => sessionStore.state.user?.empresa_activa ?? sessionStore.state.user?.organizacion_activa ?? null),
     activeWorkAssignment: computed(() => sessionStore.state.user?.asignacion_laboral_activa ?? null),
     availableWorkAssignments: computed(() => sessionStore.state.user?.asignaciones_laborales_disponibles ?? []),
     switchActiveOrganization,

@@ -328,7 +328,7 @@ class DataResourceController extends Controller
 
     protected function resolveResource(Request $request, string $resourceKey): ?array
     {
-        return $this->resources->findAvailable($resourceKey, $request->user());
+        return $this->resources->findAvailable($resourceKey, $request->user(), false);
     }
 
     protected function resolveRecord(array $resource, string $recordId): ?Model

@@ -55,6 +55,7 @@ return [
         'description' => 'Representacion tecnica transicional de empresas por tenant mientras converge el dominio hacia organizacion igual a empresa.',
         'source_module' => 'core-platform',
         'permission_key' => 'tenancy.manage',
+        'visible_in_catalog' => false,
         'model' => Empresa::class,
         'default_sort' => [
             'field' => 'nombre',
@@ -84,6 +85,7 @@ return [
         'description' => 'Sucursales por tenant, relacionadas a empresas.',
         'source_module' => 'core-platform',
         'permission_key' => 'tenancy.manage',
+        'visible_in_catalog' => false,
         'model' => Sucursal::class,
         'default_sort' => [
             'field' => 'nombre',
@@ -128,6 +130,7 @@ return [
         'description' => 'Equipos por tenant para validar estructura y relaciones operativas.',
         'source_module' => 'core-platform',
         'permission_key' => 'tenancy.manage',
+        'visible_in_catalog' => false,
         'model' => Equipo::class,
         'default_sort' => [
             'field' => 'nombre',

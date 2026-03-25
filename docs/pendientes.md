@@ -168,6 +168,8 @@ Estado: En progreso
 - [x] Sincronizacion runtime base `organizacion -> empresa` y `oficina -> sucursal` para reducir divergencia con el legado mientras se completa la convergencia final.
 - [x] Etiquetas operativas mas utiles en Data Engine para `personas` y `asignaciones_laborales`, incluyendo jefe y aprobador por contexto.
 - [x] Base de contexto laboral por usuario con `asignacion_laboral_activa` y cambio explicito dentro de la organizacion activa.
+- [x] Catalogo visible del Data Engine ya prioriza `Empresas` y `Oficinas`, ocultando recursos transicionales del legado.
+- [x] Payloads principales de auth y shell frontend ya exponen y muestran `empresa_activa` / `empresas` como lenguaje visible del dominio.
 - [x] Selector visual de contexto laboral activo en topbar y dashboard.
 - [x] RBAC contextual inicial reutiliza las mismas claves de permiso del sistema a traves de metadata por asignacion.
 
@@ -414,8 +416,8 @@ Estado: En progreso
 
 ## Indicador de avance global
 
-- Avance global estimado del proyecto: `92%`
-- Trabajo restante estimado para cerrar esta version base: `8%`
+- Avance global estimado del proyecto: `94%`
+- Trabajo restante estimado para cerrar esta version base: `6%`
 
 Lectura del porcentaje:
 

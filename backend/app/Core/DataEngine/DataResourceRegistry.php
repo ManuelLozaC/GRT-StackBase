@@ -16,18 +16,19 @@ class DataResourceRegistry
     ) {
     }
 
-    public function available(?User $user = null): Collection
+    public function available(?User $user = null, bool $catalogOnly = false): Collection
     {
         return collect($this->resources)
             ->map(fn (array $resource, string $key): array => $this->normalizeResource($key, $resource))
             ->filter(fn (array $resource): bool => $this->isModuleEnabled($resource))
             ->filter(fn (array $resource): bool => $this->userCanAccess($resource, $user))
+            ->filter(fn (array $resource): bool => ! $catalogOnly || (bool) ($resource['visible_in_catalog'] ?? true))
             ->values();
     }
 
-    public function findAvailable(string $key, ?User $user = null): ?array
+    public function findAvailable(string $key, ?User $user = null, bool $catalogOnly = false): ?array
     {
-        return $this->available($user)
+        return $this->available($user, $catalogOnly)
             ->firstWhere('key', $key);
     }
 
@@ -41,7 +42,7 @@ class DataResourceRegistry
 
     public function toFrontendPayload(?User $user = null): array
     {
-        return $this->available($user)
+        return $this->available($user, true)
             ->map(fn (array $resource): array => $this->serializeDefinition($resource))
             ->all();
     }
@@ -99,6 +100,7 @@ class DataResourceRegistry
             'description' => null,
             'source_module' => 'core-platform',
             'permission_key' => null,
+            'visible_in_catalog' => true,
             'default_sort' => [
                 'field' => 'id',
                 'direction' => 'desc',

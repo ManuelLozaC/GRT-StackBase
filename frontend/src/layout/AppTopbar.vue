@@ -47,7 +47,7 @@ async function switchOrganization(event) {
 
     toast.add({
         severity: 'success',
-        summary: 'Organizacion actualizada',
+        summary: 'Empresa actualizada',
         detail: 'El contexto activo de trabajo ya cambio.',
         life: 2500
     });
@@ -178,7 +178,7 @@ async function toggleThemePreference() {
                         <button type="button" class="topbar-impersonation-button" @click="leaveImpersonation">Salir</button>
                     </div>
                     <label v-if="organizations.length > 0" class="topbar-organization-switcher">
-                        <span>Organizacion</span>
+                        <span>Empresa</span>
                         <select :value="activeOrganizationId" :disabled="tenantStore.state.switchingOrganization" @change="switchOrganization">
                             <option v-for="organization in organizations" :key="organization.id" :value="organization.id">
                                 {{ organization.nombre }}

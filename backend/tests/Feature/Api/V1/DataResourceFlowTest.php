@@ -614,6 +614,34 @@ CSV);
         ]);
     }
 
+    public function test_resource_catalog_hides_legacy_transitional_resources_but_keeps_them_accessible(): void
+    {
+        $this->seed(RolePermissionSeeder::class);
+
+        [$user, $token] = $this->authenticateUser();
+        $user->assignRole('admin');
+
+        $catalogResponse = $this->withHeader('Authorization', 'Bearer '.$token)
+            ->getJson('/api/v1/data/resources')
+            ->assertOk();
+
+        $resourceKeys = collect($catalogResponse->json('datos'))->pluck('key')->all();
+
+        $this->assertContains('organizations', $resourceKeys);
+        $this->assertContains('offices', $resourceKeys);
+        $this->assertNotContains('tenant-companies', $resourceKeys);
+        $this->assertNotContains('tenant-branches', $resourceKeys);
+        $this->assertNotContains('tenant-teams', $resourceKeys);
+
+        $this->withHeader('Authorization', 'Bearer '.$token)
+            ->postJson('/api/v1/data/tenant-companies', [
+                'nombre' => 'Legacy Company',
+                'slug' => 'legacy-company',
+            ])
+            ->assertOk()
+            ->assertJsonPath('datos.nombre', 'Legacy Company');
+    }
+
     protected function authenticateUser(): array
     {
         $organization = Organizacion::query()->create([
