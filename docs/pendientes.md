@@ -211,8 +211,8 @@ Estado: En progreso
 - [x] Campanita con contador basico.
 - [x] Demo funcional de notificaciones dentro del `Demo Module`.
 - [ ] Email real.
-- [ ] SMS / WhatsApp real.
-- [ ] Push real si aplica.
+- [ ] SMS / WhatsApp real. // no avanzar de momento
+- [ ] Push real si aplica. 
 - [x] Preferencias por usuario.
 - [x] Historial base de entregas por canal.
 - [ ] Reintentos reales por canal e integraciones externas.
