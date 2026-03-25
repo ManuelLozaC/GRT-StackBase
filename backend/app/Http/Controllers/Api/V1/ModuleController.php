@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api\V1;
 
 use App\Core\Audit\Services\AuditLogger;
 use App\Core\Http\Concerns\ApiResponse;
+use App\Core\Metrics\MetricsRecorder;
 use App\Core\Modules\ModuleRegistry;
 use App\Core\Security\SecurityLogger;
 use App\Http\Controllers\Controller;
@@ -18,6 +19,7 @@ class ModuleController extends Controller
     public function __construct(
         protected AuditLogger $auditLogger,
         protected SecurityLogger $securityLogger,
+        protected MetricsRecorder $metrics,
     ) {
     }
 
@@ -73,6 +75,16 @@ class ModuleController extends Controller
             actor: $request->user(),
             severity: 'warning',
             summary: 'Se actualizo el estado de un modulo.',
+            context: [
+                'module_key' => $moduleKey,
+                'enabled' => (bool) $request->boolean('enabled'),
+            ],
+        );
+        $this->metrics->record(
+            moduleKey: 'core-platform',
+            eventKey: 'module.status.updated',
+            eventCategory: 'modules',
+            actor: $request->user(),
             context: [
                 'module_key' => $moduleKey,
                 'enabled' => (bool) $request->boolean('enabled'),

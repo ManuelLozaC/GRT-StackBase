@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api\V1;
 
 use App\Core\Audit\Services\AuditLogger;
 use App\Core\Http\Concerns\ApiResponse;
+use App\Core\Metrics\MetricsRecorder;
 use App\Core\Notifications\Models\CoreNotification;
 use App\Core\Notifications\Services\NotificationCenter;
 use App\Http\Controllers\Controller;
@@ -18,6 +19,7 @@ class NotificationController extends Controller
     public function __construct(
         protected NotificationCenter $notifications,
         protected AuditLogger $auditLogger,
+        protected MetricsRecorder $metrics,
     ) {
     }
 
@@ -64,6 +66,15 @@ class NotificationController extends Controller
             summary: 'Se marco una notificacion como leida',
             sourceModule: 'core-platform',
         );
+        $this->metrics->record(
+            moduleKey: 'core-platform',
+            eventKey: 'notification.read',
+            eventCategory: 'notifications',
+            actor: $user,
+            context: [
+                'notification_uuid' => $notification->uuid,
+            ],
+        );
 
         return $this->successResponse(
             data: $this->transformNotification($notification),
@@ -84,6 +95,15 @@ class NotificationController extends Controller
             entityKey: 'bulk',
             summary: 'Se marcaron todas las notificaciones como leidas',
             sourceModule: 'core-platform',
+            context: [
+                'updated_count' => $updatedCount,
+            ],
+        );
+        $this->metrics->record(
+            moduleKey: 'core-platform',
+            eventKey: 'notification.read_all',
+            eventCategory: 'notifications',
+            actor: $user,
             context: [
                 'updated_count' => $updatedCount,
             ],

@@ -7,6 +7,7 @@ use App\Core\Files\Models\FileDownload;
 use App\Core\Files\Models\ManagedFile;
 use App\Core\Files\Services\FileManager;
 use App\Core\Http\Concerns\ApiResponse;
+use App\Core\Metrics\MetricsRecorder;
 use App\Core\Modules\ModuleSettingsManager;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\V1\Demo\CreateTemporaryFileLinkRequest;
@@ -24,6 +25,7 @@ class DemoFileController extends Controller
         protected FileManager $fileManager,
         protected AuditLogger $auditLogger,
         protected ModuleSettingsManager $moduleSettings,
+        protected MetricsRecorder $metrics,
     ) {
     }
 
@@ -68,6 +70,15 @@ class DemoFileController extends Controller
                 'size_bytes' => $file->size_bytes,
             ],
         );
+        $this->metrics->record(
+            moduleKey: 'demo-platform',
+            eventKey: 'demo.file.uploaded',
+            eventCategory: 'files',
+            actor: $user,
+            context: [
+                'file_uuid' => $file->uuid,
+            ],
+        );
 
         return $this->successResponse(
             data: $this->transformFile($file->load('uploader:id,name')),
@@ -100,6 +111,16 @@ class DemoFileController extends Controller
                 'original_name' => $file->original_name,
             ],
         );
+        $this->metrics->record(
+            moduleKey: 'demo-platform',
+            eventKey: 'demo.file.downloaded',
+            eventCategory: 'files',
+            actor: $user,
+            context: [
+                'file_uuid' => $file->uuid,
+                'channel' => 'direct',
+            ],
+        );
 
         return $this->fileManager->downloadResponse($file);
     }
@@ -125,6 +146,15 @@ class DemoFileController extends Controller
             sourceModule: 'demo-platform',
             context: [
                 'ttl_minutes' => $ttlMinutes,
+            ],
+        );
+        $this->metrics->record(
+            moduleKey: 'demo-platform',
+            eventKey: 'demo.file.temporary_link.generated',
+            eventCategory: 'files',
+            actor: $request->user(),
+            context: [
+                'file_uuid' => $file->uuid,
             ],
         );
 

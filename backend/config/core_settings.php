@@ -98,6 +98,18 @@ return [
                 ['label' => 'Euro (EUR)', 'value' => 'EUR'],
             ],
         ],
+        [
+            'key' => 'timezone',
+            'label' => 'Zona horaria por defecto',
+            'type' => 'select',
+            'default' => 'America/La_Paz',
+            'options' => [
+                ['label' => 'America/La_Paz', 'value' => 'America/La_Paz'],
+                ['label' => 'UTC', 'value' => 'UTC'],
+                ['label' => 'America/New_York', 'value' => 'America/New_York'],
+                ['label' => 'Europe/Madrid', 'value' => 'Europe/Madrid'],
+            ],
+        ],
     ],
     'user' => [
         [
@@ -112,6 +124,18 @@ return [
             ],
         ],
         [
+            'key' => 'locale',
+            'label' => 'Locale preferido',
+            'type' => 'select',
+            'default' => 'inherit',
+            'options' => [
+                ['label' => 'Heredar de la organizacion', 'value' => 'inherit'],
+                ['label' => 'EspaÃ±ol (Bolivia)', 'value' => 'es-BO'],
+                ['label' => 'EspaÃ±ol (EspaÃ±a)', 'value' => 'es-ES'],
+                ['label' => 'English (US)', 'value' => 'en-US'],
+            ],
+        ],
+        [
             'key' => 'date_format',
             'label' => 'Formato de fecha preferido',
             'type' => 'select',
@@ -121,6 +145,31 @@ return [
                 ['label' => 'DD/MM/YYYY', 'value' => 'DD/MM/YYYY'],
                 ['label' => 'YYYY-MM-DD', 'value' => 'YYYY-MM-DD'],
                 ['label' => 'MM/DD/YYYY', 'value' => 'MM/DD/YYYY'],
+            ],
+        ],
+        [
+            'key' => 'currency_code',
+            'label' => 'Moneda preferida',
+            'type' => 'select',
+            'default' => 'inherit',
+            'options' => [
+                ['label' => 'Heredar de la organizacion', 'value' => 'inherit'],
+                ['label' => 'Boliviano (BOB)', 'value' => 'BOB'],
+                ['label' => 'DÃ³lar (USD)', 'value' => 'USD'],
+                ['label' => 'Euro (EUR)', 'value' => 'EUR'],
+            ],
+        ],
+        [
+            'key' => 'timezone',
+            'label' => 'Zona horaria preferida',
+            'type' => 'select',
+            'default' => 'inherit',
+            'options' => [
+                ['label' => 'Heredar de la organizacion', 'value' => 'inherit'],
+                ['label' => 'America/La_Paz', 'value' => 'America/La_Paz'],
+                ['label' => 'UTC', 'value' => 'UTC'],
+                ['label' => 'America/New_York', 'value' => 'America/New_York'],
+                ['label' => 'Europe/Madrid', 'value' => 'Europe/Madrid'],
             ],
         ],
         [

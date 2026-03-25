@@ -38,6 +38,8 @@ Backend API-first construido con Laravel 12.
 - Administracion de usuarios con multi-rol e impersonacion auditada.
 - Request IDs en header/respuesta API, rate limiting base y security logs tenant-aware.
 - Operations overview administrativo para jobs, transfers, notificaciones, archivos, auditoria y seguridad.
+- Error logs tecnicos para excepciones no controladas y metricas internas por tenant/modulo/categoria.
+- Locale, moneda, zona horaria y tema ya pueden resolverse desde settings persistidos.
 - `core-platform` y `demo-platform` declarados.
 
 ## Endpoints base actuales
@@ -71,7 +73,9 @@ Backend API-first construido con Laravel 12.
 - `GET /api/v1/users`
 - `PATCH /api/v1/users/{user}/roles`
 - `GET /api/v1/operations/overview`
+- `GET /api/v1/metrics/overview`
 - `GET /api/v1/security/logs`
+- `GET /api/v1/error-logs`
 - `GET /api/v1/demo/files`
 - `POST /api/v1/demo/files`
 - `GET /api/v1/demo/files/downloads`
@@ -98,7 +102,7 @@ php artisan config:clear
 ```
 
 ## Verificacion reciente
-- `php artisan test` pasando con 50 tests.
+- `php artisan test` pasando con 52 tests.
 - Integridad de migraciones corregida para evitar duplicados y desalineacion del esquema base.
 - Arbol HTTP legacy no enroutado eliminado para reducir deriva arquitectonica.
 - Bootstrap RBAC inicial sin duplicidad de seeders.

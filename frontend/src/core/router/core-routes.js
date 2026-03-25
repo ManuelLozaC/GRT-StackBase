@@ -43,6 +43,14 @@ export const coreRoutes = [
                 component: () => import('@/views/pages/OperationsOverview.vue')
             },
             {
+                path: '/admin/metrics',
+                name: 'usage-metrics',
+                meta: {
+                    permissionKey: 'security.manage'
+                },
+                component: () => import('@/views/pages/UsageMetrics.vue')
+            },
+            {
                 path: '/admin/modules',
                 name: 'system-modules',
                 meta: {
@@ -73,6 +81,14 @@ export const coreRoutes = [
                     permissionKey: 'security.manage'
                 },
                 component: () => import('@/views/pages/SecurityLogs.vue')
+            },
+            {
+                path: '/admin/errors',
+                name: 'error-logs',
+                meta: {
+                    permissionKey: 'security.manage'
+                },
+                component: () => import('@/views/pages/ErrorLogs.vue')
             }
         ]
     },

@@ -18,6 +18,7 @@
                         <li>Settings globales, por organizacion y por usuario con feature flags base</li>
                         <li>Servicios de archivos, jobs, auditoria y notificaciones internas/multicanal base</li>
                         <li>Request IDs, rate limiting base y vistas operativas de seguridad/operations para soporte</li>
+                        <li>Error logs, metricas internas y formato locale-aware ya forman parte del core operativo</li>
                         <li>Respuesta estandar en `api/v1`</li>
                     </ul>
                 </div>
@@ -36,6 +37,7 @@
                         <li>La demo de notificaciones ya expone canales, entregas y estados operativos</li>
                         <li>Shell con banner global y feedback HTTP transversal</li>
                         <li>El shell ya incluye `Security Logs` y `Operations Overview` para visibilidad del tenant activo</li>
+                        <li>La shell administrativa ya suma `Error Logs` y `Usage Metrics` sin depender de wiring legacy</li>
                     </ul>
                 </div>
             </div>

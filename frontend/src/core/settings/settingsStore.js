@@ -106,6 +106,23 @@ export const settingsStore = {
     userSettings: computed(() => state.user),
     featureFlags: computed(() => state.featureFlags),
     userTheme: computed(() => getSettingValue('user', 'theme', 'system')),
+    resolvedPreferences: computed(() => {
+        const organizationLocale = getSettingValue('organization', 'locale', 'es-BO');
+        const organizationDateFormat = getSettingValue('organization', 'date_format', 'DD/MM/YYYY');
+        const organizationCurrency = getSettingValue('organization', 'currency_code', 'BOB');
+        const organizationTimezone = getSettingValue('organization', 'timezone', 'America/La_Paz');
+        const userLocale = getSettingValue('user', 'locale', 'inherit');
+        const userDateFormat = getSettingValue('user', 'date_format', 'inherit');
+        const userCurrency = getSettingValue('user', 'currency_code', 'inherit');
+        const userTimezone = getSettingValue('user', 'timezone', 'inherit');
+
+        return {
+            locale: userLocale !== 'inherit' ? userLocale : organizationLocale,
+            date_format: userDateFormat !== 'inherit' ? userDateFormat : organizationDateFormat,
+            currency_code: userCurrency !== 'inherit' ? userCurrency : organizationCurrency,
+            timezone: userTimezone !== 'inherit' ? userTimezone : organizationTimezone
+        };
+    }),
     initialize,
     updateGlobal,
     updateOrganization,

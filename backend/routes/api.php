@@ -9,8 +9,10 @@ use App\Http\Controllers\Api\V1\Demo\DemoNotificationController;
 use App\Http\Controllers\Api\V1\HealthCheckController;
 use App\Http\Controllers\Api\V1\ModuleController;
 use App\Http\Controllers\Api\V1\ModuleSettingController;
+use App\Http\Controllers\Api\V1\MetricsOverviewController;
 use App\Http\Controllers\Api\V1\NotificationController;
 use App\Http\Controllers\Api\V1\OperationsOverviewController;
+use App\Http\Controllers\Api\V1\ErrorLogController;
 use App\Http\Controllers\Api\V1\SecurityLogController;
 use App\Http\Controllers\Api\V1\SettingController;
 use App\Http\Controllers\Api\V1\UserManagementController;
@@ -78,7 +80,9 @@ Route::prefix('v1')->group(function (): void {
         });
 
         Route::middleware('permission:security.manage')->get('/security/logs', [SecurityLogController::class, 'index']);
+        Route::middleware('permission:security.manage')->get('/error-logs', [ErrorLogController::class, 'index']);
         Route::middleware('permission:security.manage')->get('/operations/overview', OperationsOverviewController::class);
+        Route::middleware('permission:security.manage')->get('/metrics/overview', MetricsOverviewController::class);
 
         Route::middleware('permission:modules.manage')->group(function (): void {
             Route::patch('/modules/{moduleKey}', [ModuleController::class, 'updateStatus']);

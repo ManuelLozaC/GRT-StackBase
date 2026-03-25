@@ -59,6 +59,9 @@
 - [x] Rate limiting base para auth, escrituras de datos y descargas.
 - [x] Logs de seguridad tenant-aware con vista administrativa.
 - [x] Operations overview administrativo para jobs, transfers, notificaciones, archivos, auditoria y seguridad.
+- [x] Error logs tecnicos tenant-aware para excepciones no controladas.
+- [x] Metricas internas base por tenant, modulo y categoria.
+- [x] Aplicacion real de locale, moneda y zona horaria desde settings.
 
 ### Brechas principales
 - [ ] RBAC completo.
@@ -261,7 +264,7 @@ Estado: En progreso
 - [x] Vista demo de auditoria dentro del `Demo Module`.
 - [x] Security logs administrativos con request ID, actor e IP.
 - [x] Vista administrativa de operations overview.
-- [ ] Logs de errores.
+- [x] Logs de errores.
 - [x] Auditoria de impersonacion.
 - [ ] Auditoria de cambios de permisos.
 - [ ] Vista administrativa completa de logs tecnicos y de errores.
@@ -292,11 +295,11 @@ Estado: En progreso
 - [x] Restringir previews sensibles de recuperacion de password a entornos de desarrollo/prueba.
 
 ## P14. Internacionalizacion
-Estado: Pendiente
+Estado: En progreso
 
-- [ ] Formatos globales de fecha.
-- [ ] Formatos de moneda.
-- [ ] Zona horaria por tenant y usuario.
+- [x] Formatos globales de fecha.
+- [x] Formatos de moneda.
+- [x] Zona horaria por tenant y usuario.
 - [ ] Base para traducciones si se decide multi-idioma.
 
 ## P15. Personalizacion UI
@@ -305,7 +308,7 @@ Estado: Parcial
 - [x] Menus dinamicos segun modulos habilitados.
 - [x] Menus dinamicos segun permisos reales en administracion de modulos.
 - [ ] Extender menus dinamicos segun permisos al resto del sistema.
-- [ ] Tema dark/light persistido.
+- [x] Tema dark/light persistido.
 - [ ] Preferencias de vistas.
 - [ ] Columnas dinamicas.
 
@@ -348,7 +351,7 @@ Estado: Parcial
 ## P19. Manejo de errores
 Estado: En progreso
 
-- [ ] Catalogo de errores controlados backend.
+- [x] Catalogo de errores controlados backend.
 - [ ] Mensajes amigables frontend.
 - [x] Correlation IDs.
 - [ ] Fallbacks de UX.
@@ -357,10 +360,10 @@ Estado: En progreso
 Estado: En progreso
 
 - [x] Resumen operativo base por tenant.
-- [ ] Uso del sistema por tenant.
-- [ ] Uso por modulo.
+- [x] Uso del sistema por tenant.
+- [x] Uso por modulo.
 - [ ] Performance y tiempos de respuesta.
-- [ ] Eventos clave de usuario.
+- [x] Eventos clave de usuario.
 
 ## Siguiente desarrollo recomendado
 1. Scope multi-tenant consistente en modelos, jobs, archivos, auditoria y notificaciones externas.

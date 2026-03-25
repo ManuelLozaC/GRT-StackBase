@@ -36,6 +36,8 @@ const showGlobalErrors = computed(() => settingsStore.featureFlags.value.feature
                 <div v-if="showGlobalErrors && httpError" class="app-banner app-banner-danger">
                     <i class="pi pi-exclamation-triangle"></i>
                     <span>{{ httpError.message }}</span>
+                    <small v-if="httpError.errorCode" class="app-banner-request-id">Code: {{ httpError.errorCode }}</small>
+                    <small v-if="httpError.errorLogId" class="app-banner-request-id">Log: {{ httpError.errorLogId }}</small>
                     <small v-if="httpError.requestId" class="app-banner-request-id">Req: {{ httpError.requestId }}</small>
                     <button type="button" class="app-banner-close" @click="uiFeedbackStore.clearHttpError()">Cerrar</button>
                 </div>

@@ -39,6 +39,12 @@ export const coreMenu = [
                 permissionKey: 'security.manage'
             },
             {
+                label: 'Usage Metrics',
+                icon: 'pi pi-fw pi-wave-pulse',
+                to: '/admin/metrics',
+                permissionKey: 'security.manage'
+            },
+            {
                 label: 'Modules',
                 icon: 'pi pi-fw pi-cog',
                 to: '/admin/modules',
@@ -60,6 +66,12 @@ export const coreMenu = [
                 label: 'Security Logs',
                 icon: 'pi pi-fw pi-shield',
                 to: '/admin/security',
+                permissionKey: 'security.manage'
+            },
+            {
+                label: 'Error Logs',
+                icon: 'pi pi-fw pi-exclamation-circle',
+                to: '/admin/errors',
                 permissionKey: 'security.manage'
             }
         ]

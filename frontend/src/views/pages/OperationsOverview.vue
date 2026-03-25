@@ -1,6 +1,7 @@
 <script setup>
 import StateEmpty from '@/components/core/StateEmpty.vue';
 import StateSkeleton from '@/components/core/StateSkeleton.vue';
+import { formatDateTime } from '@/core/settings/formatters';
 import api from '@/service/api';
 import { computed, onMounted, reactive } from 'vue';
 
@@ -69,10 +70,6 @@ async function loadOverview() {
     }
 }
 
-function formatDate(value) {
-    return value ? new Date(value).toLocaleString() : '-';
-}
-
 function severityFor(level) {
     return (
         {
@@ -128,7 +125,7 @@ onMounted(loadOverview);
                         <Column field="attempts" header="Intentos" style="min-width: 7rem" />
                         <Column field="error_message" header="Error" style="min-width: 16rem" />
                         <Column field="failed_at" header="Fecha" style="min-width: 12rem">
-                            <template #body="slotProps">{{ formatDate(slotProps.data.failed_at) }}</template>
+                            <template #body="slotProps">{{ formatDateTime(slotProps.data.failed_at) }}</template>
                         </Column>
                     </DataTable>
                 </div>
@@ -151,7 +148,7 @@ onMounted(loadOverview);
                         <Column field="records_failed" header="Fallidos" style="min-width: 7rem" />
                         <Column field="error_summary" header="Resumen" style="min-width: 16rem" />
                         <Column field="finished_at" header="Fecha" style="min-width: 12rem">
-                            <template #body="slotProps">{{ formatDate(slotProps.data.finished_at) }}</template>
+                            <template #body="slotProps">{{ formatDateTime(slotProps.data.finished_at) }}</template>
                         </Column>
                     </DataTable>
                 </div>
@@ -170,7 +167,7 @@ onMounted(loadOverview);
 
                 <DataTable v-else :value="state.recentSecurityEvents" dataKey="id">
                     <Column field="occurred_at" header="Fecha" style="min-width: 12rem">
-                        <template #body="slotProps">{{ formatDate(slotProps.data.occurred_at) }}</template>
+                        <template #body="slotProps">{{ formatDateTime(slotProps.data.occurred_at) }}</template>
                     </Column>
                     <Column field="event_key" header="Evento" style="min-width: 14rem" />
                     <Column field="severity" header="Severidad" style="min-width: 8rem">

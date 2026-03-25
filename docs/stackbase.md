@@ -73,6 +73,7 @@ Su objetivo es:
 - Base multicanal de notificaciones con preferencias, feature flags y log de entregas por canal.
 - Request IDs propagados en header/respuesta API y rate limiting base por tipo de endpoint.
 - Security logs tenant-aware y operations overview administrativo para troubleshooting del core.
+- Error logs tecnicos y metricas internas base por tenant/modulo/categoria.
 - Data Engine universal con CRUD base, filtros, busqueda, paginacion, ordenamiento y soft delete sobre recurso demo.
 - Data Engine con relaciones y custom fields sobre recursos reales.
 - Export/import CSV sobre el Data Engine con historial tenant-aware de corridas.
@@ -117,3 +118,4 @@ Su objetivo es:
 - La administracion no debe permitir activar modulos con dependencias rotas ni desactivar modulos protegidos del core.
 - La experiencia operativa del core debe ser visible mediante demos funcionales, auditoria y estados reutilizables de UX.
 - El runtime debe exponer trazabilidad minima por request y vistas operativas para soporte del tenant activo.
+- Locale, tema y preferencias de presentacion deben poder resolverse desde settings persistidos sin tocar codigo.

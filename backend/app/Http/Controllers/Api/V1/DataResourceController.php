@@ -6,6 +6,7 @@ use App\Core\DataEngine\DataResourceRegistry;
 use App\Core\DataEngine\Models\CoreDataTransferRun;
 use App\Core\DataEngine\Services\DataTransferManager;
 use App\Core\Http\Concerns\ApiResponse;
+use App\Core\Metrics\MetricsRecorder;
 use App\Http\Controllers\Controller;
 use App\Jobs\DataEngine\ProcessDataExportRun;
 use Illuminate\Database\Eloquent\Builder;
@@ -24,6 +25,7 @@ class DataResourceController extends Controller
     public function __construct(
         protected DataResourceRegistry $resources,
         protected DataTransferManager $transfers,
+        protected MetricsRecorder $metrics,
     ) {
     }
 
@@ -114,6 +116,16 @@ class DataResourceController extends Controller
             );
 
             ProcessDataExportRun::dispatch($run->id);
+            $this->metrics->record(
+                moduleKey: (string) ($resource['source_module'] ?? 'core-platform'),
+                eventKey: 'data.export.queued',
+                eventCategory: 'data-engine',
+                actor: $request->user(),
+                context: [
+                    'resource_key' => $resourceKey,
+                    'format' => $format,
+                ],
+            );
 
             return $this->successResponse(
                 data: $this->transfers->serializeRun($run),
@@ -123,6 +135,16 @@ class DataResourceController extends Controller
 
         $query = $this->buildResourceQuery($request, $resource);
         $export = $this->transfers->export($resource, $query, $format, $request->user());
+        $this->metrics->record(
+            moduleKey: (string) ($resource['source_module'] ?? 'core-platform'),
+            eventKey: 'data.export.completed',
+            eventCategory: 'data-engine',
+            actor: $request->user(),
+            context: [
+                'resource_key' => $resourceKey,
+                'format' => $format,
+            ],
+        );
 
         return response($export['content'], 200, [
             'Content-Type' => $export['mime_type'],
@@ -144,6 +166,17 @@ class DataResourceController extends Controller
 
         try {
             $run = $this->transfers->import($resource, $validated['file'], $request->user());
+            $this->metrics->record(
+                moduleKey: (string) ($resource['source_module'] ?? 'core-platform'),
+                eventKey: 'data.import.completed',
+                eventCategory: 'data-engine',
+                actor: $request->user(),
+                context: [
+                    'resource_key' => $resourceKey,
+                    'records_processed' => $run->records_processed,
+                    'records_failed' => $run->records_failed,
+                ],
+            );
         } catch (\Throwable $exception) {
             return $this->errorResponse(
                 message: 'No se pudo importar el archivo CSV',
@@ -211,6 +244,16 @@ class DataResourceController extends Controller
         $modelClass = $resource['model'];
         /** @var Model $record */
         $record = $modelClass::query()->create($payload);
+        $this->metrics->record(
+            moduleKey: (string) ($resource['source_module'] ?? 'core-platform'),
+            eventKey: 'data.record.created',
+            eventCategory: 'data-engine',
+            actor: $request->user(),
+            context: [
+                'resource_key' => $resourceKey,
+                'record_id' => $record->getKey(),
+            ],
+        );
 
         return $this->successResponse(
             data: $this->transformRecord($record->fresh(), $resource),
@@ -234,6 +277,16 @@ class DataResourceController extends Controller
 
         $payload = $this->validatePayload($request, $resource, true);
         $record->fill($payload)->save();
+        $this->metrics->record(
+            moduleKey: (string) ($resource['source_module'] ?? 'core-platform'),
+            eventKey: 'data.record.updated',
+            eventCategory: 'data-engine',
+            actor: $request->user(),
+            context: [
+                'resource_key' => $resourceKey,
+                'record_id' => $record->getKey(),
+            ],
+        );
 
         return $this->successResponse(
             data: $this->transformRecord($record->fresh(), $resource),
@@ -256,6 +309,16 @@ class DataResourceController extends Controller
         }
 
         $record->delete();
+        $this->metrics->record(
+            moduleKey: (string) ($resource['source_module'] ?? 'core-platform'),
+            eventKey: 'data.record.deleted',
+            eventCategory: 'data-engine',
+            actor: $request->user(),
+            context: [
+                'resource_key' => $resourceKey,
+                'record_id' => $record->getKey(),
+            ],
+        );
 
         return $this->successResponse(
             data: null,

@@ -6,6 +6,7 @@ use App\Core\Audit\Services\AuditLogger;
 use App\Core\Auth\Models\PersonalAccessToken;
 use App\Core\Auth\Services\AccessTokenService;
 use App\Core\Http\Concerns\ApiResponse;
+use App\Core\Metrics\MetricsRecorder;
 use App\Core\Security\SecurityLogger;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\V1\UpdateUserRolesRequest;
@@ -23,6 +24,7 @@ class UserManagementController extends Controller
         protected AccessTokenService $tokens,
         protected AuditLogger $auditLogger,
         protected SecurityLogger $securityLogger,
+        protected MetricsRecorder $metrics,
     ) {
     }
 
@@ -69,6 +71,16 @@ class UserManagementController extends Controller
             actor: $request->user(),
             severity: 'warning',
             summary: 'Se actualizaron roles de un usuario.',
+            context: [
+                'target_user_id' => $user->id,
+                'roles' => $user->getRoleNames()->values()->all(),
+            ],
+        );
+        $this->metrics->record(
+            moduleKey: 'core-platform',
+            eventKey: 'user.roles_updated',
+            eventCategory: 'rbac',
+            actor: $request->user(),
             context: [
                 'target_user_id' => $user->id,
                 'roles' => $user->getRoleNames()->values()->all(),
@@ -140,6 +152,16 @@ class UserManagementController extends Controller
             context: [
                 'target_user_id' => $targetUser->id,
                 'target_email' => $targetUser->email,
+            ],
+            organizationId: $actor->organizacion_activa_id,
+        );
+        $this->metrics->record(
+            moduleKey: 'core-platform',
+            eventKey: 'user.impersonation_started',
+            eventCategory: 'support',
+            actor: $actor,
+            context: [
+                'target_user_id' => $targetUser->id,
             ],
             organizationId: $actor->organizacion_activa_id,
         );
@@ -217,6 +239,16 @@ class UserManagementController extends Controller
             context: [
                 'target_user_id' => $currentUser->id,
                 'target_email' => $currentUser->email,
+            ],
+            organizationId: $impersonator->organizacion_activa_id,
+        );
+        $this->metrics->record(
+            moduleKey: 'core-platform',
+            eventKey: 'user.impersonation_finished',
+            eventCategory: 'support',
+            actor: $impersonator,
+            context: [
+                'target_user_id' => $currentUser->id,
             ],
             organizationId: $impersonator->organizacion_activa_id,
         );

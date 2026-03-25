@@ -27,6 +27,7 @@ Resolver una sola vez las capacidades transversales del producto y reutilizarlas
 - Multi-rol, administracion de usuarios e impersonacion con auditoria.
 - Estructuras tenant base (`empresas`, `sucursales`, `equipos`) y base multicanal de notificaciones.
 - Request IDs, rate limiting base, security logs y operations overview administrativo.
+- Error logs, usage metrics y formatos locale-aware aplicados desde settings.
 
 ## Documentacion principal
 

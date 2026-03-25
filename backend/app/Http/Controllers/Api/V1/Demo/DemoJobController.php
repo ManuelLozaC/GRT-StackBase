@@ -6,6 +6,7 @@ use App\Core\Audit\Services\AuditLogger;
 use App\Core\Http\Concerns\ApiResponse;
 use App\Core\Jobs\Models\CoreJobRun;
 use App\Core\Jobs\Services\CoreJobRunner;
+use App\Core\Metrics\MetricsRecorder;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\V1\Demo\DispatchDemoJobRequest;
 use App\Jobs\Demo\ProcessDemoJobRun;
@@ -20,6 +21,7 @@ class DemoJobController extends Controller
     public function __construct(
         protected CoreJobRunner $jobRunner,
         protected AuditLogger $auditLogger,
+        protected MetricsRecorder $metrics,
     ) {
     }
 
@@ -65,6 +67,16 @@ class DemoJobController extends Controller
                 'should_fail' => $request->boolean('should_fail'),
             ],
         );
+        $this->metrics->record(
+            moduleKey: 'demo-platform',
+            eventKey: 'demo.job.dispatched',
+            eventCategory: 'jobs',
+            actor: $user,
+            context: [
+                'job_uuid' => $run->uuid,
+                'mode' => $mode,
+            ],
+        );
 
         if ($mode === 'immediate') {
             $run = $this->jobRunner->runDemoJob($run);
@@ -82,6 +94,16 @@ class DemoJobController extends Controller
                 sourceModule: 'demo-platform',
                 context: [
                     'mode' => $mode,
+                    'status' => $run->status,
+                ],
+            );
+            $this->metrics->record(
+                moduleKey: 'demo-platform',
+                eventKey: $run->status === 'failed' ? 'demo.job.failed' : 'demo.job.completed',
+                eventCategory: 'jobs',
+                actor: $user,
+                context: [
+                    'job_uuid' => $run->uuid,
                     'status' => $run->status,
                 ],
             );

@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api\V1\Auth;
 use App\Core\Auth\Models\PersonalAccessToken;
 use App\Core\Auth\Services\AccessTokenService;
 use App\Core\Http\Concerns\ApiResponse;
+use App\Core\Metrics\MetricsRecorder;
 use App\Core\Security\SecurityLogger;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\V1\Auth\ForgotPasswordRequest;
@@ -27,6 +28,7 @@ class AuthController extends Controller
     public function __construct(
         protected AccessTokenService $tokens,
         protected SecurityLogger $securityLogger,
+        protected MetricsRecorder $metrics,
     ) {
     }
 
@@ -67,6 +69,12 @@ class AuthController extends Controller
             actor: $user,
             severity: 'info',
             summary: 'Sesion iniciada correctamente.',
+        );
+        $this->metrics->record(
+            moduleKey: 'core-platform',
+            eventKey: 'auth.login_succeeded',
+            eventCategory: 'auth',
+            actor: $user,
         );
 
         return $this->successResponse(
@@ -112,6 +120,13 @@ class AuthController extends Controller
             actor: $user,
             severity: 'info',
             summary: 'Se registro un nuevo usuario.',
+            organizationId: $organizacion->id,
+        );
+        $this->metrics->record(
+            moduleKey: 'core-platform',
+            eventKey: 'auth.registered',
+            eventCategory: 'auth',
+            actor: $user,
             organizationId: $organizacion->id,
         );
 
@@ -227,6 +242,12 @@ class AuthController extends Controller
             severity: 'info',
             summary: 'Sesion cerrada.',
         );
+        $this->metrics->record(
+            moduleKey: 'core-platform',
+            eventKey: 'auth.logout',
+            eventCategory: 'auth',
+            actor: $request->user(),
+        );
 
         return $this->successResponse(
             data: null,
@@ -263,6 +284,16 @@ class AuthController extends Controller
             actor: $user,
             severity: 'info',
             summary: 'Se cambio la organizacion activa.',
+            context: [
+                'organizacion_id' => $organizacionId,
+            ],
+            organizationId: $organizacionId,
+        );
+        $this->metrics->record(
+            moduleKey: 'core-platform',
+            eventKey: 'auth.organization_switched',
+            eventCategory: 'tenancy',
+            actor: $user,
             context: [
                 'organizacion_id' => $organizacionId,
             ],

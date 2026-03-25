@@ -1,6 +1,7 @@
 <script setup>
 import StateEmpty from '@/components/core/StateEmpty.vue';
 import StateSkeleton from '@/components/core/StateSkeleton.vue';
+import { formatDateTime } from '@/core/settings/formatters';
 import { moduleCatalog } from '@/core/modules/moduleCatalog';
 import api from '@/service/api';
 import { useConfirm } from 'primevue/useconfirm';
@@ -598,7 +599,7 @@ onMounted(async () => {
                     <Column field="records_failed" header="Errores" style="min-width: 8rem" />
                     <Column field="created_at" header="Creado" style="min-width: 14rem">
                         <template #body="slotProps">
-                            {{ slotProps.data.created_at ? new Date(slotProps.data.created_at).toLocaleString() : 'Sin dato' }}
+                            {{ slotProps.data.created_at ? formatDateTime(slotProps.data.created_at) : 'Sin dato' }}
                         </template>
                     </Column>
                     <Column field="error_summary" header="Resumen" style="min-width: 18rem">

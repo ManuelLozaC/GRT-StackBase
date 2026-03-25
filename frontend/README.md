@@ -29,6 +29,8 @@ Frontend construido con Vue 3, Vite y PrimeVue.
 - Ya existe panel de `System Settings`, preferencias del usuario, banner global y manejo global de errores HTTP.
 - Ya existe administracion de usuarios con multi-rol e impersonacion.
 - Ya existen `Security Logs` y `Operations Overview` para soporte operativo del tenant activo.
+- Ya existen `Error Logs` y `Usage Metrics` para observabilidad base.
+- Fechas y horas visibles del shell ya pueden respetar locale/zona horaria desde settings.
 - El shell ya usa skeleton loaders y empty states reutilizables en pantallas reales.
 
 ## Pantallas relevantes hoy
@@ -46,7 +48,9 @@ Frontend construido con Vue 3, Vite y PrimeVue.
 - `/admin/settings`
 - `/admin/users`
 - `/admin/operations`
+- `/admin/metrics`
 - `/admin/security`
+- `/admin/errors`
 - `/account/preferences`
 
 ## Comandos utiles

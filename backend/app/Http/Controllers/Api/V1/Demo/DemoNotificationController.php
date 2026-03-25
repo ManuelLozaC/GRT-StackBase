@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api\V1\Demo;
 
 use App\Core\Audit\Services\AuditLogger;
 use App\Core\Http\Concerns\ApiResponse;
+use App\Core\Metrics\MetricsRecorder;
 use App\Core\Modules\ModuleSettingsManager;
 use App\Core\Notifications\Services\NotificationCenter;
 use App\Http\Controllers\Controller;
@@ -19,6 +20,7 @@ class DemoNotificationController extends Controller
         protected NotificationCenter $notifications,
         protected AuditLogger $auditLogger,
         protected ModuleSettingsManager $moduleSettings,
+        protected MetricsRecorder $metrics,
     ) {
     }
 
@@ -52,6 +54,15 @@ class DemoNotificationController extends Controller
             context: [
                 'level' => $notification?->level,
                 'title' => $notification?->title ?? $request->string('title')->toString(),
+                'channels' => $deliveries->pluck('channel')->all(),
+            ],
+        );
+        $this->metrics->record(
+            moduleKey: 'demo-platform',
+            eventKey: 'demo.notification.created',
+            eventCategory: 'notifications',
+            actor: $user,
+            context: [
                 'channels' => $deliveries->pluck('channel')->all(),
             ],
         );
