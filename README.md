@@ -20,13 +20,16 @@ Resolver una sola vez las capacidades transversales del producto y reutilizarlas
 - backend Laravel 12 API-first con `api/v1`
 - frontend Vue 3 + Vite + PrimeVue
 - decision de dominio vigente: `organizacion = empresa`
+- login por correo o alias
 - registro modular con `core-platform` y `demo-platform`
 - administracion de modulos con activacion, desactivacion, dependencias y settings
 - Data Engine tenant-aware con relaciones, custom fields e import/export
+- recursos base del dominio ya expuestos en backend por Data Engine
 - settings globales, por organizacion y por usuario
 - multi-rol, administracion de usuarios e impersonacion
 - observabilidad base: request IDs, security logs, error logs y metrics
 - webhooks salientes y entrantes, API tokens y OpenAPI JSON
+- bootstrap oficial inicial con `GRT SRL`, `TalentHub` y `Manuel Loza`
 
 ## Fuente de verdad documental
 
@@ -52,7 +55,7 @@ npm run build
 ## Siguiente foco
 
 - orden documental y fuente unica de verdad
-- bootstrap real del dominio base
 - cierre del modelo organizacional y laboral
+- convergencia total de `organizacion = empresa`
 - tenancy transversal completa
 - storage real con Spaces

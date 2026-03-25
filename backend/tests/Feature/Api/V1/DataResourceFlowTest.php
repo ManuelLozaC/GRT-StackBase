@@ -430,6 +430,96 @@ CSV);
             ->assertJsonPath('datos.custom_fields.canal_origen', 'web');
     }
 
+    public function test_admin_can_manage_base_domain_resources_with_data_engine(): void
+    {
+        $this->seed(RolePermissionSeeder::class);
+
+        [$user, $token] = $this->authenticateUser();
+        $user->assignRole('admin');
+
+        $officeResponse = $this->withHeader('Authorization', 'Bearer '.$token)
+            ->postJson('/api/v1/data/offices', [
+                'nombre' => 'Oficina Norte',
+                'slug' => 'oficina-norte',
+                'codigo' => 'NORTE',
+                'ciudad' => 'Santa Cruz',
+                'pais' => 'Bolivia',
+                'activa' => true,
+            ])
+            ->assertOk();
+
+        $officeId = $officeResponse->json('datos.id');
+
+        $personResponse = $this->withHeader('Authorization', 'Bearer '.$token)
+            ->postJson('/api/v1/data/people', [
+                'nombres' => 'Maria',
+                'apellido_paterno' => 'Suarez',
+                'correo' => 'maria@test.dev',
+                'telefono' => '70000003',
+                'sexo' => 'femenino',
+                'ciudad' => 'Santa Cruz',
+                'pais' => 'Bolivia',
+                'activa' => true,
+            ])
+            ->assertOk();
+
+        $personId = $personResponse->json('datos.id');
+
+        $divisionId = $this->withHeader('Authorization', 'Bearer '.$token)
+            ->postJson('/api/v1/data/divisions', [
+                'nombre' => 'Comercial',
+                'slug' => 'comercial',
+                'activa' => true,
+            ])
+            ->assertOk()
+            ->json('datos.id');
+
+        $areaId = $this->withHeader('Authorization', 'Bearer '.$token)
+            ->postJson('/api/v1/data/areas', [
+                'nombre' => 'Ventas',
+                'slug' => 'ventas',
+                'division_id' => $divisionId,
+                'activa' => true,
+            ])
+            ->assertOk()
+            ->json('datos.id');
+
+        $cargoId = $this->withHeader('Authorization', 'Bearer '.$token)
+            ->postJson('/api/v1/data/positions', [
+                'nombre' => 'Ejecutiva de Ventas',
+                'slug' => 'ejecutiva-de-ventas',
+                'activa' => true,
+            ])
+            ->assertOk()
+            ->json('datos.id');
+
+        $assignmentResponse = $this->withHeader('Authorization', 'Bearer '.$token)
+            ->postJson('/api/v1/data/work-assignments', [
+                'persona_id' => $personId,
+                'oficina_id' => $officeId,
+                'division_id' => $divisionId,
+                'area_id' => $areaId,
+                'cargo_id' => $cargoId,
+                'es_principal' => true,
+                'estado' => 'active',
+                'fecha_inicio' => '2026-03-25',
+            ])
+            ->assertOk();
+
+        $assignmentId = $assignmentResponse->json('datos.id');
+
+        $this->withHeader('Authorization', 'Bearer '.$token)
+            ->getJson('/api/v1/data/work-assignments/'.$assignmentId)
+            ->assertOk()
+            ->assertJsonPath('datos.persona_id', $personId)
+            ->assertJsonPath('datos.persona_id_label', 'Maria')
+            ->assertJsonPath('datos.oficina_id', $officeId)
+            ->assertJsonPath('datos.oficina_id_label', 'Oficina Norte')
+            ->assertJsonPath('datos.division_id_label', 'Comercial')
+            ->assertJsonPath('datos.area_id_label', 'Ventas')
+            ->assertJsonPath('datos.cargo_id_label', 'Ejecutiva de Ventas');
+    }
+
     protected function authenticateUser(): array
     {
         $organization = Organizacion::query()->create([

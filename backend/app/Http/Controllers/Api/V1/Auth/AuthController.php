@@ -34,11 +34,14 @@ class AuthController extends Controller
 
     public function login(LoginRequest $request): JsonResponse
     {
-        $email = $request->string('email')->toString();
+        $login = trim($request->string('email')->toString());
         $password = $request->string('password')->toString();
 
         $user = User::query()
-            ->where('email', $email)
+            ->where(function ($query) use ($login): void {
+                $query->where('email', $login)
+                    ->orWhere('alias', $login);
+            })
             ->first();
 
         if ($user === null || ! Hash::check($password, $user->password)) {
@@ -47,7 +50,7 @@ class AuthController extends Controller
                 severity: 'warning',
                 summary: 'Intento de login fallido.',
                 context: [
-                    'email' => $email,
+                    'login' => $login,
                 ],
                 organizationId: $user?->organizacion_activa_id,
             );
@@ -320,6 +323,7 @@ class AuthController extends Controller
         return [
             'id' => $user->id,
             'name' => $user->name,
+            'alias' => $user->alias,
             'email' => $user->email,
             'organizacion_activa' => $this->transformOrganization($user->organizacionActiva),
             'organizaciones' => $user->organizaciones

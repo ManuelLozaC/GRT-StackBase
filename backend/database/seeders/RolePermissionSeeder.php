@@ -37,7 +37,7 @@ class RolePermissionSeeder extends Seeder
 
         $adminCandidates = [
             'admin@stackbase.local',
-            'cliente.admin@stackbase.local',
+            'mloza@grt.com.bo',
         ];
 
         User::query()

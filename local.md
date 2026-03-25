@@ -158,18 +158,22 @@ docker compose exec frontend npm install
 
 ## 7. Credenciales por defecto
 
-Estado actual del codigo:
+Bootstrap oficial actual:
 
-- el seeder vigente todavia crea un usuario demo y una organizacion demo
-- el bootstrap oficial con `Manuel Loza`, `GRT SRL` y `TalentHub` sigue pendiente de implementacion
-
-Credenciales reales del seeder actual:
-
-- correo: `cliente.admin@stackbase.local`
-- contrasena: `password`
+- organizacion: `GRT SRL`
+- oficina principal: `TalentHub`
+- usuario: `Manuel Loza`
+- alias: `mloza`
+- correo: `mloza@grt.com.bo`
+- contrasena: `admin1984!`
 
 Nota:
-La documentacion del proyecto ya fija como objetivo el bootstrap oficial de Manuel Loza, pero esa semilla aun no esta aplicada en codigo.
+La semilla actual ya crea la base oficial del stack. El siguiente bloque pendiente es ampliar esa base hacia personas, oficinas y asignaciones laborales completas.
+
+Puedes iniciar sesion con:
+
+- `mloza@grt.com.bo`
+- `mloza`
 
 ## 8. Validaciones recomendadas
 

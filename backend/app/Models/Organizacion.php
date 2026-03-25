@@ -51,4 +51,34 @@ class Organizacion extends Model
     {
         return $this->hasMany(Equipo::class);
     }
+
+    public function oficinas(): HasMany
+    {
+        return $this->hasMany(Oficina::class);
+    }
+
+    public function personas(): HasMany
+    {
+        return $this->hasMany(Persona::class);
+    }
+
+    public function divisiones(): HasMany
+    {
+        return $this->hasMany(Division::class);
+    }
+
+    public function areas(): HasMany
+    {
+        return $this->hasMany(Area::class);
+    }
+
+    public function cargos(): HasMany
+    {
+        return $this->hasMany(Cargo::class);
+    }
+
+    public function asignacionesLaborales(): HasMany
+    {
+        return $this->hasMany(AsignacionLaboral::class);
+    }
 }

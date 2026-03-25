@@ -268,6 +268,7 @@ class UserManagementController extends Controller
         return [
             'id' => $user->id,
             'name' => $user->name,
+            'alias' => $user->alias,
             'email' => $user->email,
             'organizacion_activa' => $this->transformOrganization($user->organizacionActiva),
             'organizaciones' => $user->organizaciones

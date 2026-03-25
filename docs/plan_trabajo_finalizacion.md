@@ -99,6 +99,11 @@ Garantizar que una instalacion nueva deja el sistema listo para usar y validar.
 
 - `migrate:fresh --seed` deja el stack en un estado verificable y consistente con la documentacion
 
+Estado actual:
+
+- base oficial inicial ya implementada
+- pendiente: enriquecer bootstrap con el dominio completo de personas, oficinas y estructura laboral
+
 ## Fase 3. Tenancy y RBAC completos para el dominio base
 
 ### Objetivo

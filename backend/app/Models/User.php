@@ -16,9 +16,15 @@ class User extends Authenticatable
     use HasFactory, Notifiable, HasRoles;
 
     protected $fillable = [
+        'persona_id',
         'name',
+        'alias',
         'email',
+        'telefono',
         'password',
+        'activo',
+        'primer_acceso_pendiente',
+        'expira_password_en',
         'organizacion_activa_id',
     ];
 
@@ -32,6 +38,9 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'activo' => 'boolean',
+            'primer_acceso_pendiente' => 'boolean',
+            'expira_password_en' => 'datetime',
         ];
     }
 
@@ -51,9 +60,19 @@ class User extends Authenticatable
         return $this->belongsTo(Organizacion::class, 'organizacion_activa_id');
     }
 
+    public function persona(): BelongsTo
+    {
+        return $this->belongsTo(Persona::class);
+    }
+
     public function equipos(): BelongsToMany
     {
         return $this->belongsToMany(Equipo::class)
             ->withTimestamps();
+    }
+
+    public function asignacionesLaborales(): HasMany
+    {
+        return $this->hasMany(AsignacionLaboral::class, 'user_id');
     }
 }

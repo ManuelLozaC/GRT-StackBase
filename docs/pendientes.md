@@ -10,6 +10,7 @@
 - [x] Endpoint `me`.
 - [x] Registro de usuarios.
 - [x] Recuperacion y reset de password.
+- [x] Login con correo o alias.
 - [x] Organizaciones base y membresias usuario <-> organizacion.
 - [x] Organizacion activa por usuario.
 - [x] Cambio de organizacion activa desde API y frontend.
@@ -71,6 +72,8 @@
 - [x] OpenAPI JSON sincronizado con rutas reales del backend.
 - [x] Headers de seguridad base para respuestas API.
 - [x] Ajustes responsive en pantallas administrativas clave (`modulos`, `operations`, `security`, `API tokens`, `webhooks`).
+- [x] Bootstrap oficial inicial con `GRT SRL`, `TalentHub` y `Manuel Loza`.
+- [x] Recursos base del dominio expuestos por Data Engine: `organizations`, `offices`, `people`, `divisions`, `areas`, `positions`, `work-assignments`.
 
 ### Brechas principales
 - [ ] RBAC completo.
@@ -124,6 +127,7 @@ Estado: En progreso
 - [x] Perfil autenticado (`me`).
 - [x] RBAC inicial para administracion de modulos.
 - [x] Registro de usuarios.
+- [x] Login por alias.
 - [x] Recuperacion y reseteo de password.
 - [x] Token auth inicial.
 - [ ] Ampliar RBAC por endpoint y accion para mas areas del sistema.
@@ -144,6 +148,7 @@ Estado: En progreso
 - [x] Migraciones de empresas.
 - [x] Migraciones de sucursales.
 - [x] Migraciones de equipos.
+- [x] Migraciones base de `oficinas`, `personas`, `divisiones`, `areas`, `cargos` y `asignaciones_laborales`.
 - [ ] Aplicar en codigo y migraciones la decision final `organizacion = empresa`.
 - [ ] Tenant activo por request en todos los servicios backend.
 - [x] Configuracion por tenant.
@@ -154,6 +159,7 @@ Estado: En progreso
 - [x] Base fundacional de tenancy adelgazada para no mezclar catalogos de ubicacion o personas no usados por el core.
 - [x] `TenantContext` compartido para request autenticado y jobs base.
 - [x] CRUD tenant-aware para estructuras `empresa/sucursal/equipo`.
+- [x] CRUD base tenant-aware para `oficinas`, `personas`, `divisiones`, `areas`, `cargos` y `asignaciones_laborales` via Data Engine.
 
 ## P3. Configuracion del sistema
 Estado: En progreso
@@ -381,23 +387,23 @@ Estado: En progreso
 - [x] Eventos clave de usuario.
 
 ## Siguiente desarrollo recomendado
-1. Limpiar documentacion legacy y dejar una sola fuente de verdad operativa.
-2. Aplicar la decision `organizacion = empresa` en dominio, backlog y roadmap.
-3. Rehacer el bootstrap oficial con Manuel Loza, GRT SRL y TalentHub.
-4. Cerrar scope multi-tenant consistente en modelos, jobs, archivos, auditoria y notificaciones externas.
-5. Integrar archivos con Spaces, versionado y entidades de negocio.
+1. Aplicar por completo en codigo la decision `organizacion = empresa`.
+2. Completar el dominio base de oficinas, personas y asignaciones laborales.
+3. Cerrar scope multi-tenant consistente en modelos, jobs, archivos, auditoria y notificaciones externas.
+4. Integrar archivos con Spaces, versionado y entidades de negocio.
+5. Seguir con endurecimiento operativo local -> Droplet.
 
 ## Objetivos inmediatos desde aqui en adelante
-1. Cerrar por completo la limpieza documental residual y evitar volver a abrir documentos paralelos.
-2. Aplicar en codigo la decision `organizacion = empresa` y definir la estructura laboral final.
-3. Reemplazar el bootstrap demo por el bootstrap oficial del stack base.
-4. Completar los CRUDs base de organizaciones, oficinas, personas, usuarios y asignaciones laborales.
-5. Seguir con tenancy transversal, Spaces y endurecimiento operativo local -> Droplet.
+1. Aplicar en codigo la decision `organizacion = empresa` y definir la estructura laboral final.
+2. Completar los CRUDs base de organizaciones, oficinas, personas, usuarios y asignaciones laborales.
+3. Seguir con tenancy transversal en modelos, jobs, archivos y auditoria.
+4. Integrar Spaces y endurecer la operacion local -> Droplet.
+5. Mantener visibles los objetivos de mediano plazo: pruebas frontend, CI y release 1.0.
 
 ## Indicador de avance global
 
-- Avance global estimado del proyecto: `72%`
-- Trabajo restante estimado para cerrar esta version base: `28%`
+- Avance global estimado del proyecto: `80%`
+- Trabajo restante estimado para cerrar esta version base: `20%`
 
 Lectura del porcentaje:
 

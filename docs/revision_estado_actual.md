@@ -35,6 +35,7 @@ El proyecto ya puede considerarse una plataforma avanzada en construccion, pero 
 - auth real con login, register, reset, `me`, cambio de organizacion e impersonacion
 - metadata modular y administracion de modulos
 - Data Engine con CRUD, import/export y transfer runs
+- recursos base del dominio ya gestionables desde Data Engine
 - settings globales, por organizacion y por usuario
 - observabilidad base: logs de seguridad, logs de error, metricas y operations overview
 - webhooks salientes y entrantes con trazabilidad
@@ -55,9 +56,8 @@ El proyecto ya puede considerarse una plataforma avanzada en construccion, pero 
 
 ## Hallazgos prioritarios vigentes
 
-### P0. El bootstrap de instalacion no representa el dominio acordado
-
-El seeder de instalacion sigue creando un tenant demo y un usuario demo generico, no la base oficial definida para el stack.
+### P0. El bootstrap oficial ya existe, pero todavia es una base inicial y no el dominio completo
+La semilla oficial ya crea `GRT SRL`, `TalentHub` y `Manuel Loza`. El pendiente ahora ya no es "tener bootstrap", sino expandir ese bootstrap hacia el dominio completo de personas, oficinas y estructura laboral.
 
 Evidencia:
 
@@ -66,13 +66,12 @@ Evidencia:
 
 Impacto:
 
-- el primer arranque no deja el sistema en el estado de negocio esperado
-- onboarding y QA siguen partiendo de datos ficticios
-- el principal pendiente ya no es documental, sino de bootstrap real
+- onboarding y QA ya parten de datos base reales
+- el siguiente nivel pendiente es enriquecer ese arranque con el resto del dominio base
 
 ### P0. El modelo tenant y el modelo organizacional ya tienen decisiones clave cerradas, pero aun no estan aplicados extremo a extremo
 
-La decision documental `organizacion = empresa` ya quedo cerrada, pero el runtime todavia debe converger por completo hacia ese modelo y hacia la estructura laboral definida.
+La decision documental `organizacion = empresa` ya quedo cerrada, y el runtime ya sumo recursos base reales para oficinas, personas y asignaciones laborales. Aun asi, todavia falta converger por completo hacia ese modelo y endurecerlo en todo el sistema.
 
 Lo que aun debe aterrizarse:
 
@@ -184,10 +183,9 @@ Impacto:
 
 La plataforma va por buen camino. El principal riesgo hoy ya no es el desorden documental; ese bloque quedo bastante mejor resuelto. El principal riesgo ahora es de cierre funcional:
 
-1. bootstrap oficial
-2. dominio organizacional y laboral definitivo
-3. tenancy transversal
-4. paridad local -> Droplet
-5. pruebas y release
+1. dominio organizacional y laboral definitivo
+2. tenancy transversal
+3. paridad local -> Droplet
+4. pruebas y release
 
 El plan de trabajo para resolver eso vive en [`docs/plan_trabajo_finalizacion.md`](/D:/Desarrollo/GRT-StackBase/docs/plan_trabajo_finalizacion.md).

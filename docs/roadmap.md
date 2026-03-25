@@ -15,8 +15,10 @@ Fecha de referencia: `2026-03-25`
 - Docker Compose con backend, frontend, MySQL, Redis y Meilisearch
 - backend Laravel 12 con API `v1`
 - auth base: login, logout, `me`, registro y reset
+- login por correo o alias
 - metadata modular y administracion de modulos
 - Data Engine con CRUD, relaciones, custom fields e import/export
+- recursos base del dominio ya expuestos en backend por Data Engine
 - settings globales, por organizacion y por usuario
 - multi-rol, impersonacion y administracion base de usuarios
 - observabilidad base: request IDs, logs, metricas y operations overview
@@ -28,16 +30,21 @@ Fecha de referencia: `2026-03-25`
 - tenancy transversal en todo el dominio
 - endurecimiento del contrato modular
 - cierre del dominio base reutilizable
-- bootstrap oficial de instalacion
 - integracion real con Spaces
 
 ### Pendiente clave
 
 - aplicar en codigo la decision `organizacion = empresa`
 - cerrar modelo de oficinas, personas y asignaciones laborales
-- reemplazar bootstrap demo por bootstrap oficial
 - agregar pruebas frontend y pipeline de calidad
 - documentar despliegue real en Droplets
+
+### Reciente
+
+- bootstrap oficial inicial ya implementado con `GRT SRL`, `TalentHub` y `Manuel Loza`
+- `DatabaseSeeder` ya usa una sola entrada oficial de instalacion
+- pruebas de bootstrap idempotente ya agregadas al backend
+- recursos base del dominio ya existen en backend para oficinas, personas y asignaciones laborales
 
 ## Fases vigentes
 

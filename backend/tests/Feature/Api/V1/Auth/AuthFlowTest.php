@@ -50,6 +50,34 @@ class AuthFlowTest extends TestCase
             ]);
     }
 
+    public function test_user_can_login_with_alias_and_retrieve_profile(): void
+    {
+        $organizacion = Organizacion::query()->create([
+            'nombre' => 'Alias Org',
+            'slug' => 'alias-org',
+        ]);
+
+        $user = User::factory()->create([
+            'alias' => 'mloza',
+            'email' => 'mloza@grt.com.bo',
+            'password' => 'admin1984!',
+            'organizacion_activa_id' => $organizacion->id,
+        ]);
+
+        $user->organizaciones()->attach($organizacion->id);
+
+        $loginResponse = $this->postJson('/api/v1/auth/login', [
+            'email' => 'mloza',
+            'password' => 'admin1984!',
+            'device_name' => 'phpunit-alias',
+        ]);
+
+        $loginResponse
+            ->assertOk()
+            ->assertJsonPath('datos.user.alias', 'mloza')
+            ->assertJsonPath('datos.user.email', 'mloza@grt.com.bo');
+    }
+
     public function test_invalid_credentials_are_rejected(): void
     {
         User::factory()->create([
