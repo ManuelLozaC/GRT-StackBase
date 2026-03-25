@@ -17,6 +17,7 @@ Backend API-first construido con Laravel 12.
 - Dependencias modulares basicas bloqueadas al activar/desactivar; `core-platform` queda protegido.
 - Listado de modulos disponible para cualquier usuario autenticado; el toggle sigue protegido por permiso.
 - `TenantContext` compartido para request autenticado, jobs base, notificaciones internas y descargas base.
+- Aislamiento por tenant cubierto con tests para notificaciones, archivos, descargas y auditoria demo.
 - Migraciones fundacionales separadas por responsabilidad.
 - Registro de modulos.
 - Persistencia de modulos en `system_modules`.
@@ -60,7 +61,7 @@ php artisan config:clear
 ```
 
 ## Verificacion reciente
-- `php artisan test` pasando con 26 tests.
+- `php artisan test` pasando con 29 tests.
 - Integridad de migraciones corregida para evitar duplicados y desalineacion del esquema base.
 - Arbol HTTP legacy no enroutado eliminado para reducir deriva arquitectonica.
 - Bootstrap RBAC inicial sin duplicidad de seeders.

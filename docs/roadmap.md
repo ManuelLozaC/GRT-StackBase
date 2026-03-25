@@ -32,6 +32,7 @@ Fecha de referencia: `2026-03-25`
 - `Demo Module` inicial con guard de acceso por estado del modulo.
 - Frontend ya consume `sessionStore`, `tenantStore` y `accessStore` directamente, sin fachada `authStore`.
 - Tenancy base extendida a notificaciones internas y descargas de archivos para reducir filtros manuales por organizacion.
+- Aislamiento por tenant validado con pruebas automatizadas en notificaciones, archivos, descargas y auditoria demo.
 - Base de archivos en core con upload, descarga directa, signed URLs e historial.
 - Base de jobs en core con dispatch, estados, logs y demo funcional.
 - Base de auditoria transversal con eventos para modulos, archivos y jobs.
@@ -43,6 +44,7 @@ Fecha de referencia: `2026-03-25`
 ### En progreso
 - Estructura `core/modules` ya creada y el `Demo Module` ya usa bootstrap por API; el contrato de modulos ya bloquea dependencias basicas, pero todavia debe crecer para futuros modulos.
 - Tenancy base ya existe y se reforzo en notificaciones/descargas, pero falta propagarla de forma consistente a todo el dominio.
+- El frontend ya refresca el catalogo modular completo tras toggles para no conservar estados operativos stale.
 - `Demo Module` ya existe y ya contiene demos funcionales de archivos, jobs, auditoria y notificaciones. Sigue pendiente export/import.
 - Persisten deudas operativas menores ligadas sobre todo a tenancy transversal, UX global y definicion formal del contrato modular.
 
@@ -137,8 +139,8 @@ Un nuevo sistema debe poder ensamblarse con:
 El backlog detallado vive en `docs/pendientes.md`.
 
 ## Resumen actual
-- Logrado: kernel modular, auth API, registro, reset de password, RBAC inicial, tenancy base, archivos, jobs, auditoria y notificaciones internas ya funcionan en backend y frontend con demos activables desde `Demo Module`; ademas la integridad del repositorio quedo estabilizada, la capa legacy principal fue retirada y todo quedo verificado con tests/build.
+- Logrado: kernel modular, auth API, registro, reset de password, RBAC inicial, tenancy base, archivos, jobs, auditoria y notificaciones internas ya funcionan en backend y frontend con demos activables desde `Demo Module`; ademas la integridad del repositorio quedo estabilizada, la capa legacy principal fue retirada, el contrato modular ya evita estados invalidos y el aislamiento por tenant quedo cubierto con pruebas automatizadas.
 - Pendiente: completar multi-tenant transversal, CRUD universal, export/import, integraciones de storage y notificaciones multicanal, mas observabilidad y seguridad operativa, y generalizar el contrato `core + modules` para nuevos modulos.
 - Pendiente tecnico residual: seguir endureciendo el core en tenancy transversal, CRUD generico, settings/permisos operativos por modulo y catalogos universales realmente necesarios.
 
-Avance global estimado del roadmap: 86% completado.
+Avance global estimado del roadmap: 88% completado.

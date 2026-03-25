@@ -40,6 +40,7 @@
 - [x] Bloqueo operativo basico de dependencias entre modulos al activar/desactivar.
 - [x] Retiro de la fachada `authStore`; frontend ya consume stores separados directamente.
 - [x] Tenancy mas consistente en notificaciones internas y descargas de archivos base.
+- [x] Validacion automatizada de aislamiento por tenant en notificaciones, archivos, descargas y auditoria demo.
 
 ### Brechas principales
 - [ ] RBAC completo.
@@ -113,6 +114,7 @@ Estado: En progreso
 - [ ] Configuracion por tenant.
 - [ ] Scope multi-tenant consistente en modelos, jobs, archivos y auditoria.
 - [x] Extender tenancy base a notificaciones y descargas de archivos para reducir filtros manuales por organizacion.
+- [x] Cubrir con tests el aislamiento por tenant en archivos, descargas, notificaciones y auditoria demo.
 - [x] Base fundacional de tenancy adelgazada para no mezclar catalogos de ubicacion o personas no usados por el core.
 - [x] `TenantContext` compartido para request autenticado y jobs base.
 
@@ -285,6 +287,7 @@ Estado: En progreso
 - [x] Separar migraciones fundacionales por responsabilidad (`organizaciones`, `users`, `organizacion_user`).
 - [x] Depurar `core-menu` para dejar solo shell realmente transversal del producto.
 - [x] Convertir bootstrap modular frontend a metadata consumida por API.
+- [x] Refrescar catalogo modular completo tras toggles para no dejar estados derivados desfasados en frontend.
 - [ ] Reducir mas el shell core a rutas/utilidades estrictamente transversales.
 
 ## P17. Higiene tecnica y operativa

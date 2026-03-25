@@ -120,6 +120,104 @@ class DemoFileFlowTest extends TestCase
         ]);
     }
 
+    public function test_files_and_downloads_are_scoped_by_active_organization(): void
+    {
+        Storage::fake('local');
+        config(['filesystems.default' => 'local']);
+
+        [$user, $token, $primaryOrganization, $secondaryOrganization] = $this->authenticateUserWithTwoOrganizations();
+
+        $user->forceFill([
+            'organizacion_activa_id' => $primaryOrganization->id,
+        ])->save();
+
+        $primaryFile = app(FileManager::class)->storeUploadedFile(
+            UploadedFile::fake()->createWithContent('primary-tenant.txt', 'primary'),
+            $user->fresh(),
+            ['source' => 'phpunit'],
+        );
+
+        $this->withHeader('Authorization', 'Bearer '.$token)
+            ->get('/api/v1/demo/files/'.$primaryFile->uuid.'/download')
+            ->assertOk();
+
+        $user->forceFill([
+            'organizacion_activa_id' => $secondaryOrganization->id,
+        ])->save();
+
+        $secondaryFile = app(FileManager::class)->storeUploadedFile(
+            UploadedFile::fake()->createWithContent('secondary-tenant.txt', 'secondary'),
+            $user->fresh(),
+            ['source' => 'phpunit'],
+        );
+
+        $this->withHeader('Authorization', 'Bearer '.$token)
+            ->patchJson('/api/v1/auth/active-organization', [
+                'organizacion_id' => $secondaryOrganization->id,
+            ])
+            ->assertOk();
+
+        $this->withHeader('Authorization', 'Bearer '.$token)
+            ->get('/api/v1/demo/files/'.$secondaryFile->uuid.'/download')
+            ->assertOk();
+
+        $this->withHeader('Authorization', 'Bearer '.$token)
+            ->patchJson('/api/v1/auth/active-organization', [
+                'organizacion_id' => $primaryOrganization->id,
+            ])
+            ->assertOk();
+
+        $this->withHeader('Authorization', 'Bearer '.$token)
+            ->getJson('/api/v1/demo/files')
+            ->assertOk()
+            ->assertJsonPath('meta.total', 1)
+            ->assertJsonFragment([
+                'original_name' => 'primary-tenant.txt',
+            ])
+            ->assertJsonMissing([
+                'original_name' => 'secondary-tenant.txt',
+            ]);
+
+        $this->withHeader('Authorization', 'Bearer '.$token)
+            ->getJson('/api/v1/demo/files/downloads')
+            ->assertOk()
+            ->assertJsonPath('meta.total', 1)
+            ->assertJsonFragment([
+                'original_name' => 'primary-tenant.txt',
+            ])
+            ->assertJsonMissing([
+                'original_name' => 'secondary-tenant.txt',
+            ]);
+
+        $this->withHeader('Authorization', 'Bearer '.$token)
+            ->patchJson('/api/v1/auth/active-organization', [
+                'organizacion_id' => $secondaryOrganization->id,
+            ])
+            ->assertOk();
+
+        $this->withHeader('Authorization', 'Bearer '.$token)
+            ->getJson('/api/v1/demo/files')
+            ->assertOk()
+            ->assertJsonPath('meta.total', 1)
+            ->assertJsonFragment([
+                'original_name' => 'secondary-tenant.txt',
+            ])
+            ->assertJsonMissing([
+                'original_name' => 'primary-tenant.txt',
+            ]);
+
+        $this->withHeader('Authorization', 'Bearer '.$token)
+            ->getJson('/api/v1/demo/files/downloads')
+            ->assertOk()
+            ->assertJsonPath('meta.total', 1)
+            ->assertJsonFragment([
+                'original_name' => 'secondary-tenant.txt',
+            ])
+            ->assertJsonMissing([
+                'original_name' => 'primary-tenant.txt',
+            ]);
+    }
+
     protected function authenticateUser(): array
     {
         $organizacion = Organizacion::query()->create([
@@ -136,6 +234,35 @@ class DemoFileFlowTest extends TestCase
         return [
             $user,
             app(AccessTokenService::class)->createForUser($user, 'phpunit'),
+        ];
+    }
+
+    protected function authenticateUserWithTwoOrganizations(): array
+    {
+        $primaryOrganization = Organizacion::query()->create([
+            'nombre' => 'Acme Files Primary',
+            'slug' => 'acme-files-primary',
+        ]);
+
+        $secondaryOrganization = Organizacion::query()->create([
+            'nombre' => 'Acme Files Secondary',
+            'slug' => 'acme-files-secondary',
+        ]);
+
+        $user = User::factory()->create([
+            'organizacion_activa_id' => $primaryOrganization->id,
+        ]);
+
+        $user->organizaciones()->attach([
+            $primaryOrganization->id,
+            $secondaryOrganization->id,
+        ]);
+
+        return [
+            $user,
+            app(AccessTokenService::class)->createForUser($user, 'phpunit'),
+            $primaryOrganization,
+            $secondaryOrganization,
         ];
     }
 }

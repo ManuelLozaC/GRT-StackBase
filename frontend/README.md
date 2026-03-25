@@ -21,6 +21,7 @@ Frontend construido con Vue 3, Vite y PrimeVue.
 - `Demo Module` ya se bootstrappea desde metadata modular entregada por API.
 - Stores consumidos por responsabilidad: sesion, tenant y permisos, sin fachada `authStore`.
 - Pantalla de modulos informa dependencias, features y bloqueos operativos antes de togglear.
+- El catalogo modular frontend se refresca completo tras togglear para no dejar estados derivados desactualizados.
 
 ## Pantallas relevantes hoy
 - `/admin/modules`

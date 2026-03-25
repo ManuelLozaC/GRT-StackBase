@@ -88,22 +88,13 @@ async function loadModules(force = false) {
 }
 
 async function updateModuleStatus(moduleKey, enabled) {
-    const response = await api.patch(`/v1/modules/${moduleKey}`, {
+    await api.patch(`/v1/modules/${moduleKey}`, {
         enabled
     });
 
-    const updatedModule = response.data.datos;
-    const index = state.items.findIndex((item) => item.key === moduleKey);
+    await loadModules(true);
 
-    if (index >= 0) {
-        state.items[index] = updatedModule;
-    } else {
-        state.items.push(updatedModule);
-    }
-
-    state.loaded = true;
-
-    return updatedModule;
+    return state.items.find((item) => item.key === moduleKey) ?? null;
 }
 
 function isModuleEnabled(moduleKey) {

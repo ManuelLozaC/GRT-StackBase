@@ -2,6 +2,7 @@
 
 namespace Tests\Feature\Api\V1\Demo;
 
+use App\Core\Audit\Services\AuditLogger;
 use App\Models\Organizacion;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -77,6 +78,71 @@ class DemoAuditFlowTest extends TestCase
             ]);
     }
 
+    public function test_audit_log_is_scoped_by_active_organization(): void
+    {
+        [$user, $token, $primaryOrganization, $secondaryOrganization] = $this->authenticateUserWithTwoOrganizations();
+
+        $user->forceFill([
+            'organizacion_activa_id' => $primaryOrganization->id,
+        ])->save();
+
+        app(AuditLogger::class)->record(
+            eventKey: 'demo.audit.primary',
+            actor: $user->fresh(),
+            entityType: 'demo',
+            entityKey: 'primary',
+            summary: 'Evento de auditoria para tenant primario',
+            sourceModule: 'demo-platform',
+        );
+
+        $user->forceFill([
+            'organizacion_activa_id' => $secondaryOrganization->id,
+        ])->save();
+
+        app(AuditLogger::class)->record(
+            eventKey: 'demo.audit.secondary',
+            actor: $user->fresh(),
+            entityType: 'demo',
+            entityKey: 'secondary',
+            summary: 'Evento de auditoria para tenant secundario',
+            sourceModule: 'demo-platform',
+        );
+
+        $this->withHeader('Authorization', 'Bearer '.$token)
+            ->patchJson('/api/v1/auth/active-organization', [
+                'organizacion_id' => $primaryOrganization->id,
+            ])
+            ->assertOk();
+
+        $this->withHeader('Authorization', 'Bearer '.$token)
+            ->getJson('/api/v1/demo/audit')
+            ->assertOk()
+            ->assertJsonPath('meta.total', 1)
+            ->assertJsonFragment([
+                'event_key' => 'demo.audit.primary',
+            ])
+            ->assertJsonMissing([
+                'event_key' => 'demo.audit.secondary',
+            ]);
+
+        $this->withHeader('Authorization', 'Bearer '.$token)
+            ->patchJson('/api/v1/auth/active-organization', [
+                'organizacion_id' => $secondaryOrganization->id,
+            ])
+            ->assertOk();
+
+        $this->withHeader('Authorization', 'Bearer '.$token)
+            ->getJson('/api/v1/demo/audit')
+            ->assertOk()
+            ->assertJsonPath('meta.total', 1)
+            ->assertJsonFragment([
+                'event_key' => 'demo.audit.secondary',
+            ])
+            ->assertJsonMissing([
+                'event_key' => 'demo.audit.primary',
+            ]);
+    }
+
     protected function authenticateUser(): array
     {
         $organizacion = Organizacion::query()->create([
@@ -99,6 +165,41 @@ class DemoAuditFlowTest extends TestCase
         return [
             $user,
             $loginResponse->json('datos.token'),
+        ];
+    }
+
+    protected function authenticateUserWithTwoOrganizations(): array
+    {
+        $primaryOrganization = Organizacion::query()->create([
+            'nombre' => 'Acme Audit Primary',
+            'slug' => 'acme-audit-primary',
+        ]);
+
+        $secondaryOrganization = Organizacion::query()->create([
+            'nombre' => 'Acme Audit Secondary',
+            'slug' => 'acme-audit-secondary',
+        ]);
+
+        $user = User::factory()->create([
+            'organizacion_activa_id' => $primaryOrganization->id,
+        ]);
+
+        $user->organizaciones()->attach([
+            $primaryOrganization->id,
+            $secondaryOrganization->id,
+        ]);
+
+        $loginResponse = $this->postJson('/api/v1/auth/login', [
+            'email' => $user->email,
+            'password' => 'password',
+            'device_name' => 'phpunit',
+        ]);
+
+        return [
+            $user,
+            $loginResponse->json('datos.token'),
+            $primaryOrganization,
+            $secondaryOrganization,
         ];
     }
 }

@@ -81,6 +81,7 @@ Su objetivo es:
 - Dependencias modulares basicas bloqueadas para no habilitar/deshabilitar modulos en estados invalidos.
 - Stores frontend consumidos directamente por responsabilidad: sesion, tenant y permisos.
 - `TenantContext` backend compartido entre request autenticado, jobs, notificaciones internas y descargas base.
+- Suite automatizada validando aislamiento por tenant en notificaciones, archivos, descargas y auditoria demo.
 
 ## Contenedores previstos
 - `app`: backend Laravel

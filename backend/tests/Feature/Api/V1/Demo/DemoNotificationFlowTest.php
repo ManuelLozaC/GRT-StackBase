@@ -78,6 +78,63 @@ class DemoNotificationFlowTest extends TestCase
             ->assertJsonPath('meta.unread_count', 0);
     }
 
+    public function test_notifications_are_scoped_by_active_organization(): void
+    {
+        [$user, $token, $primaryOrganization, $secondaryOrganization] = $this->authenticateUserWithTwoOrganizations();
+
+        $user->forceFill([
+            'organizacion_activa_id' => $primaryOrganization->id,
+        ])->save();
+
+        app(NotificationCenter::class)->createInternal(
+            recipient: $user->fresh(),
+            title: 'Primary notification',
+            message: 'Pertenece a la organizacion primaria.',
+        );
+
+        $user->forceFill([
+            'organizacion_activa_id' => $secondaryOrganization->id,
+        ])->save();
+
+        app(NotificationCenter::class)->createInternal(
+            recipient: $user->fresh(),
+            title: 'Secondary notification',
+            message: 'Pertenece a la organizacion secundaria.',
+        );
+
+        $user->forceFill([
+            'organizacion_activa_id' => $primaryOrganization->id,
+        ])->save();
+
+        $this->withHeader('Authorization', 'Bearer '.$token)
+            ->getJson('/api/v1/notifications')
+            ->assertOk()
+            ->assertJsonPath('meta.total', 1)
+            ->assertJsonFragment([
+                'title' => 'Primary notification',
+            ])
+            ->assertJsonMissing([
+                'title' => 'Secondary notification',
+            ]);
+
+        $this->withHeader('Authorization', 'Bearer '.$token)
+            ->patchJson('/api/v1/auth/active-organization', [
+                'organizacion_id' => $secondaryOrganization->id,
+            ])
+            ->assertOk();
+
+        $this->withHeader('Authorization', 'Bearer '.$token)
+            ->getJson('/api/v1/notifications')
+            ->assertOk()
+            ->assertJsonPath('meta.total', 1)
+            ->assertJsonFragment([
+                'title' => 'Secondary notification',
+            ])
+            ->assertJsonMissing([
+                'title' => 'Primary notification',
+            ]);
+    }
+
     protected function authenticateUser(): array
     {
         $organizacion = Organizacion::query()->create([
@@ -100,6 +157,41 @@ class DemoNotificationFlowTest extends TestCase
         return [
             $user,
             $loginResponse->json('datos.token'),
+        ];
+    }
+
+    protected function authenticateUserWithTwoOrganizations(): array
+    {
+        $primaryOrganization = Organizacion::query()->create([
+            'nombre' => 'Acme Notifications Primary',
+            'slug' => 'acme-notifications-primary',
+        ]);
+
+        $secondaryOrganization = Organizacion::query()->create([
+            'nombre' => 'Acme Notifications Secondary',
+            'slug' => 'acme-notifications-secondary',
+        ]);
+
+        $user = User::factory()->create([
+            'organizacion_activa_id' => $primaryOrganization->id,
+        ]);
+
+        $user->organizaciones()->attach([
+            $primaryOrganization->id,
+            $secondaryOrganization->id,
+        ]);
+
+        $loginResponse = $this->postJson('/api/v1/auth/login', [
+            'email' => $user->email,
+            'password' => 'password',
+            'device_name' => 'phpunit',
+        ]);
+
+        return [
+            $user,
+            $loginResponse->json('datos.token'),
+            $primaryOrganization,
+            $secondaryOrganization,
         ];
     }
 }
