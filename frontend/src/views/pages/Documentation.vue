@@ -1,9 +1,22 @@
+<script setup>
+const apiBaseUrl = import.meta.env.VITE_API_URL || 'http://localhost:8080/api/v1';
+const openApiUrl = `${apiBaseUrl}/openapi.json`;
+</script>
+
 <template>
     <div class="space-y-6">
         <div class="rounded-3xl border border-slate-200 bg-white p-8 shadow-sm">
-            <div class="text-sm uppercase tracking-[0.3em] text-sky-600 font-semibold mb-3">StackBase</div>
-            <h1 class="text-3xl font-semibold text-slate-900 mb-3">Documentacion operativa</h1>
-            <p class="text-slate-600 max-w-3xl">Esta vista reemplaza la documentacion del template original. Su objetivo es resumir la arquitectura activa del proyecto y orientar el siguiente desarrollo sobre `Core Platform + Modules`.</p>
+            <div class="mb-3 text-sm font-semibold uppercase tracking-[0.3em] text-sky-600">StackBase</div>
+            <div class="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+                <div>
+                    <h1 class="mb-3 text-3xl font-semibold text-slate-900">Documentacion operativa</h1>
+                    <p class="max-w-3xl text-slate-600">Esta vista reemplaza la documentacion del template original. Su objetivo es resumir la arquitectura activa del proyecto y orientar el siguiente desarrollo sobre `Core Platform + Modules`.</p>
+                </div>
+                <a :href="openApiUrl" target="_blank" rel="noreferrer" class="inline-flex items-center gap-2 rounded-2xl border border-sky-200 bg-sky-50 px-4 py-3 text-sm font-semibold text-sky-700 transition hover:bg-sky-100">
+                    <i class="pi pi-external-link"></i>
+                    Ver OpenAPI JSON
+                </a>
+            </div>
         </div>
 
         <div class="grid grid-cols-12 gap-6">
@@ -19,7 +32,7 @@
                         <li>Servicios de archivos, jobs, auditoria y notificaciones internas/multicanal base</li>
                         <li>Request IDs, rate limiting base y vistas operativas de seguridad/operations para soporte</li>
                         <li>Error logs, metricas internas y formato locale-aware ya forman parte del core operativo</li>
-                        <li>API tokens, webhooks salientes/entrantes tenant-aware, sanitizacion base y performance metrics ya existen como base de integracion y operacion</li>
+                        <li>API tokens, webhooks salientes/entrantes tenant-aware, sanitizacion base, OpenAPI JSON y performance metrics ya existen como base de integracion y operacion</li>
                         <li>Respuesta estandar en `api/v1`</li>
                     </ul>
                 </div>
@@ -59,7 +72,8 @@
 
             <div class="col-span-12">
                 <div class="rounded-3xl border border-dashed border-slate-300 bg-slate-50 p-6 text-slate-700">
-                    La fuente maestra sigue estando en `docs/roadmap.md`, `docs/pendientes.md` y `docs/stackbase.md`. Esta pantalla existe para que el frontend no exponga mas contenido heredado del template original.
+                    La fuente maestra sigue estando en `docs/roadmap.md`, `docs/pendientes.md` y `docs/stackbase.md`. Esta pantalla existe para que el frontend no exponga mas contenido heredado del template original y ahora tambien deja visible el
+                    `OpenAPI JSON` real de la API.
                 </div>
             </div>
         </div>

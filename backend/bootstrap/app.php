@@ -19,6 +19,7 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->appendToGroup('api', \App\Http\Middleware\AttachRequestContext::class);
         $middleware->appendToGroup('api', \App\Http\Middleware\SanitizeApiInput::class);
+        $middleware->appendToGroup('api', \App\Http\Middleware\SetApiSecurityHeaders::class);
         $middleware->appendToGroup('api', \App\Http\Middleware\TrackApiPerformance::class);
 
         $middleware->alias([

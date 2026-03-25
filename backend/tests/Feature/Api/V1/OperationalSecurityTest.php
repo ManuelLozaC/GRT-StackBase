@@ -21,6 +21,9 @@ class OperationalSecurityTest extends TestCase
         $response->assertOk()
             ->assertHeader('X-Request-Id', 'req-test-123')
             ->assertHeader('X-Response-Time-ms')
+            ->assertHeader('X-Content-Type-Options', 'nosniff')
+            ->assertHeader('X-Frame-Options', 'DENY')
+            ->assertHeader('Referrer-Policy', 'no-referrer')
             ->assertJsonPath('meta.request_id', 'req-test-123');
     }
 

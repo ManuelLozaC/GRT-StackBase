@@ -12,6 +12,7 @@ use App\Http\Controllers\Api\V1\ModuleController;
 use App\Http\Controllers\Api\V1\ModuleSettingController;
 use App\Http\Controllers\Api\V1\MetricsOverviewController;
 use App\Http\Controllers\Api\V1\NotificationController;
+use App\Http\Controllers\Api\V1\OpenApiController;
 use App\Http\Controllers\Api\V1\OperationsOverviewController;
 use App\Http\Controllers\Api\V1\ErrorLogController;
 use App\Http\Controllers\Api\V1\SecurityLogController;
@@ -23,6 +24,7 @@ use Illuminate\Support\Facades\Route;
 
 Route::prefix('v1')->group(function (): void {
     Route::get('/health', HealthCheckController::class);
+    Route::get('/openapi.json', OpenApiController::class);
 
     Route::prefix('auth')->group(function (): void {
         Route::middleware('throttle:auth-api')->group(function (): void {

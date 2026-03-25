@@ -57,6 +57,7 @@ La metadata que llega por API declara:
 - Los `settings` ya son operativos: se persisten, se administran por API/UI y pueden afectar comportamiento real del modulo.
 - La metadata backend ya expone piezas operativas del contrato (`jobs`, `webhooks`, `dashboards`, `seeders`, `assets`) aunque varias siguen siendo descriptivas y no ejecutables por runtime.
 - Los `webhooks` ya son operativos para salidas y recepcion declarativa: cada modulo puede declarar eventos disponibles y el shell administrativo consume ese catalogo sin wiring manual adicional.
+- El runtime ya expone documentacion OpenAPI viva de las rutas reales del backend, util para integraciones modulares.
 - El shell administrativo ya consume esta metadata junto con vistas core de `System Modules`, `Security Logs` y `Operations Overview` sin reintroducir wiring legacy.
 
 ## Deuda restante del contrato

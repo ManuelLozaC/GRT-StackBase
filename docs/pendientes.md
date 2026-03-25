@@ -68,6 +68,8 @@
 - [x] Metricas base de performance y tiempo de respuesta API.
 - [x] Webhooks salientes tenant-aware con secretos cifrados, entregas auditables y pantalla administrativa.
 - [x] Recepcion de webhooks tenant-aware con firma HMAC, receipts auditables y endpoint publico controlado.
+- [x] OpenAPI JSON sincronizado con rutas reales del backend.
+- [x] Headers de seguridad base para respuestas API.
 - [x] Ajustes responsive en pantallas administrativas clave (`modulos`, `operations`, `security`, `API tokens`, `webhooks`).
 
 ### Brechas principales
@@ -291,13 +293,14 @@ Estado: Parcial
 - [x] Webhooks salientes.
 - [x] Recepcion de webhooks.
 - [x] Rate limiting base.
-- [ ] Swagger sincronizado con endpoints reales.
+- [x] Swagger/OpenAPI sincronizado con endpoints reales.
 
 ## P13. Seguridad
 Estado: En progreso
 
 - [x] Sanitizacion de inputs.
 - [ ] XSS / CSRF segun canal.
+- [x] Headers de seguridad base en canal API.
 - [x] Rate limiting por auth/API/descargas.
 - [ ] Encriptacion de datos sensibles.
 - [x] Cifrado de secretos sensibles de webhooks.
@@ -380,6 +383,6 @@ Estado: En progreso
 ## Siguiente desarrollo recomendado
 1. Scope multi-tenant consistente en modelos, jobs, archivos, auditoria y notificaciones externas.
 2. Integracion de archivos con Spaces, versionado y entidades de negocio.
-3. Completar integraciones reales de API: Swagger sincronizado y contratos ejecutables.
+3. Completar integraciones reales de API: contratos ejecutables mas profundos y ejemplos de integracion.
 4. Completar el contrato modular con ejecucion real de assets y dashboards por modulo.
 5. Extender el Data Engine con acciones avanzadas, relaciones dependientes y custom fields realmente universales.

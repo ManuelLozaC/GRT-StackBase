@@ -5,6 +5,7 @@ Backend API-first construido con Laravel 12.
 ## Estado actual
 - API `v1` inicial.
 - Healthcheck.
+- OpenAPI JSON ejecutable en `/api/v1/openapi.json`.
 - Login, logout y `me`.
 - Registro y reset de password.
 - Preview del token de reset disponible solo en `local/testing`.
@@ -42,10 +43,12 @@ Backend API-first construido con Laravel 12.
 - Locale, moneda, zona horaria y tema ya pueden resolverse desde settings persistidos.
 - Tokens API personales, webhooks salientes/entrantes tenant-aware y secretos cifrados para integraciones de terceros.
 - Sanitizacion base de inputs y politicas de password reforzadas.
+- Headers de seguridad base para respuestas API.
 - `core-platform` y `demo-platform` declarados.
 
 ## Endpoints base actuales
 - `GET /api/v1/health`
+- `GET /api/v1/openapi.json`
 - `POST /api/v1/auth/login`
 - `POST /api/v1/auth/register`
 - `POST /api/v1/auth/forgot-password`
@@ -117,7 +120,7 @@ php artisan config:clear
 ```
 
 ## Verificacion reciente
-- `php artisan test` pasando con 58 tests.
+- `php artisan test` pasando con 59 tests.
 - Integridad de migraciones corregida para evitar duplicados y desalineacion del esquema base.
 - Arbol HTTP legacy no enroutado eliminado para reducir deriva arquitectonica.
 - Bootstrap RBAC inicial sin duplicidad de seeders.

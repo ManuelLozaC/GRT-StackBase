@@ -52,6 +52,8 @@ Fecha de referencia: `2026-03-25`
 - Performance/response times API ya quedan trazados dentro de metricas internas.
 - Webhooks salientes tenant-aware ya estan disponibles con secretos cifrados, entregas auditables y UI administrativa.
 - Recepcion de webhooks tenant-aware ya esta disponible con firma HMAC, receipts auditables y endpoint publico controlado.
+- OpenAPI JSON ya se genera desde rutas reales del backend y queda visible para integraciones.
+- Headers de seguridad base ya se aplican a respuestas API.
 - Limpieza residual completada en branding/documentacion raiz y restos visuales del shell legacy.
 - Base de archivos en core con upload, descarga directa, signed URLs e historial.
 - Base de jobs en core con dispatch, estados, logs y demo funcional.
@@ -124,7 +126,7 @@ Estado: En progreso
 - Auditoria base ya implementada; request IDs, security logs y overview operativo ya existen, pero faltan logs tecnicos y endurecimiento adicional.
 - Error handling tecnico base ya existe con `error logs`, `error_code` y respuesta controlada para excepciones no manejadas.
 - Metricas internas base por tenant/modulo/categoria ya existen; falta profundizar performance y tiempos de respuesta.
-- API access para terceros ya tiene base con tokens personales, webhooks salientes y recepcion controlada; faltan contratos de integracion mas profundos y documentacion ejecutable.
+- API access para terceros ya tiene base con tokens personales, webhooks salientes, recepcion controlada y OpenAPI JSON; faltan contratos de integracion mas profundos.
 - Busqueda e indexacion.
 
 ## Fase 4. Shell de experiencia
