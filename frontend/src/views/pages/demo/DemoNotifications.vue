@@ -80,9 +80,7 @@ function resolveSeverity(level) {
                 <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3">
                     <div>
                         <h2 class="m-0">Demo funcional de notificaciones</h2>
-                        <p class="m-0 text-color-secondary">
-                            Valida notificaciones internas, bandeja del usuario, marcado de lectura y contador de no leidas.
-                        </p>
+                        <p class="m-0 text-color-secondary">Valida notificaciones internas, bandeja del usuario, marcado de lectura y contador de no leidas.</p>
                     </div>
                     <div class="demo-notification-summary">
                         <div>
@@ -102,9 +100,7 @@ function resolveSeverity(level) {
             <div class="card flex flex-col gap-4">
                 <div>
                     <h3 class="m-0 mb-2">Generar notificacion demo</h3>
-                    <p class="m-0 text-sm text-color-secondary">
-                        Crea una notificacion interna para el usuario actual en la organizacion activa.
-                    </p>
+                    <p class="m-0 text-sm text-color-secondary">Crea una notificacion interna para el usuario actual en la organizacion activa.</p>
                 </div>
 
                 <input v-model="form.title" type="text" class="demo-input" placeholder="Titulo" />
@@ -122,9 +118,7 @@ function resolveSeverity(level) {
 
                 <input v-model="form.action_url" type="text" class="demo-input" placeholder="URL de accion opcional" />
 
-                <button class="demo-primary-button" @click="createNotification">
-                    Crear notificacion
-                </button>
+                <button class="demo-primary-button" @click="createNotification">Crear notificacion</button>
             </div>
         </div>
 
@@ -133,23 +127,17 @@ function resolveSeverity(level) {
                 <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3 mb-4">
                     <div>
                         <h3 class="m-0">Bandeja interna</h3>
-                        <p class="m-0 text-sm text-color-secondary">
-                            Esta misma bandeja alimenta la campanita del layout y sirve como base para futuras preferencias y canales.
-                        </p>
+                        <p class="m-0 text-sm text-color-secondary">Esta misma bandeja alimenta la campanita del layout y sirve como base para futuras preferencias y canales.</p>
                     </div>
                     <div class="demo-actions">
                         <button class="demo-secondary-button" :disabled="notificationStore.state.loading" @click="notificationStore.loadNotifications">
                             {{ notificationStore.state.loading ? 'Actualizando...' : 'Actualizar' }}
                         </button>
-                        <button class="demo-secondary-button" :disabled="notificationStore.unreadCount === 0" @click="markAllAsRead">
-                            Marcar todas como leidas
-                        </button>
+                        <button class="demo-secondary-button" :disabled="notificationStore.unreadCount === 0" @click="markAllAsRead">Marcar todas como leidas</button>
                     </div>
                 </div>
 
-                <div v-if="notificationStore.state.items.length === 0" class="demo-empty-state">
-                    Todavia no hay notificaciones. Genera una desde la demo para probar el flujo.
-                </div>
+                <div v-if="notificationStore.state.items.length === 0" class="demo-empty-state">Todavia no hay notificaciones. Genera una desde la demo para probar el flujo.</div>
 
                 <div v-else class="demo-notification-list">
                     <article v-for="notification in notificationStore.state.items" :key="notification.uuid" class="demo-notification-card" :class="{ unread: !notification.read_at }">
@@ -171,12 +159,8 @@ function resolveSeverity(level) {
                             </span>
 
                             <div class="demo-actions">
-                                <router-link v-if="notification.action_url" :to="notification.action_url" class="demo-link">
-                                    Abrir accion
-                                </router-link>
-                                <button v-if="!notification.read_at" class="demo-secondary-button" @click="markAsRead(notification)">
-                                    Marcar leida
-                                </button>
+                                <router-link v-if="notification.action_url" :to="notification.action_url" class="demo-link"> Abrir accion </router-link>
+                                <button v-if="!notification.read_at" class="demo-secondary-button" @click="markAsRead(notification)">Marcar leida</button>
                             </div>
                         </div>
                     </article>

@@ -61,6 +61,7 @@ Su objetivo es:
 - Seeders iniciales y RBAC base alineados sin duplicidad de bootstrap.
 - Branding principal del template removido de la shell frontend.
 - Estructura laboral heredada retirada del runtime activo.
+- Toolchain frontend alineado a una version segura de `Vite` con particion de chunks y auditoria `npm` limpia.
 - Organizaciones base y cambio de organizacion activa.
 - Core de archivos con upload, descarga directa, signed URL e historial.
 - Core de jobs con dispatch, ejecucion inmediata demo y trazabilidad basica.

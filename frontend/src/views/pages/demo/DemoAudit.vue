@@ -17,17 +17,7 @@ const filteredLogs = computed(() => {
     }
 
     return state.logs.filter((log) => {
-        return [
-            log.event_key,
-            log.entity_type,
-            log.entity_key,
-            log.summary,
-            log.actor?.name,
-            log.actor?.email,
-            log.source_module
-        ]
-            .filter(Boolean)
-            .some((value) => String(value).toLowerCase().includes(term));
+        return [log.event_key, log.entity_type, log.entity_key, log.summary, log.actor?.name, log.actor?.email, log.source_module].filter(Boolean).some((value) => String(value).toLowerCase().includes(term));
     });
 });
 
@@ -68,9 +58,7 @@ onMounted(loadLogs);
                 <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3">
                     <div>
                         <h2 class="m-0">Demo funcional de auditoria</h2>
-                        <p class="m-0 text-color-secondary">
-                            Muestra actividad transversal del core: modulos, archivos y jobs con actor, fecha, entidad y contexto.
-                        </p>
+                        <p class="m-0 text-color-secondary">Muestra actividad transversal del core: modulos, archivos y jobs con actor, fecha, entidad y contexto.</p>
                     </div>
                     <div class="demo-audit-summary">
                         <div>
@@ -87,9 +75,7 @@ onMounted(loadLogs);
                 <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3 mb-4">
                     <div>
                         <h3 class="m-0">Actividad reciente</h3>
-                        <p class="m-0 text-sm text-color-secondary">
-                            Usa las demos de archivos, jobs o la administracion de modulos y vuelve aqui para inspeccionar trazabilidad.
-                        </p>
+                        <p class="m-0 text-sm text-color-secondary">Usa las demos de archivos, jobs o la administracion de modulos y vuelve aqui para inspeccionar trazabilidad.</p>
                     </div>
                     <div class="demo-audit-toolbar">
                         <input v-model="search" type="text" class="demo-search" placeholder="Buscar evento, actor o entidad" />
@@ -99,18 +85,14 @@ onMounted(loadLogs);
                     </div>
                 </div>
 
-                <div v-if="filteredLogs.length === 0" class="demo-empty-state">
-                    No hay eventos que coincidan con el filtro actual.
-                </div>
+                <div v-if="filteredLogs.length === 0" class="demo-empty-state">No hay eventos que coincidan con el filtro actual.</div>
 
                 <div v-else class="demo-audit-list">
                     <article v-for="log in filteredLogs" :key="log.id" class="demo-audit-card">
                         <div class="flex items-start justify-between gap-3">
                             <div>
                                 <div class="font-semibold">{{ log.summary || log.event_key }}</div>
-                                <div class="text-sm text-color-secondary">
-                                    {{ log.event_key }} · {{ formatDate(log.occurred_at) }}
-                                </div>
+                                <div class="text-sm text-color-secondary">{{ log.event_key }} · {{ formatDate(log.occurred_at) }}</div>
                             </div>
                             <Tag severity="info" :value="log.source_module || 'core'" />
                         </div>

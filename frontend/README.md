@@ -17,6 +17,7 @@ Frontend construido con Vue 3, Vite y PrimeVue.
 - Build de produccion verificado tras saneamiento de conflictos de merge.
 - Navegacion principal limpia de demos del template original.
 - Branding principal alineado a `GRT StackBase`.
+- Toolchain frontend actualizado a `Vite 6.4.1`.
 
 ## Pantallas relevantes hoy
 - `/admin/modules`
@@ -34,7 +35,9 @@ Frontend construido con Vue 3, Vite y PrimeVue.
 ```bash
 npm install
 npm run dev
+npm run lint
 npm run build
+npm audit --audit-level=moderate
 ```
 
 ## Nota
@@ -42,4 +45,7 @@ La administracion de modulos ya esta conectada a autenticacion real y al permiso
 
 El siguiente paso visible en frontend es construir el nuevo motor CRUD del core, ya sin arrastrar el mantenimiento heredado del template.
 
-Queda pendiente reducir el warning de chunk grande que hoy reporta Vite en el build de produccion.
+Validacion reciente:
+- `npm run lint` en verde.
+- `npm run build` en verde y sin warning por chunks gigantes.
+- `npm audit --audit-level=moderate` en verde.

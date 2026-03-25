@@ -1,6 +1,6 @@
 <script setup>
 import api from '@/service/api';
-import { onMounted, reactive, ref } from 'vue';
+import { onMounted, reactive } from 'vue';
 import { useToast } from 'primevue/usetoast';
 
 const toast = useToast();
@@ -94,9 +94,7 @@ onMounted(loadJobs);
                 <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3">
                     <div>
                         <h2 class="m-0">Demo funcional de jobs</h2>
-                        <p class="m-0 text-color-secondary">
-                            Valida dispatch en cola, ejecucion inmediata para pruebas locales, estados y logs basicos por tenant.
-                        </p>
+                        <p class="m-0 text-color-secondary">Valida dispatch en cola, ejecucion inmediata para pruebas locales, estados y logs basicos por tenant.</p>
                     </div>
                     <div class="demo-job-summary">
                         <div>
@@ -112,17 +110,10 @@ onMounted(loadJobs);
             <div class="card flex flex-col gap-4">
                 <div>
                     <h3 class="m-0 mb-2">Lanzar job demo</h3>
-                    <p class="m-0 text-sm text-color-secondary">
-                        El job transforma texto y puede simular fallos para probar reintentos y errores controlados.
-                    </p>
+                    <p class="m-0 text-sm text-color-secondary">El job transforma texto y puede simular fallos para probar reintentos y errores controlados.</p>
                 </div>
 
-                <textarea
-                    v-model="form.message"
-                    rows="5"
-                    class="demo-textarea"
-                    placeholder="Texto a procesar"
-                ></textarea>
+                <textarea v-model="form.message" rows="5" class="demo-textarea" placeholder="Texto a procesar"></textarea>
 
                 <label class="demo-field">
                     <span>Modo de ejecucion</span>
@@ -153,27 +144,21 @@ onMounted(loadJobs);
                 <div class="flex items-center justify-between mb-4">
                     <div>
                         <h3 class="m-0">Historial de ejecuciones</h3>
-                        <p class="m-0 text-sm text-color-secondary">
-                            Los jobs quedan registrados con payload, resultado, intentos y errores dentro del tenant activo.
-                        </p>
+                        <p class="m-0 text-sm text-color-secondary">Los jobs quedan registrados con payload, resultado, intentos y errores dentro del tenant activo.</p>
                     </div>
                     <button class="demo-secondary-button" :disabled="state.loading" @click="loadJobs">
                         {{ state.loading ? 'Actualizando...' : 'Actualizar' }}
                     </button>
                 </div>
 
-                <div v-if="state.jobs.length === 0" class="demo-empty-state">
-                    Todavia no hay ejecuciones. Lanza un job en cola o inmediato para validar el flujo.
-                </div>
+                <div v-if="state.jobs.length === 0" class="demo-empty-state">Todavia no hay ejecuciones. Lanza un job en cola o inmediato para validar el flujo.</div>
 
                 <div v-else class="demo-job-list">
                     <article v-for="job in state.jobs" :key="job.uuid" class="demo-job-card">
                         <div class="flex items-start justify-between gap-3">
                             <div>
                                 <div class="font-semibold">{{ job.job_key }}</div>
-                                <div class="text-sm text-color-secondary">
-                                    {{ job.queue }} · solicitado por {{ job.requested_by || 'sistema' }}
-                                </div>
+                                <div class="text-sm text-color-secondary">{{ job.queue }} - solicitado por {{ job.requested_by || 'sistema' }}</div>
                             </div>
                             <Tag :severity="resolveSeverity(job.status)" :value="job.status" />
                         </div>

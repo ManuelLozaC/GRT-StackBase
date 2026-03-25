@@ -271,8 +271,10 @@ Estado: En progreso
 - [x] Retirar capa HTTP/UI legacy fuera de la arquitectura actual.
 - [x] Unificar seeders iniciales de permisos.
 - [x] Limpiar branding principal heredado del template.
-- [ ] Reducir warning de chunk grande en build de Vite.
-- [ ] Revisar y mitigar vulnerabilidades reportadas por `npm audit`.
+- [x] Endurecer toolchain frontend a una linea segura de `Vite`.
+- [x] Reducir warning de chunk grande en build de Vite con `manualChunks`.
+- [x] Revisar y mitigar vulnerabilidades reportadas por `npm audit`.
+- [x] Recuperar `lint` frontend en verde.
 
 ## P17. Responsive y soporte movil
 Estado: Parcial

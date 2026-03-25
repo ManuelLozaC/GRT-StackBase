@@ -22,10 +22,7 @@ async function loadData() {
     state.loading = true;
 
     try {
-        const [filesResponse, downloadsResponse] = await Promise.all([
-            api.get('/v1/demo/files'),
-            api.get('/v1/demo/files/downloads')
-        ]);
+        const [filesResponse, downloadsResponse] = await Promise.all([api.get('/v1/demo/files'), api.get('/v1/demo/files/downloads')]);
 
         state.files = filesResponse.data.datos ?? [];
         state.downloads = downloadsResponse.data.datos ?? [];
@@ -171,9 +168,7 @@ onMounted(loadData);
                 <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3">
                     <div>
                         <h2 class="m-0">Demo funcional de archivos</h2>
-                        <p class="m-0 text-color-secondary">
-                            Esta demo valida carga, almacenamiento, descarga directa, signed URLs e historial por usuario dentro del tenant activo.
-                        </p>
+                        <p class="m-0 text-color-secondary">Esta demo valida carga, almacenamiento, descarga directa, signed URLs e historial por usuario dentro del tenant activo.</p>
                     </div>
                     <div class="demo-summary">
                         <div>
@@ -193,19 +188,12 @@ onMounted(loadData);
             <div class="card flex flex-col gap-4">
                 <div>
                     <h3 class="m-0 mb-2">Subir archivo</h3>
-                    <p class="m-0 text-sm text-color-secondary">
-                        Guarda el archivo en el storage configurado y registra metadata base en el core.
-                    </p>
+                    <p class="m-0 text-sm text-color-secondary">Guarda el archivo en el storage configurado y registra metadata base en el core.</p>
                 </div>
 
                 <input id="demo-file-input" type="file" @change="onSelectFile" />
 
-                <textarea
-                    v-model="notes"
-                    rows="4"
-                    class="demo-textarea"
-                    placeholder="Notas opcionales para esta carga demo"
-                ></textarea>
+                <textarea v-model="notes" rows="4" class="demo-textarea" placeholder="Notas opcionales para esta carga demo"></textarea>
 
                 <button class="demo-primary-button" :disabled="state.uploading" @click="uploadFile">
                     {{ state.uploading ? 'Subiendo...' : 'Subir archivo demo' }}
@@ -225,9 +213,7 @@ onMounted(loadData);
                     </button>
                 </div>
 
-                <div v-if="state.files.length === 0" class="demo-empty-state">
-                    Todavia no hay archivos en esta organizacion. Sube uno para probar el flujo completo.
-                </div>
+                <div v-if="state.files.length === 0" class="demo-empty-state">Todavia no hay archivos en esta organizacion. Sube uno para probar el flujo completo.</div>
 
                 <div v-else class="demo-file-list">
                     <article v-for="file in state.files" :key="file.uuid" class="demo-file-card">
@@ -235,16 +221,12 @@ onMounted(loadData);
                             <div class="flex items-start justify-between gap-3">
                                 <div>
                                     <div class="font-semibold">{{ file.original_name }}</div>
-                                    <div class="text-sm text-color-secondary">
-                                        {{ formatBytes(file.size_bytes) }} · {{ file.mime_type || 'tipo no detectado' }}
-                                    </div>
+                                    <div class="text-sm text-color-secondary">{{ formatBytes(file.size_bytes) }} · {{ file.mime_type || 'tipo no detectado' }}</div>
                                 </div>
                                 <Tag severity="contrast" :value="`v${file.version}`" />
                             </div>
 
-                            <div class="text-sm text-color-secondary">
-                                Subido por {{ file.uploaded_by || 'sistema' }} · {{ formatDate(file.uploaded_at) }}
-                            </div>
+                            <div class="text-sm text-color-secondary">Subido por {{ file.uploaded_by || 'sistema' }} · {{ formatDate(file.uploaded_at) }}</div>
 
                             <div class="demo-token-row">
                                 <span>Token de rastreo</span>
@@ -275,21 +257,15 @@ onMounted(loadData);
             <div class="card">
                 <div class="mb-4">
                     <h3 class="m-0">Historial de descargas</h3>
-                    <p class="m-0 text-sm text-color-secondary">
-                        Registro del usuario actual dentro de la organizacion activa. Sirve como base para la futura seccion `Downloads`.
-                    </p>
+                    <p class="m-0 text-sm text-color-secondary">Registro del usuario actual dentro de la organizacion activa. Sirve como base para la futura seccion `Downloads`.</p>
                 </div>
 
-                <div v-if="state.downloads.length === 0" class="demo-empty-state">
-                    Aun no hay descargas registradas en esta sesion y organizacion.
-                </div>
+                <div v-if="state.downloads.length === 0" class="demo-empty-state">Aun no hay descargas registradas en esta sesion y organizacion.</div>
 
                 <div v-else class="demo-download-list">
                     <article v-for="download in state.downloads" :key="download.id" class="demo-download-card">
                         <div class="font-semibold">{{ download.file.original_name }}</div>
-                        <div class="text-sm text-color-secondary">
-                            {{ download.channel }} · {{ download.status }} · {{ formatDate(download.downloaded_at) }}
-                        </div>
+                        <div class="text-sm text-color-secondary">{{ download.channel }} · {{ download.status }} · {{ formatDate(download.downloaded_at) }}</div>
                         <div class="text-sm text-color-secondary">
                             {{ formatBytes(download.file.size_bytes) }}
                         </div>

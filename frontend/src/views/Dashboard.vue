@@ -15,9 +15,7 @@ const permissions = computed(() => user.value?.permissions ?? []);
             <div class="rounded-3xl border border-slate-200 bg-white p-8 shadow-sm">
                 <div class="text-sm uppercase tracking-[0.3em] text-sky-600 font-semibold mb-3">Core Platform</div>
                 <h1 class="text-3xl font-semibold text-slate-900 mb-2">Bienvenido{{ user?.name ? `, ${user.name}` : '' }}</h1>
-                <p class="text-slate-600 max-w-3xl">
-                    Esta base ya opera sobre autenticacion API, tenancy por organizacion, modulos administrables y demos tecnicas del core.
-                </p>
+                <p class="text-slate-600 max-w-3xl">Esta base ya opera sobre autenticacion API, tenancy por organizacion, modulos administrables y demos tecnicas del core.</p>
             </div>
         </div>
 
@@ -51,9 +49,7 @@ const permissions = computed(() => user.value?.permissions ?? []);
                         <div class="text-sm text-slate-600">{{ organization.slug }}</div>
                     </div>
                 </div>
-                <div v-else class="text-slate-500">
-                    Este usuario todavia no tiene organizaciones asociadas.
-                </div>
+                <div v-else class="text-slate-500">Este usuario todavia no tiene organizaciones asociadas.</div>
             </div>
         </div>
     </div>

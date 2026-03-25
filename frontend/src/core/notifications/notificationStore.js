@@ -30,10 +30,7 @@ async function markAsRead(notificationUuid) {
         state.items[index] = updated;
     }
 
-    state.unreadCount = Math.max(
-        0,
-        state.items.filter((item) => !item.read_at).length
-    );
+    state.unreadCount = Math.max(0, state.items.filter((item) => !item.read_at).length);
 
     return updated;
 }

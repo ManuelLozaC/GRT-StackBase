@@ -39,9 +39,7 @@ async function onToggle(moduleItem) {
         <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
             <div>
                 <h3 class="m-0 text-xl font-semibold">Administracion de modulos</h3>
-                <p class="mt-2 mb-0 text-color-secondary">
-                    Desde aqui puedes habilitar o deshabilitar modulos plug-in, incluido el modulo de demo para probar funcionalidades genericas.
-                </p>
+                <p class="mt-2 mb-0 text-color-secondary">Desde aqui puedes habilitar o deshabilitar modulos plug-in, incluido el modulo de demo para probar funcionalidades genericas.</p>
             </div>
             <Tag severity="contrast" :value="`${modules.length} modulos`" />
         </div>
@@ -65,10 +63,7 @@ async function onToggle(moduleItem) {
             <Column header="Estado" style="min-width: 10rem">
                 <template #body="slotProps">
                     <div class="flex items-center gap-3">
-                        <ToggleSwitch
-                            :modelValue="slotProps.data.enabled"
-                            @update:modelValue="onToggle(slotProps.data)"
-                        />
+                        <ToggleSwitch :modelValue="slotProps.data.enabled" @update:modelValue="onToggle(slotProps.data)" />
                         <Tag :severity="slotProps.data.enabled ? 'success' : 'secondary'" :value="slotProps.data.enabled ? 'Activo' : 'Inactivo'" />
                     </div>
                 </template>

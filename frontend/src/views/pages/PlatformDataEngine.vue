@@ -4,8 +4,8 @@
             <div class="text-sm uppercase tracking-[0.3em] text-sky-600 font-semibold mb-3">Core Platform</div>
             <h1 class="text-3xl font-semibold text-slate-900 mb-3">Data Engine</h1>
             <p class="text-slate-600 max-w-3xl">
-                Esta seccion reemplaza el CRUD heredado del template. El proyecto ya no expone un mantenimiento legacy desconectado de `api/v1`:
-                el siguiente desarrollo aqui sera el motor de datos real del core, con CRUD universal, filtros, paginacion y contratos reutilizables para modulos.
+                Esta seccion reemplaza el CRUD heredado del template. El proyecto ya no expone un mantenimiento legacy desconectado de `api/v1`: el siguiente desarrollo aqui sera el motor de datos real del core, con CRUD universal, filtros,
+                paginacion y contratos reutilizables para modulos.
             </p>
         </div>
 

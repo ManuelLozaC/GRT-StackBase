@@ -3,9 +3,7 @@
         <div class="rounded-3xl border border-slate-200 bg-white p-8 shadow-sm">
             <div class="text-sm uppercase tracking-[0.3em] text-sky-600 font-semibold mb-3">StackBase</div>
             <h1 class="text-3xl font-semibold text-slate-900 mb-3">Documentacion operativa</h1>
-            <p class="text-slate-600 max-w-3xl">
-                Esta vista reemplaza la documentacion del template original. Su objetivo es resumir la arquitectura activa del proyecto y orientar el siguiente desarrollo sobre `Core Platform + Modules`.
-            </p>
+            <p class="text-slate-600 max-w-3xl">Esta vista reemplaza la documentacion del template original. Su objetivo es resumir la arquitectura activa del proyecto y orientar el siguiente desarrollo sobre `Core Platform + Modules`.</p>
         </div>
 
         <div class="grid grid-cols-12 gap-6">

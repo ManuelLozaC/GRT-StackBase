@@ -42,9 +42,7 @@ const demoCapabilities = [
         <div class="flex flex-col gap-3 mb-6">
             <Tag severity="warning" value="Demo Module" class="w-fit" />
             <h2 class="m-0">Platform Demo</h2>
-            <p class="m-0 text-color-secondary">
-                Este modulo existe para probar de forma aislada las capacidades genericas del StackBase antes de usarlas en modulos de negocio reales.
-            </p>
+            <p class="m-0 text-color-secondary">Este modulo existe para probar de forma aislada las capacidades genericas del StackBase antes de usarlas en modulos de negocio reales.</p>
         </div>
 
         <div class="grid grid-cols-12 gap-4">
@@ -57,9 +55,7 @@ const demoCapabilities = [
                     <p class="m-0 text-sm text-color-secondary mb-4">
                         {{ capability.description }}
                     </p>
-                    <router-link v-if="capability.to" :to="capability.to" class="text-primary font-medium no-underline">
-                        Abrir demo
-                    </router-link>
+                    <router-link v-if="capability.to" :to="capability.to" class="text-primary font-medium no-underline"> Abrir demo </router-link>
                 </div>
             </div>
         </div>
