@@ -40,7 +40,8 @@ Backend API-first construido con Laravel 12.
 - Operations overview administrativo para jobs, transfers, notificaciones, archivos, auditoria y seguridad.
 - Error logs tecnicos para excepciones no controladas y metricas internas por tenant/modulo/categoria.
 - Locale, moneda, zona horaria y tema ya pueden resolverse desde settings persistidos.
-- Tokens API personales para terceros, sanitizacion base de inputs y politicas de password reforzadas.
+- Tokens API personales, webhooks salientes tenant-aware y secretos cifrados para integraciones de terceros.
+- Sanitizacion base de inputs y politicas de password reforzadas.
 - `core-platform` y `demo-platform` declarados.
 
 ## Endpoints base actuales
@@ -60,6 +61,11 @@ Backend API-first construido con Laravel 12.
 - `GET /api/v1/auth/api-tokens`
 - `POST /api/v1/auth/api-tokens`
 - `DELETE /api/v1/auth/api-tokens/{tokenId}`
+- `GET /api/v1/webhooks/endpoints`
+- `POST /api/v1/webhooks/endpoints`
+- `PATCH /api/v1/webhooks/endpoints/{endpoint}`
+- `POST /api/v1/webhooks/endpoints/{endpoint}/test`
+- `GET /api/v1/webhooks/deliveries`
 - `GET /api/v1/settings/global`
 - `PATCH /api/v1/settings/global`
 - `GET /api/v1/settings/organization`
@@ -106,7 +112,7 @@ php artisan config:clear
 ```
 
 ## Verificacion reciente
-- `php artisan test` pasando con 53 tests.
+- `php artisan test` pasando con 56 tests.
 - Integridad de migraciones corregida para evitar duplicados y desalineacion del esquema base.
 - Arbol HTTP legacy no enroutado eliminado para reducir deriva arquitectonica.
 - Bootstrap RBAC inicial sin duplicidad de seeders.

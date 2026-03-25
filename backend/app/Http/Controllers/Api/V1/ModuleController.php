@@ -7,6 +7,7 @@ use App\Core\Http\Concerns\ApiResponse;
 use App\Core\Metrics\MetricsRecorder;
 use App\Core\Modules\ModuleRegistry;
 use App\Core\Security\SecurityLogger;
+use App\Core\Webhooks\WebhookManager;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\V1\UpdateModuleStatusRequest;
 use DomainException;
@@ -20,6 +21,7 @@ class ModuleController extends Controller
         protected AuditLogger $auditLogger,
         protected SecurityLogger $securityLogger,
         protected MetricsRecorder $metrics,
+        protected WebhookManager $webhooks,
     ) {
     }
 
@@ -89,6 +91,24 @@ class ModuleController extends Controller
                 'module_key' => $moduleKey,
                 'enabled' => (bool) $request->boolean('enabled'),
             ],
+        );
+        $this->webhooks->dispatch(
+            moduleKey: 'core-platform',
+            eventKey: 'module.status.updated',
+            payload: [
+                'module' => [
+                    'key' => $module['key'],
+                    'name' => $module['name'],
+                    'enabled' => $module['enabled'],
+                    'is_demo' => $module['is_demo'],
+                ],
+                'changed_by' => [
+                    'id' => $request->user()?->id,
+                    'email' => $request->user()?->email,
+                ],
+                'occurred_at' => now()->toIso8601String(),
+            ],
+            actor: $request->user(),
         );
 
         return $this->successResponse(

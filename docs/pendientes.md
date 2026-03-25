@@ -66,6 +66,8 @@
 - [x] Sanitizacion base de inputs API y politicas de password mas estrictas.
 - [x] Preferencias persistidas de vistas/columnas para Data Engine.
 - [x] Metricas base de performance y tiempo de respuesta API.
+- [x] Webhooks salientes tenant-aware con secretos cifrados, entregas auditables y pantalla administrativa.
+- [x] Ajustes responsive en pantallas administrativas clave (`modulos`, `operations`, `security`, `API tokens`, `webhooks`).
 
 ### Brechas principales
 - [ ] RBAC completo.
@@ -76,7 +78,7 @@
 - [ ] Jobs avanzados.
 - [ ] Notificaciones avanzadas y multicanal.
 - [ ] Auditoria y logs avanzados.
-- [ ] Demos funcionales de las capacidades genericas.
+- [ ] Demos funcionales de las capacidades genericas pendientes.
 - [ ] Definir los catalogos universales reales que el core soportara de forma explicita.
 - [x] Unificar metadata modular backend/frontend para que rutas y menu se consuman por API.
 
@@ -101,6 +103,7 @@ Estado: En progreso
 - [x] Route guard frontend para modulos deshabilitados.
 - [x] `Demo Module` inicial.
 - [ ] Contrato formal de un modulo: permisos, menus, rutas, migraciones, settings, jobs, webhooks, dashboards.
+- [x] Webhooks declarados por modulo y consumidos por UI/API administrativa.
 - [x] Metadata modular extendida con `jobs`, `webhooks`, `dashboards`, `seeders` y `assets`.
 - [ ] Contrato formal de una demo por capacidad transversal.
 - [x] Carga de menus y rutas del `Demo Module` desde manifest declarativa frontend.
@@ -273,6 +276,7 @@ Estado: En progreso
 - [ ] Auditoria de cambios de permisos.
 - [ ] Vista administrativa completa de logs tecnicos y de errores.
 - [x] Correlation IDs y trazabilidad tecnica base.
+- [x] Historial administrativo de entregas de webhooks salientes.
 
 ## P12. API e integraciones
 Estado: Parcial
@@ -282,7 +286,7 @@ Estado: Parcial
 - [x] Endpoints de modulos.
 - [x] Retiro de la capa HTTP legacy no enroutada fuera de `api/v1`.
 - [x] Auth API para terceros.
-- [ ] Webhooks salientes.
+- [x] Webhooks salientes.
 - [ ] Recepcion de webhooks.
 - [x] Rate limiting base.
 - [ ] Swagger sincronizado con endpoints reales.
@@ -294,6 +298,7 @@ Estado: En progreso
 - [ ] XSS / CSRF segun canal.
 - [x] Rate limiting por auth/API/descargas.
 - [ ] Encriptacion de datos sensibles.
+- [x] Cifrado de secretos sensibles de webhooks.
 - [x] Logs de seguridad.
 - [x] Politicas de contrasenas y sesiones.
 - [x] Restringir previews sensibles de recuperacion de password a entornos de desarrollo/prueba.
@@ -348,7 +353,8 @@ Estado: En progreso
 Estado: Parcial
 
 - [x] Base responsive del template.
-- [ ] Revisar pantallas reales del producto.
+- [x] Ajustes responsive en pantallas administrativas clave.
+- [ ] Revisar resto de pantallas reales del producto.
 - [ ] PWA si aplica.
 - [ ] Offline basico solo donde aporte valor.
 
@@ -372,6 +378,6 @@ Estado: En progreso
 ## Siguiente desarrollo recomendado
 1. Scope multi-tenant consistente en modelos, jobs, archivos, auditoria y notificaciones externas.
 2. Integracion de archivos con Spaces, versionado y entidades de negocio.
-3. Completar integraciones reales de API: webhooks, recepcion y Swagger sincronizado.
+3. Completar integraciones reales de API: recepcion de webhooks y Swagger sincronizado.
 4. Completar el contrato modular con ejecucion real de hooks, assets y dashboards por modulo.
 5. Extender el Data Engine con acciones avanzadas, relaciones dependientes y custom fields realmente universales.

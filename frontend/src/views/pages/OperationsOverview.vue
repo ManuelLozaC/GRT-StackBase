@@ -92,7 +92,7 @@ onMounted(loadOverview);
                     <h1 class="text-3xl font-semibold text-slate-900 mb-3">Operations Overview</h1>
                     <p class="text-slate-600 max-w-3xl">Vista ejecutiva del tenant activo para seguir seguridad, jobs, transferencias, auditoria, archivos y notificaciones sin salir del shell administrativo.</p>
                 </div>
-                <Tag severity="contrast" :value="generatedAt ? `Actualizado ${formatDate(generatedAt)}` : 'Sin timestamp'" />
+                <Tag severity="contrast" :value="state.generatedAt ? `Actualizado ${formatDateTime(state.generatedAt)}` : 'Sin timestamp'" />
             </div>
         </div>
 
@@ -119,15 +119,17 @@ onMounted(loadOverview);
 
                     <StateEmpty v-if="!state.recentFailedJobs.length" title="Sin jobs fallidos recientes" description="Todavia no hay jobs fallidos en la ventana operativa actual." icon="pi pi-server" />
 
-                    <DataTable v-else :value="state.recentFailedJobs" dataKey="id">
-                        <Column field="job_key" header="Job" style="min-width: 12rem" />
-                        <Column field="queue" header="Queue" style="min-width: 8rem" />
-                        <Column field="attempts" header="Intentos" style="min-width: 7rem" />
-                        <Column field="error_message" header="Error" style="min-width: 16rem" />
-                        <Column field="failed_at" header="Fecha" style="min-width: 12rem">
-                            <template #body="slotProps">{{ formatDateTime(slotProps.data.failed_at) }}</template>
-                        </Column>
-                    </DataTable>
+                    <div v-else class="overflow-x-auto">
+                        <DataTable :value="state.recentFailedJobs" dataKey="id">
+                            <Column field="job_key" header="Job" style="min-width: 12rem" />
+                            <Column field="queue" header="Queue" style="min-width: 8rem" />
+                            <Column field="attempts" header="Intentos" style="min-width: 7rem" />
+                            <Column field="error_message" header="Error" style="min-width: 16rem" />
+                            <Column field="failed_at" header="Fecha" style="min-width: 12rem">
+                                <template #body="slotProps">{{ formatDateTime(slotProps.data.failed_at) }}</template>
+                            </Column>
+                        </DataTable>
+                    </div>
                 </div>
 
                 <div class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
@@ -141,16 +143,18 @@ onMounted(loadOverview);
 
                     <StateEmpty v-if="!state.recentFailedTransfers.length" title="Sin transfers problematicos" description="No se detectaron transferencias fallidas o con errores parciales en la ventana actual." icon="pi pi-sync" />
 
-                    <DataTable v-else :value="state.recentFailedTransfers" dataKey="id">
-                        <Column field="resource_key" header="Recurso" style="min-width: 10rem" />
-                        <Column field="type" header="Tipo" style="min-width: 7rem" />
-                        <Column field="status" header="Estado" style="min-width: 9rem" />
-                        <Column field="records_failed" header="Fallidos" style="min-width: 7rem" />
-                        <Column field="error_summary" header="Resumen" style="min-width: 16rem" />
-                        <Column field="finished_at" header="Fecha" style="min-width: 12rem">
-                            <template #body="slotProps">{{ formatDateTime(slotProps.data.finished_at) }}</template>
-                        </Column>
-                    </DataTable>
+                    <div v-else class="overflow-x-auto">
+                        <DataTable :value="state.recentFailedTransfers" dataKey="id">
+                            <Column field="resource_key" header="Recurso" style="min-width: 10rem" />
+                            <Column field="type" header="Tipo" style="min-width: 7rem" />
+                            <Column field="status" header="Estado" style="min-width: 9rem" />
+                            <Column field="records_failed" header="Fallidos" style="min-width: 7rem" />
+                            <Column field="error_summary" header="Resumen" style="min-width: 16rem" />
+                            <Column field="finished_at" header="Fecha" style="min-width: 12rem">
+                                <template #body="slotProps">{{ formatDateTime(slotProps.data.finished_at) }}</template>
+                            </Column>
+                        </DataTable>
+                    </div>
                 </div>
             </div>
 
@@ -165,28 +169,30 @@ onMounted(loadOverview);
 
                 <StateEmpty v-if="!state.recentSecurityEvents.length" title="Sin eventos de seguridad" description="Aun no hay eventos de seguridad recientes dentro del tenant activo." icon="pi pi-shield" />
 
-                <DataTable v-else :value="state.recentSecurityEvents" dataKey="id">
-                    <Column field="occurred_at" header="Fecha" style="min-width: 12rem">
-                        <template #body="slotProps">{{ formatDateTime(slotProps.data.occurred_at) }}</template>
-                    </Column>
-                    <Column field="event_key" header="Evento" style="min-width: 14rem" />
-                    <Column field="severity" header="Severidad" style="min-width: 8rem">
-                        <template #body="slotProps">
-                            <Tag :severity="severityFor(slotProps.data.severity)" :value="slotProps.data.severity" />
-                        </template>
-                    </Column>
-                    <Column field="summary" header="Resumen" style="min-width: 16rem" />
-                    <Column field="request_id" header="Request ID" style="min-width: 15rem" />
-                    <Column header="Actor" style="min-width: 14rem">
-                        <template #body="slotProps">
-                            <div v-if="slotProps.data.actor" class="flex flex-col gap-1">
-                                <strong>{{ slotProps.data.actor.name }}</strong>
-                                <small class="text-color-secondary">{{ slotProps.data.actor.email }}</small>
-                            </div>
-                            <span v-else class="text-color-secondary">Sistema</span>
-                        </template>
-                    </Column>
-                </DataTable>
+                <div v-else class="overflow-x-auto">
+                    <DataTable :value="state.recentSecurityEvents" dataKey="id">
+                        <Column field="occurred_at" header="Fecha" style="min-width: 12rem">
+                            <template #body="slotProps">{{ formatDateTime(slotProps.data.occurred_at) }}</template>
+                        </Column>
+                        <Column field="event_key" header="Evento" style="min-width: 14rem" />
+                        <Column field="severity" header="Severidad" style="min-width: 8rem">
+                            <template #body="slotProps">
+                                <Tag :severity="severityFor(slotProps.data.severity)" :value="slotProps.data.severity" />
+                            </template>
+                        </Column>
+                        <Column field="summary" header="Resumen" style="min-width: 16rem" />
+                        <Column field="request_id" header="Request ID" style="min-width: 15rem" />
+                        <Column header="Actor" style="min-width: 14rem">
+                            <template #body="slotProps">
+                                <div v-if="slotProps.data.actor" class="flex flex-col gap-1">
+                                    <strong>{{ slotProps.data.actor.name }}</strong>
+                                    <small class="text-color-secondary">{{ slotProps.data.actor.email }}</small>
+                                </div>
+                                <span v-else class="text-color-secondary">Sistema</span>
+                            </template>
+                        </Column>
+                    </DataTable>
+                </div>
             </div>
         </template>
     </div>

@@ -120,24 +120,26 @@ onMounted(loadTokens);
         <div v-else class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
             <StateEmpty v-if="!hasItems" title="Sin tokens API" description="Todavia no generaste tokens personales para acceso API." icon="pi pi-key" />
 
-            <DataTable v-else :value="state.items" dataKey="id">
-                <Column field="name" header="Nombre" style="min-width: 15rem" />
-                <Column field="type" header="Tipo" style="min-width: 10rem" />
-                <Column field="created_at" header="Creado" style="min-width: 12rem">
-                    <template #body="slotProps">{{ formatDateTime(slotProps.data.created_at) }}</template>
-                </Column>
-                <Column field="last_used_at" header="Ultimo uso" style="min-width: 12rem">
-                    <template #body="slotProps">{{ formatDateTime(slotProps.data.last_used_at) }}</template>
-                </Column>
-                <Column field="expires_at" header="Expira" style="min-width: 12rem">
-                    <template #body="slotProps">{{ formatDateTime(slotProps.data.expires_at) }}</template>
-                </Column>
-                <Column header="Acciones" style="min-width: 8rem">
-                    <template #body="slotProps">
-                        <Button label="Revocar" icon="pi pi-times" text severity="danger" @click="revokeToken(slotProps.data)" />
-                    </template>
-                </Column>
-            </DataTable>
+            <div v-else class="overflow-x-auto">
+                <DataTable :value="state.items" dataKey="id">
+                    <Column field="name" header="Nombre" style="min-width: 15rem" />
+                    <Column field="type" header="Tipo" style="min-width: 10rem" />
+                    <Column field="created_at" header="Creado" style="min-width: 12rem">
+                        <template #body="slotProps">{{ formatDateTime(slotProps.data.created_at) }}</template>
+                    </Column>
+                    <Column field="last_used_at" header="Ultimo uso" style="min-width: 12rem">
+                        <template #body="slotProps">{{ formatDateTime(slotProps.data.last_used_at) }}</template>
+                    </Column>
+                    <Column field="expires_at" header="Expira" style="min-width: 12rem">
+                        <template #body="slotProps">{{ formatDateTime(slotProps.data.expires_at) }}</template>
+                    </Column>
+                    <Column header="Acciones" style="min-width: 8rem">
+                        <template #body="slotProps">
+                            <Button label="Revocar" icon="pi pi-times" text severity="danger" @click="revokeToken(slotProps.data)" />
+                        </template>
+                    </Column>
+                </DataTable>
+            </div>
         </div>
     </div>
 </template>

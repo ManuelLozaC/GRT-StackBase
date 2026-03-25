@@ -64,6 +64,14 @@ export const coreRoutes = [
                 component: () => import('@/views/pages/SystemModules.vue')
             },
             {
+                path: '/admin/webhooks',
+                name: 'system-webhooks',
+                meta: {
+                    permissionKey: 'integrations.manage'
+                },
+                component: () => import('@/views/pages/SystemWebhooks.vue')
+            },
+            {
                 path: '/admin/settings',
                 name: 'system-settings',
                 meta: {

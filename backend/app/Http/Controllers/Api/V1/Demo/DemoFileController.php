@@ -9,6 +9,7 @@ use App\Core\Files\Services\FileManager;
 use App\Core\Http\Concerns\ApiResponse;
 use App\Core\Metrics\MetricsRecorder;
 use App\Core\Modules\ModuleSettingsManager;
+use App\Core\Webhooks\WebhookManager;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\V1\Demo\CreateTemporaryFileLinkRequest;
 use App\Http\Requests\Api\V1\Demo\StoreDemoFileRequest;
@@ -26,6 +27,7 @@ class DemoFileController extends Controller
         protected AuditLogger $auditLogger,
         protected ModuleSettingsManager $moduleSettings,
         protected MetricsRecorder $metrics,
+        protected WebhookManager $webhooks,
     ) {
     }
 
@@ -78,6 +80,25 @@ class DemoFileController extends Controller
             context: [
                 'file_uuid' => $file->uuid,
             ],
+        );
+        $this->webhooks->dispatch(
+            moduleKey: 'demo-platform',
+            eventKey: 'demo.file.uploaded',
+            payload: [
+                'file' => [
+                    'uuid' => $file->uuid,
+                    'original_name' => $file->original_name,
+                    'mime_type' => $file->mime_type,
+                    'size_bytes' => $file->size_bytes,
+                    'version' => $file->version,
+                ],
+                'uploaded_by' => [
+                    'id' => $user->id,
+                    'email' => $user->email,
+                ],
+                'occurred_at' => now()->toIso8601String(),
+            ],
+            actor: $user,
         );
 
         return $this->successResponse(

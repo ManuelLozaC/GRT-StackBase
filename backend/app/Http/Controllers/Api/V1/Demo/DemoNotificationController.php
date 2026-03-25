@@ -7,6 +7,7 @@ use App\Core\Http\Concerns\ApiResponse;
 use App\Core\Metrics\MetricsRecorder;
 use App\Core\Modules\ModuleSettingsManager;
 use App\Core\Notifications\Services\NotificationCenter;
+use App\Core\Webhooks\WebhookManager;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\V1\Demo\StoreDemoNotificationRequest;
 use App\Models\User;
@@ -21,6 +22,7 @@ class DemoNotificationController extends Controller
         protected AuditLogger $auditLogger,
         protected ModuleSettingsManager $moduleSettings,
         protected MetricsRecorder $metrics,
+        protected WebhookManager $webhooks,
     ) {
     }
 
@@ -65,6 +67,24 @@ class DemoNotificationController extends Controller
             context: [
                 'channels' => $deliveries->pluck('channel')->all(),
             ],
+        );
+        $this->webhooks->dispatch(
+            moduleKey: 'demo-platform',
+            eventKey: 'demo.notification.created',
+            payload: [
+                'notification' => [
+                    'uuid' => $notification?->uuid,
+                    'title' => $notification?->title ?? $request->string('title')->toString(),
+                    'level' => $notification?->level ?? $request->string('level')->toString(),
+                    'channels' => $deliveries->pluck('channel')->all(),
+                ],
+                'created_by' => [
+                    'id' => $user->id,
+                    'email' => $user->email,
+                ],
+                'occurred_at' => now()->toIso8601String(),
+            ],
+            actor: $user,
         );
 
         return $this->successResponse(

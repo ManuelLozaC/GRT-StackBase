@@ -17,6 +17,7 @@ use App\Http\Controllers\Api\V1\ErrorLogController;
 use App\Http\Controllers\Api\V1\SecurityLogController;
 use App\Http\Controllers\Api\V1\SettingController;
 use App\Http\Controllers\Api\V1\UserManagementController;
+use App\Http\Controllers\Api\V1\WebhookController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('v1')->group(function (): void {
@@ -87,6 +88,14 @@ Route::prefix('v1')->group(function (): void {
         Route::middleware('permission:security.manage')->get('/error-logs', [ErrorLogController::class, 'index']);
         Route::middleware('permission:security.manage')->get('/operations/overview', OperationsOverviewController::class);
         Route::middleware('permission:security.manage')->get('/metrics/overview', MetricsOverviewController::class);
+
+        Route::middleware('permission:integrations.manage')->group(function (): void {
+            Route::get('/webhooks/endpoints', [WebhookController::class, 'endpoints']);
+            Route::post('/webhooks/endpoints', [WebhookController::class, 'store'])->middleware('throttle:data-writes');
+            Route::patch('/webhooks/endpoints/{endpoint}', [WebhookController::class, 'update'])->middleware('throttle:data-writes');
+            Route::post('/webhooks/endpoints/{endpoint}/test', [WebhookController::class, 'test'])->middleware('throttle:data-writes');
+            Route::get('/webhooks/deliveries', [WebhookController::class, 'deliveries']);
+        });
 
         Route::middleware('permission:modules.manage')->group(function (): void {
             Route::patch('/modules/{moduleKey}', [ModuleController::class, 'updateStatus']);

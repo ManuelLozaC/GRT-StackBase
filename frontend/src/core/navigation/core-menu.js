@@ -56,6 +56,12 @@ export const coreMenu = [
                 permissionKey: 'modules.manage'
             },
             {
+                label: 'Webhooks',
+                icon: 'pi pi-fw pi-send',
+                to: '/admin/webhooks',
+                permissionKey: 'integrations.manage'
+            },
+            {
                 label: 'System Settings',
                 icon: 'pi pi-fw pi-sliders-v',
                 to: '/admin/settings',

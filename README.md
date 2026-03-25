@@ -28,7 +28,7 @@ Resolver una sola vez las capacidades transversales del producto y reutilizarlas
 - Estructuras tenant base (`empresas`, `sucursales`, `equipos`) y base multicanal de notificaciones.
 - Request IDs, rate limiting base, security logs y operations overview administrativo.
 - Error logs, usage metrics y formatos locale-aware aplicados desde settings.
-- API tokens personales, sanitizacion base y preferencias persistidas de Data Engine.
+- API tokens personales, webhooks salientes administrables, sanitizacion base y preferencias persistidas de Data Engine.
 
 ## Documentacion principal
 
@@ -54,3 +54,4 @@ npm run build
 - storage real con Spaces
 - notificaciones multicanal reales
 - evolucion del Data Engine hacia acciones avanzadas y operaciones masivas
+- recepcion de webhooks y sincronizacion API mas profunda

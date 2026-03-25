@@ -14,6 +14,7 @@ return [
             'permissions' => [
                 'modules.manage',
                 'settings.manage',
+                'integrations.manage',
                 'users.manage_roles',
                 'users.impersonate',
                 'tenancy.manage',
@@ -37,7 +38,13 @@ return [
                 'notifications',
             ],
             'jobs' => [],
-            'webhooks' => [],
+            'webhooks' => [
+                [
+                    'key' => 'module.status.updated',
+                    'label' => 'Cambio de estado de modulo',
+                    'description' => 'Se emite cuando un administrador habilita o deshabilita un modulo.',
+                ],
+            ],
             'dashboards' => [],
             'seeders' => [
                 Database\Seeders\RolePermissionSeeder::class,
@@ -95,7 +102,18 @@ return [
                 App\Jobs\Demo\ProcessDemoJobRun::class,
                 App\Jobs\DataEngine\ProcessDataExportRun::class,
             ],
-            'webhooks' => [],
+            'webhooks' => [
+                [
+                    'key' => 'demo.notification.created',
+                    'label' => 'Notificacion demo creada',
+                    'description' => 'Se emite cuando el Demo Module genera una notificacion interna o multicanal.',
+                ],
+                [
+                    'key' => 'demo.file.uploaded',
+                    'label' => 'Archivo demo cargado',
+                    'description' => 'Se emite al registrar una nueva carga de archivo dentro del modulo de demo.',
+                ],
+            ],
             'dashboards' => [],
             'seeders' => [],
             'assets' => [],
