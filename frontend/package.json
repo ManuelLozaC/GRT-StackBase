@@ -9,8 +9,13 @@
     },
     "dependencies": {
         "@primeuix/themes": "^2.0.0",
+<<<<<<< HEAD
         "axios": "^1.8.4",
+=======
+        "axios": "^1.9.0",
+>>>>>>> 7e73f0a9cd3fbae4dc50a3da8e769c2a38178ab3
         "chart.js": "3.3.2",
+        "pinia": "^3.0.3",
         "primeicons": "^7.0.0",
         "primevue": "^4.5.4",
         "tailwindcss-primeui": "^0.6.0",
