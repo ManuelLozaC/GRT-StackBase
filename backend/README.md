@@ -14,6 +14,9 @@ Backend API-first construido con Laravel 12.
 - Solo se mantiene activa la capa HTTP alineada a `api/v1`; el API legacy previo fue retirado.
 - Seeders iniciales de permisos alineados en un solo flujo (`RolePermissionSeeder`).
 - Metadata modular ampliada en `config/modules.php` con dependencias, permisos, settings y features.
+- Listado de modulos disponible para cualquier usuario autenticado; el toggle sigue protegido por permiso.
+- `TenantContext` compartido para request autenticado y jobs base.
+- Migraciones fundacionales separadas por responsabilidad.
 - Registro de modulos.
 - Persistencia de modulos en `system_modules`.
 - Toggle de modulos por API.

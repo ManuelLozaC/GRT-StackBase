@@ -125,6 +125,10 @@ class ModuleRegistry
             'permissions' => [],
             'settings' => [],
             'features' => [],
+            'frontend' => [
+                'navigation' => null,
+                'routes' => [],
+            ],
         ], $module);
     }
 

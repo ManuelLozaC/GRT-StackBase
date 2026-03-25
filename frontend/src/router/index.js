@@ -1,16 +1,38 @@
 import { authStore } from '@/core/auth/authStore';
 import { moduleCatalog } from '@/core/modules/moduleCatalog';
 import { coreRoutes } from '@/core/router/core-routes';
-import { moduleRoutes } from '@/modules';
 import { createRouter, createWebHistory } from 'vue-router';
 
 const router = createRouter({
     history: createWebHistory(),
-    routes: [...coreRoutes, ...moduleRoutes]
+    routes: [...coreRoutes]
 });
+
+function ensureModuleRoutesRegistered() {
+    const routeNames = [];
+
+    moduleCatalog.routeRecords.value.forEach((routeRecord) => {
+        if (!router.hasRoute(routeRecord.name)) {
+            router.addRoute('app-shell', routeRecord);
+        }
+
+        routeNames.push(routeRecord.name);
+    });
+
+    moduleCatalog.markRoutesRegistered(routeNames);
+}
 
 router.beforeEach(async (to) => {
     await authStore.initialize();
+
+    if (authStore.isAuthenticated.value) {
+        await moduleCatalog.loadModules();
+        ensureModuleRoutesRegistered();
+
+        if (to.matched.length === 0) {
+            return to.fullPath;
+        }
+    }
 
     const requiresAuth = to.matched.some((record) => record.meta.requiresAuth);
 
@@ -40,8 +62,6 @@ router.beforeEach(async (to) => {
     if (!requiresAuth) {
         return true;
     }
-
-    await moduleCatalog.loadModules();
 
     if (to.meta?.moduleKey && !moduleCatalog.isModuleEnabled(to.meta.moduleKey)) {
         return {

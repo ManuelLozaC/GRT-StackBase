@@ -20,6 +20,10 @@ return [
                 'audit',
                 'notifications',
             ],
+            'frontend' => [
+                'navigation' => null,
+                'routes' => [],
+            ],
         ],
         'demo-platform' => [
             'name' => 'Demo Platform',
@@ -38,6 +42,63 @@ return [
                 'demo.files',
                 'demo.jobs',
                 'demo.audit',
+            ],
+            'frontend' => [
+                'navigation' => [
+                    'label' => 'Demo',
+                ],
+                'routes' => [
+                    [
+                        'path' => '/demo/platform',
+                        'name' => 'platform-demo',
+                        'view' => 'platform.demo',
+                        'meta' => [],
+                        'menu' => [
+                            'label' => 'Platform Demo',
+                            'icon' => 'pi pi-fw pi-play-circle',
+                        ],
+                    ],
+                    [
+                        'path' => '/demo/notifications',
+                        'name' => 'demo-notifications',
+                        'view' => 'demo.notifications',
+                        'meta' => [],
+                        'menu' => [
+                            'label' => 'Notifications Demo',
+                            'icon' => 'pi pi-fw pi-bell',
+                        ],
+                    ],
+                    [
+                        'path' => '/demo/files',
+                        'name' => 'demo-files',
+                        'view' => 'demo.files',
+                        'meta' => [],
+                        'menu' => [
+                            'label' => 'Files Demo',
+                            'icon' => 'pi pi-fw pi-file',
+                        ],
+                    ],
+                    [
+                        'path' => '/demo/jobs',
+                        'name' => 'demo-jobs',
+                        'view' => 'demo.jobs',
+                        'meta' => [],
+                        'menu' => [
+                            'label' => 'Jobs Demo',
+                            'icon' => 'pi pi-fw pi-cog',
+                        ],
+                    ],
+                    [
+                        'path' => '/demo/audit',
+                        'name' => 'demo-audit',
+                        'view' => 'demo.audit',
+                        'meta' => [],
+                        'menu' => [
+                            'label' => 'Audit Demo',
+                            'icon' => 'pi pi-fw pi-history',
+                        ],
+                    ],
+                ],
             ],
         ],
     ],

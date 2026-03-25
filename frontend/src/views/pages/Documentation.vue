@@ -11,8 +11,9 @@
                 <div class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm h-full">
                     <div class="text-sm font-semibold text-slate-500 uppercase mb-3">Core</div>
                     <ul class="space-y-3 text-slate-700 list-disc pl-5">
-                        <li>Autenticacion API y tenancy base</li>
-                        <li>Modulos instalables con activacion por administracion</li>
+                        <li>Autenticacion API con stores separados de sesion, tenant y permisos</li>
+                        <li>Tenancy base reforzada con `TenantContext` en request y jobs</li>
+                        <li>Modulos instalables consumidos por API como fuente de verdad</li>
                         <li>Servicios de archivos, jobs, auditoria y notificaciones</li>
                         <li>Respuesta estandar en `api/v1`</li>
                     </ul>
@@ -23,6 +24,7 @@
                 <div class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm h-full">
                     <div class="text-sm font-semibold text-slate-500 uppercase mb-3">Demo Module</div>
                     <ul class="space-y-3 text-slate-700 list-disc pl-5">
+                        <li>Rutas y menu bootstrappeados desde metadata modular backend</li>
                         <li>Demo funcional de archivos</li>
                         <li>Demo funcional de jobs</li>
                         <li>Demo funcional de auditoria</li>
@@ -36,7 +38,8 @@
                     <div class="text-sm font-semibold text-slate-500 uppercase mb-3">Siguiente foco</div>
                     <ul class="space-y-3 text-slate-700 list-disc pl-5">
                         <li>Motor CRUD universal</li>
-                        <li>Propagacion tenant consistente</li>
+                        <li>Generalizar el contrato modular para futuros modulos</li>
+                        <li>Propagacion tenant consistente en todo el dominio</li>
                         <li>Storage real con Spaces</li>
                         <li>Export/import demo funcional</li>
                     </ul>

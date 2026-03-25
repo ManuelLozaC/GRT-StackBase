@@ -2,16 +2,16 @@
 > Contrato actual de referencia para crecer `Core Platform + Modules` sin duplicar wiring.
 
 ## Objetivo
-Cada modulo debe declararse una sola vez y desde esa manifest alimentar:
+Cada modulo debe declararse una sola vez en backend y desde esa fuente alimentar:
 - registro backend
 - activacion/desactivacion
 - metadata funcional
-- rutas frontend
-- menu frontend
+- bootstrap de rutas frontend
+- bootstrap de menu frontend
 - permisos y dependencias declarativas
 
 ## Contrato backend actual
-La fuente de verdad backend vive en `backend/config/modules.php`.
+La fuente de verdad vive en `backend/config/modules.php` y se expone por `GET /api/v1/modules`.
 
 Campos soportados hoy:
 - `name`
@@ -24,34 +24,33 @@ Campos soportados hoy:
 - `permissions`
 - `settings`
 - `features`
+- `frontend.navigation`
+- `frontend.routes`
 
 ## Contrato frontend actual
-La fuente de verdad frontend por modulo vive en `frontend/src/modules/<module-key>/manifest.js`.
+Frontend ya no define metadata de navegacion como fuente de verdad.
 
-Campos soportados hoy:
-- `key`
-- `name`
-- `description`
-- `isDemo`
-- `navigation.label`
-- `routes[]`
+Frontend solo mantiene un registro local de vistas en `frontend/src/modules/<module-key>/registry.js`.
 
-Cada entrada de `routes[]` puede declarar:
+Cada registro local resuelve:
+- `viewKey -> component`
+
+La metadata que llega por API declara:
 - `path`
 - `name`
-- `component`
+- `view`
 - `meta`
 - `menu.label`
 - `menu.icon`
 
 ## Estado actual
-- `demo-platform` ya usa manifest unica en frontend.
-- `frontend/src/modules/index.js` ya compone `moduleRoutes` y `moduleMenu` desde manifests.
+- `demo-platform` ya consume metadata de rutas y menu desde backend/API.
+- `frontend/src/modules/registry.js` solo resuelve componentes locales por `viewKey`.
+- `moduleCatalog` ya construye menu y rutas desde la respuesta de `GET /api/v1/modules`.
 - `ModuleRegistry` ya normaliza metadata modular en backend y la conserva al togglear modulos.
 
 ## Deuda restante del contrato
-- unificar naming y estructura entre manifest frontend y config backend
-- exponer metadata modular extendida por API para que frontend no dependa de duplicacion manual
+- generalizar el contrato para futuros modulos sin wiring adicional
 - declarar dependencias entre modulos y bloquear activaciones invalidas
 - soportar permisos y settings por modulo de forma operativa, no solo descriptiva
-- permitir rutas y menus declarativos para futuros modulos sin wiring manual adicional
+- reducir aun mas el registro local frontend a solo vistas realmente necesarias

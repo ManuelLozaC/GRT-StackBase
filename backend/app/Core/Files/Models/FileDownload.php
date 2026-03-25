@@ -4,13 +4,14 @@ namespace App\Core\Files\Models;
 
 use App\Models\Organizacion;
 use App\Models\User;
+use App\Traits\MultiTenantable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class FileDownload extends Model
 {
-    use HasFactory;
+    use HasFactory, MultiTenantable;
 
     protected $table = 'core_file_downloads';
 

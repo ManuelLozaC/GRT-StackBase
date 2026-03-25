@@ -1,12 +1,14 @@
 <script setup>
-import { authStore } from '@/core/auth/authStore';
+import { accessStore } from '@/core/auth/accessStore';
+import { sessionStore } from '@/core/auth/sessionStore';
+import { tenantStore } from '@/core/auth/tenantStore';
 import { computed } from 'vue';
 
-const user = computed(() => authStore.state.user);
-const activeOrganization = computed(() => user.value?.organizacion_activa ?? null);
-const organizations = computed(() => user.value?.organizaciones ?? []);
-const roles = computed(() => user.value?.roles ?? []);
-const permissions = computed(() => user.value?.permissions ?? []);
+const user = computed(() => sessionStore.state.user);
+const activeOrganization = computed(() => tenantStore.activeOrganization.value);
+const organizations = computed(() => tenantStore.organizations.value);
+const roles = computed(() => accessStore.roles.value);
+const permissions = computed(() => accessStore.permissions.value);
 </script>
 
 <template>

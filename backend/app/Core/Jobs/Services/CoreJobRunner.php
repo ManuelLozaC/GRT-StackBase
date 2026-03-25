@@ -3,17 +3,23 @@
 namespace App\Core\Jobs\Services;
 
 use App\Core\Jobs\Models\CoreJobRun;
+use App\Core\Tenancy\TenantContext;
 use App\Models\User;
 use Illuminate\Support\Str;
 use Throwable;
 
 class CoreJobRunner
 {
+    public function __construct(
+        protected TenantContext $tenantContext,
+    ) {
+    }
+
     public function createDemoRun(User $user, array $payload, string $queue = 'demo'): CoreJobRun
     {
         return CoreJobRun::query()->create([
             'uuid' => (string) Str::uuid(),
-            'organizacion_id' => $user->organizacion_activa_id,
+            'organizacion_id' => $this->tenantContext->organizationId($user),
             'requested_by' => $user->id,
             'job_key' => 'demo.text-transform',
             'queue' => $queue,

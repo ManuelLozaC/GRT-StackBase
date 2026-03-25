@@ -24,6 +24,7 @@ Fecha de referencia: `2026-03-25`
 - Toolchain frontend endurecido: `Vite 6.4.1`, auditoria `npm` limpia y build chunked sin warnings por tamano excesivo.
 - Base fundacional del core adelgazada: catalogos y modelos inactivos de ubicacion/personas retirados del arranque modular.
 - Primer paso del contrato modular formal: metadata backend ampliada y manifest unica del `Demo Module` en frontend.
+- Contrato modular consumido por API para bootstrap del `Demo Module`, stores de auth separados y tenancy base reforzada con `TenantContext`.
 - Registro modular inicial con `core-platform` y `demo-platform`.
 - Persistencia de modulos en base de datos y toggle por API.
 - Pantalla de administracion de modulos en frontend.
@@ -37,8 +38,7 @@ Fecha de referencia: `2026-03-25`
 - Build frontend y tests backend pasando.
 
 ### En progreso
-- Estructura `core/modules` ya creada, pero el contrato de modulos todavia debe crecer.
-- El `Demo Module` ya usa manifest declarativa en frontend; falta unificar esa fuente con backend/API.
+- Estructura `core/modules` ya creada y el `Demo Module` ya usa bootstrap por API; el contrato de modulos todavia debe crecer para futuros modulos.
 - Tenancy base ya existe, pero falta propagarla de forma consistente a modelos, jobs, archivos y auditoria.
 - `Demo Module` ya existe y ya contiene demos funcionales de archivos, jobs, auditoria y notificaciones. Sigue pendiente export/import.
 - Persisten deudas operativas menores ligadas sobre todo a tenancy transversal, UX global y definicion formal del contrato modular.
@@ -59,9 +59,9 @@ Estado: En progreso
 - [x] Pantalla de administracion para habilitar o deshabilitar modulos.
 - [x] `Demo Module` inicial habilitable desde administracion.
 - [ ] Contrato formal completo de modulos: permisos, settings, webhooks, dashboards, assets, seeds.
-- [x] Manifest declarativa inicial del `Demo Module` en frontend.
+- [x] Bootstrap inicial del `Demo Module` desde metadata backend/API.
 - [ ] Contrato formal de demos por capacidad transversal.
-- [ ] Bootstrap modular desde API para no duplicar metadata entre backend y frontend.
+- [x] Bootstrap modular desde API para no duplicar metadata del `Demo Module`.
 
 ## Fase 1. Identidad y acceso
 Estado: En progreso
@@ -134,7 +134,7 @@ El backlog detallado vive en `docs/pendientes.md`.
 
 ## Resumen actual
 - Logrado: kernel modular, auth API, registro, reset de password, RBAC inicial, tenancy base, archivos, jobs, auditoria y notificaciones internas ya funcionan en backend y frontend con demos activables desde `Demo Module`; ademas la integridad del repositorio quedo estabilizada, la capa legacy principal fue retirada y todo quedo verificado con tests/build.
-- Pendiente: completar multi-tenant transversal, CRUD universal, export/import, integraciones de storage y notificaciones multicanal, mas observabilidad y seguridad operativa, y cerrar la definicion formal del contrato `core + modules`.
-- Pendiente tecnico residual: seguir endureciendo el core en tenancy transversal, CRUD generico, bootstrap modular desde API y catalogos universales realmente necesarios.
+- Pendiente: completar multi-tenant transversal, CRUD universal, export/import, integraciones de storage y notificaciones multicanal, mas observabilidad y seguridad operativa, y generalizar el contrato `core + modules` para nuevos modulos.
+- Pendiente tecnico residual: seguir endureciendo el core en tenancy transversal, CRUD generico, dependencias modulares operativas y catalogos universales realmente necesarios.
 
-Avance global estimado del roadmap: 76% completado.
+Avance global estimado del roadmap: 82% completado.

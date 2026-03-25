@@ -3,10 +3,16 @@
 namespace App\Core\Audit\Services;
 
 use App\Core\Audit\Models\AuditLog;
+use App\Core\Tenancy\TenantContext;
 use App\Models\User;
 
 class AuditLogger
 {
+    public function __construct(
+        protected TenantContext $tenantContext,
+    ) {
+    }
+
     public function record(
         string $eventKey,
         ?User $actor = null,
@@ -18,7 +24,7 @@ class AuditLogger
         ?int $organizationId = null,
     ): AuditLog {
         return AuditLog::query()->create([
-            'organizacion_id' => $organizationId ?? $actor?->organizacion_activa_id,
+            'organizacion_id' => $organizationId ?? $this->tenantContext->organizationId($actor),
             'actor_id' => $actor?->id,
             'event_key' => $eventKey,
             'entity_type' => $entityType,

@@ -1,5 +1,6 @@
 <script setup>
-import { authStore } from '@/core/auth/authStore';
+import { sessionStore } from '@/core/auth/sessionStore';
+import { tenantStore } from '@/core/auth/tenantStore';
 import { notificationStore } from '@/core/notifications/notificationStore';
 import { useLayout } from '@/layout/composables/layout';
 import { useToast } from 'primevue/usetoast';
@@ -10,12 +11,12 @@ import AppConfigurator from './AppConfigurator.vue';
 const router = useRouter();
 const toast = useToast();
 const { toggleMenu, toggleDarkMode, isDarkTheme } = useLayout();
-const organizations = computed(() => authStore.organizations.value);
-const activeOrganizationId = computed(() => authStore.activeOrganization.value?.id ?? '');
+const organizations = computed(() => tenantStore.organizations.value);
+const activeOrganizationId = computed(() => tenantStore.activeOrganization.value?.id ?? '');
 const unreadNotifications = computed(() => notificationStore.unreadCount.value);
 
 async function logout() {
-    await authStore.logout();
+    await sessionStore.logout();
 
     toast.add({
         severity: 'success',
@@ -36,8 +37,7 @@ async function switchOrganization(event) {
         return;
     }
 
-    await authStore.switchActiveOrganization(selectedId);
-    await notificationStore.loadNotifications();
+    await tenantStore.switchActiveOrganization(selectedId);
 
     toast.add({
         severity: 'success',
@@ -98,7 +98,7 @@ async function openNotifications() {
                 <div class="layout-topbar-menu-content">
                     <label v-if="organizations.length > 0" class="topbar-organization-switcher">
                         <span>Organizacion</span>
-                        <select :value="activeOrganizationId" :disabled="authStore.state.switchingOrganization" @change="switchOrganization">
+                        <select :value="activeOrganizationId" :disabled="tenantStore.state.switchingOrganization" @change="switchOrganization">
                             <option v-for="organization in organizations" :key="organization.id" :value="organization.id">
                                 {{ organization.nombre }}
                             </option>
@@ -106,11 +106,11 @@ async function openNotifications() {
                     </label>
                     <button type="button" class="layout-topbar-action">
                         <i class="pi pi-user"></i>
-                        <span>{{ authStore.state.user?.name || 'Profile' }}</span>
+                        <span>{{ sessionStore.state.user?.name || 'Profile' }}</span>
                     </button>
                     <button type="button" class="layout-topbar-action">
                         <i class="pi pi-envelope"></i>
-                        <span>{{ authStore.state.user?.email || 'No email' }}</span>
+                        <span>{{ sessionStore.state.user?.email || 'No email' }}</span>
                     </button>
                     <button type="button" class="layout-topbar-action" @click="logout">
                         <i class="pi pi-sign-out"></i>

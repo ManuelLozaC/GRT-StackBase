@@ -14,6 +14,7 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->alias([
             'auth-token' => \App\Http\Middleware\ApiTokenAuth::class,
+            'tenant-context' => \App\Http\Middleware\SetTenantContext::class,
             'permission' => \App\Http\Middleware\RequirePermission::class,
         ]);
     })

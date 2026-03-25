@@ -4,6 +4,7 @@ namespace App\Jobs\Demo;
 
 use App\Core\Jobs\Models\CoreJobRun;
 use App\Core\Jobs\Services\CoreJobRunner;
+use App\Core\Tenancy\TenantContext;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Foundation\Queue\Queueable;
@@ -25,12 +26,18 @@ class ProcessDemoJobRun implements ShouldQueue
         $this->onQueue('demo');
     }
 
-    public function handle(CoreJobRunner $jobRunner): void
+    public function handle(CoreJobRunner $jobRunner, TenantContext $tenantContext): void
     {
         $jobRun = CoreJobRun::query()->findOrFail($this->jobRunId);
         $attempts = $this->job?->attempts() ?? 1;
 
-        $jobRunner->runDemoJob($jobRun, $attempts);
+        $tenantContext->setOrganizationId($jobRun->organizacion_id);
+
+        try {
+            $jobRunner->runDemoJob($jobRun, $attempts);
+        } finally {
+            $tenantContext->clear();
+        }
     }
 
     public function failed(Throwable $exception): void

@@ -3,6 +3,7 @@ import AppLayout from '@/layout/AppLayout.vue';
 export const coreRoutes = [
     {
         path: '/',
+        name: 'app-shell',
         meta: {
             requiresAuth: true
         },

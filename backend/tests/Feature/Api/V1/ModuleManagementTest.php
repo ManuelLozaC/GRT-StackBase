@@ -52,11 +52,22 @@ class ModuleManagementTest extends TestCase
             ]);
     }
 
-    public function test_it_rejects_authenticated_user_without_permission(): void
+    public function test_it_allows_authenticated_user_to_list_modules_without_permission(): void
     {
         $this
             ->withHeader('Authorization', 'Bearer '.$this->issueToken(false))
             ->getJson('/api/v1/modules')
+            ->assertOk()
+            ->assertJsonPath('estado', 'ok');
+    }
+
+    public function test_it_rejects_module_toggle_without_permission(): void
+    {
+        $this
+            ->withHeader('Authorization', 'Bearer '.$this->issueToken(false))
+            ->patchJson('/api/v1/modules/demo-platform', [
+                'enabled' => true,
+            ])
             ->assertStatus(403)
             ->assertJsonPath('estado', 'error');
     }

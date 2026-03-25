@@ -2,6 +2,7 @@
 
 namespace App\Traits;
 
+use App\Core\Tenancy\TenantContext;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Schema;
 use Throwable;
@@ -29,11 +30,7 @@ trait MultiTenantable
 
     protected static function resolveCurrentOrganizationId(): ?int
     {
-        if (! auth()->check()) {
-            return null;
-        }
-
-        return auth()->user()?->organizacion_activa_id;
+        return app(TenantContext::class)->organizationId(auth()->user());
     }
 
     protected static function supportsOrganizationColumn(): bool

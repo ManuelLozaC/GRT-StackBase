@@ -4,6 +4,7 @@ namespace App\Core\Files\Services;
 
 use App\Core\Files\Models\FileDownload;
 use App\Core\Files\Models\ManagedFile;
+use App\Core\Tenancy\TenantContext;
 use App\Models\User;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
@@ -13,6 +14,11 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class FileManager
 {
+    public function __construct(
+        protected TenantContext $tenantContext,
+    ) {
+    }
+
     public function storeUploadedFile(UploadedFile $uploadedFile, User $user, array $metadata = []): ManagedFile
     {
         $disk = config('filesystems.default', 'local');
@@ -29,7 +35,7 @@ class FileManager
 
         return ManagedFile::query()->create([
             'uuid' => $uuid,
-            'organizacion_id' => $user->organizacion_activa_id,
+            'organizacion_id' => $this->tenantContext->organizationId($user),
             'uploaded_by' => $user->id,
             'disk' => $disk,
             'path' => $path,
@@ -64,7 +70,7 @@ class FileManager
     {
         FileDownload::query()->create([
             'managed_file_id' => $file->id,
-            'organizacion_id' => $file->organizacion_id,
+            'organizacion_id' => $this->tenantContext->organizationId($user) ?? $file->organizacion_id,
             'user_id' => $user?->id,
             'channel' => $channel,
             'status' => 'completed',

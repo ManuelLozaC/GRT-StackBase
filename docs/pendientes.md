@@ -49,7 +49,7 @@
 - [ ] Auditoria y logs avanzados.
 - [ ] Demos funcionales de las capacidades genericas.
 - [ ] Definir los catalogos universales reales que el core soportara de forma explicita.
-- [ ] Unificar contrato modular backend/frontend en una sola fuente de verdad consumible por API.
+- [x] Unificar metadata modular backend/frontend para que rutas y menu se consuman por API.
 
 ## Regla transversal del proyecto
 - [x] Toda funcionalidad generica importante debe vivir en el core.
@@ -74,10 +74,10 @@ Estado: En progreso
 - [ ] Contrato formal de un modulo: permisos, menus, rutas, migraciones, settings, jobs, webhooks, dashboards.
 - [ ] Contrato formal de una demo por capacidad transversal.
 - [x] Carga de menus y rutas del `Demo Module` desde manifest declarativa frontend.
-- [ ] Carga de menus y rutas por modulo desde metadata declarativa backend/frontend unificada.
+- [x] Carga de menus y rutas del `Demo Module` desde metadata declarativa backend/API.
 - [ ] Orden de carga y dependencias entre modulos.
 - [ ] Bloqueo operativo de dependencias entre modulos al activar/desactivar.
-- [ ] Exponer metadata modular extendida por API para bootstrap frontend.
+- [x] Exponer metadata modular extendida por API para bootstrap frontend.
 
 ## P1. Identidad y acceso
 Estado: En progreso
@@ -110,6 +110,7 @@ Estado: En progreso
 - [ ] Configuracion por tenant.
 - [ ] Scope multi-tenant consistente en modelos, jobs, archivos y auditoria.
 - [x] Base fundacional de tenancy adelgazada para no mezclar catalogos de ubicacion o personas no usados por el core.
+- [x] `TenantContext` compartido para request autenticado y jobs base.
 
 ## P3. Configuracion del sistema
 Estado: Pendiente
@@ -275,10 +276,11 @@ Estado: En progreso
 - [x] Retirar catalogos y modelos inactivos del arranque base.
 - [x] Manifest unica del `Demo Module` en frontend para evitar duplicacion de rutas/menu.
 - [x] Metadata modular backend ampliada con `dependencies`, `permissions`, `settings` y `features`.
-- [ ] Separar `authStore` en contexto de sesion, tenant y permisos si el crecimiento del core lo exige.
-- [ ] Separar migraciones fundacionales por responsabilidad (`organizaciones`, `users`, `organizacion_user`).
-- [ ] Depurar `core-menu` para dejar solo shell realmente transversal del producto.
-- [ ] Convertir manifests frontend a bootstrap desde API/modulo registrado.
+- [x] Separar stores de sesion, tenant y permisos.
+- [x] Separar migraciones fundacionales por responsabilidad (`organizaciones`, `users`, `organizacion_user`).
+- [x] Depurar `core-menu` para dejar solo shell realmente transversal del producto.
+- [x] Convertir bootstrap modular frontend a metadata consumida por API.
+- [ ] Reducir mas el shell core a rutas/utilidades estrictamente transversales.
 
 ## P17. Higiene tecnica y operativa
 Estado: En progreso
@@ -320,7 +322,7 @@ Estado: Pendiente
 
 ## Siguiente desarrollo recomendado
 1. Scope multi-tenant consistente en modelos, jobs, archivos y auditoria.
-2. Unificar contrato modular backend/frontend con bootstrap por API.
-3. CRUD universal base del core.
-4. Integracion de archivos con Spaces y entidades de negocio.
-5. Export/import demo funcional.
+2. CRUD universal base del core.
+3. Integracion de archivos con Spaces y entidades de negocio.
+4. Export/import demo funcional.
+5. Bloqueo operativo de dependencias entre modulos y ajustes finales del contrato modular.

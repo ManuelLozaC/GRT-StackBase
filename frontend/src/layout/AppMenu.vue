@@ -1,15 +1,14 @@
 <script setup>
-import { authStore } from '@/core/auth/authStore';
+import { accessStore } from '@/core/auth/accessStore';
 import { coreMenu } from '@/core/navigation/core-menu';
 import { moduleCatalog } from '@/core/modules/moduleCatalog';
-import { moduleMenu } from '@/modules';
 import { computed } from 'vue';
 import AppMenuItem from './AppMenuItem.vue';
 
 function filterMenu(items) {
     return items
         .filter((item) => !item.moduleKey || moduleCatalog.isModuleEnabled(item.moduleKey))
-        .filter((item) => !item.permissionKey || authStore.hasPermission(item.permissionKey))
+        .filter((item) => !item.permissionKey || accessStore.hasPermission(item.permissionKey))
         .map((item) => ({
             ...item,
             items: item.items ? filterMenu(item.items) : undefined
@@ -17,7 +16,7 @@ function filterMenu(items) {
         .filter((item) => !item.items || item.items.length > 0);
 }
 
-const model = computed(() => filterMenu([...coreMenu, ...moduleMenu]));
+const model = computed(() => filterMenu([...coreMenu, ...moduleCatalog.menuTree.value]));
 </script>
 
 <template>

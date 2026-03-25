@@ -19,14 +19,14 @@ Route::prefix('v1')->group(function (): void {
         Route::post('/forgot-password', [AuthController::class, 'forgotPassword']);
         Route::post('/reset-password', [AuthController::class, 'resetPassword']);
 
-        Route::middleware('auth-token')->group(function (): void {
+        Route::middleware(['auth-token', 'tenant-context'])->group(function (): void {
             Route::get('/me', [AuthController::class, 'me']);
             Route::post('/logout', [AuthController::class, 'logout']);
             Route::patch('/active-organization', [AuthController::class, 'switchActiveOrganization']);
         });
     });
 
-    Route::middleware('auth-token')->group(function (): void {
+    Route::middleware(['auth-token', 'tenant-context'])->group(function (): void {
         Route::get('/notifications', [NotificationController::class, 'index']);
         Route::patch('/notifications/{notification}/read', [NotificationController::class, 'markAsRead']);
         Route::post('/notifications/read-all', [NotificationController::class, 'markAllAsRead']);
@@ -43,8 +43,9 @@ Route::prefix('v1')->group(function (): void {
             Route::post('/notifications', [DemoNotificationController::class, 'store']);
         });
 
+        Route::get('/modules', [ModuleController::class, 'index']);
+
         Route::middleware('permission:modules.manage')->group(function (): void {
-            Route::get('/modules', [ModuleController::class, 'index']);
             Route::patch('/modules/{moduleKey}', [ModuleController::class, 'updateStatus']);
         });
     });
