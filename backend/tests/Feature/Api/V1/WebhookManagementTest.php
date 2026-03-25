@@ -200,6 +200,97 @@ class WebhookManagementTest extends TestCase
             ->assertJsonPath('datos.0.target_url', 'https://hooks.stackbase.test/org-a');
     }
 
+    public function test_admin_can_create_and_list_incoming_webhook_receivers_and_receipts(): void
+    {
+        [$user, $token] = $this->authenticateIntegrationAdmin();
+
+        $createResponse = $this->withHeader('Authorization', 'Bearer '.$token)
+            ->postJson('/api/v1/webhooks/receivers', [
+                'module_key' => 'demo-platform',
+                'event_key' => 'demo.notification.created',
+                'source_name' => 'ERP Connector',
+                'signing_secret' => 'incoming-secret-123',
+                'is_active' => true,
+            ])
+            ->assertOk()
+            ->assertJsonPath('datos.source_name', 'ERP Connector')
+            ->assertJsonPath('datos.module_key', 'demo-platform');
+
+        $receiverId = $createResponse->json('datos.id');
+        $payload = [
+            'external_id' => 'evt-100',
+            'title' => 'Webhook inbound',
+        ];
+        $signature = hash_hmac('sha256', json_encode($payload), 'incoming-secret-123');
+
+        $this->withHeader('X-StackBase-Signature', 'sha256='.$signature)
+            ->postJson('/api/v1/webhooks/incoming/'.$receiverId, $payload)
+            ->assertOk()
+            ->assertJsonPath('datos.signature_status', 'valid')
+            ->assertJsonPath('datos.processing_status', 'accepted');
+
+        $this->withHeader('Authorization', 'Bearer '.$token)
+            ->getJson('/api/v1/webhooks/receivers')
+            ->assertOk()
+            ->assertJsonPath('meta.total', 1)
+            ->assertJsonPath('datos.0.source_name', 'ERP Connector');
+
+        $this->withHeader('Authorization', 'Bearer '.$token)
+            ->getJson('/api/v1/webhooks/receipts')
+            ->assertOk()
+            ->assertJsonPath('meta.total', 1)
+            ->assertJsonPath('datos.0.signature_status', 'valid')
+            ->assertJsonPath('datos.0.processing_status', 'accepted');
+
+        $this->assertDatabaseHas('core_webhook_receivers', [
+            'id' => $receiverId,
+            'organizacion_id' => $user->organizacion_activa_id,
+            'source_name' => 'ERP Connector',
+        ]);
+
+        $this->assertDatabaseHas('core_webhook_receipts', [
+            'receiver_id' => $receiverId,
+            'organizacion_id' => $user->organizacion_activa_id,
+            'signature_status' => 'valid',
+            'processing_status' => 'accepted',
+        ]);
+    }
+
+    public function test_incoming_webhook_rejects_invalid_signature_and_logs_receipt(): void
+    {
+        [$user, $token] = $this->authenticateIntegrationAdmin();
+
+        $receiverId = $this->withHeader('Authorization', 'Bearer '.$token)
+            ->postJson('/api/v1/webhooks/receivers', [
+                'module_key' => 'core-platform',
+                'event_key' => 'module.status.updated',
+                'source_name' => 'Security Scanner',
+                'signing_secret' => 'incoming-secret-456',
+            ])
+            ->assertOk()
+            ->json('datos.id');
+
+        $this->withHeader('X-StackBase-Signature', 'sha256=firma-invalida')
+            ->postJson('/api/v1/webhooks/incoming/'.$receiverId, [
+                'external_id' => 'evt-invalid',
+            ])
+            ->assertStatus(401)
+            ->assertJsonPath('mensaje', 'Firma invalida');
+
+        $this->assertDatabaseHas('core_webhook_receipts', [
+            'receiver_id' => $receiverId,
+            'organizacion_id' => $user->organizacion_activa_id,
+            'signature_status' => 'invalid',
+            'processing_status' => 'rejected',
+        ]);
+
+        $this->assertDatabaseHas('core_security_logs', [
+            'organizacion_id' => $user->organizacion_activa_id,
+            'event_key' => 'security.webhook_incoming_rejected',
+            'severity' => 'warning',
+        ]);
+    }
+
     protected function authenticateIntegrationAdmin(): array
     {
         $organization = Organizacion::query()->create([

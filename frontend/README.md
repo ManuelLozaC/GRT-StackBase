@@ -30,7 +30,7 @@ Frontend construido con Vue 3, Vite y PrimeVue.
 - Ya existe administracion de usuarios con multi-rol e impersonacion.
 - Ya existen `Security Logs` y `Operations Overview` para soporte operativo del tenant activo.
 - Ya existen `Error Logs` y `Usage Metrics` para observabilidad base.
-- Ya existe `System Webhooks` para administrar endpoints salientes y revisar entregas recientes.
+- Ya existe `System Webhooks` para administrar endpoints salientes, receivers entrantes y revisar entregas/recepciones recientes.
 - Fechas y horas visibles del shell ya pueden respetar locale/zona horaria desde settings.
 - El usuario ya puede gestionar `API Tokens` y persistir columnas visibles del `Data Engine`.
 - El shell ya usa skeleton loaders y empty states reutilizables en pantallas reales.

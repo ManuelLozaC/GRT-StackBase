@@ -18,6 +18,7 @@ use App\Http\Controllers\Api\V1\SecurityLogController;
 use App\Http\Controllers\Api\V1\SettingController;
 use App\Http\Controllers\Api\V1\UserManagementController;
 use App\Http\Controllers\Api\V1\WebhookController;
+use App\Http\Controllers\Api\V1\WebhookReceiverController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('v1')->group(function (): void {
@@ -95,6 +96,10 @@ Route::prefix('v1')->group(function (): void {
             Route::patch('/webhooks/endpoints/{endpoint}', [WebhookController::class, 'update'])->middleware('throttle:data-writes');
             Route::post('/webhooks/endpoints/{endpoint}/test', [WebhookController::class, 'test'])->middleware('throttle:data-writes');
             Route::get('/webhooks/deliveries', [WebhookController::class, 'deliveries']);
+            Route::get('/webhooks/receivers', [WebhookReceiverController::class, 'index']);
+            Route::post('/webhooks/receivers', [WebhookReceiverController::class, 'store'])->middleware('throttle:data-writes');
+            Route::patch('/webhooks/receivers/{receiver}', [WebhookReceiverController::class, 'update'])->middleware('throttle:data-writes');
+            Route::get('/webhooks/receipts', [WebhookReceiverController::class, 'receipts']);
         });
 
         Route::middleware('permission:modules.manage')->group(function (): void {
@@ -115,4 +120,8 @@ Route::prefix('v1')->group(function (): void {
         '/demo/files/{file}/temporary-download',
         [DemoFileController::class, 'temporaryDownload'],
     )->middleware('throttle:downloads')->name('api.v1.demo.files.temporary-download');
+
+    Route::post('/webhooks/incoming/{receiver}', [WebhookReceiverController::class, 'receive'])
+        ->middleware('throttle:data-writes')
+        ->name('api.v1.webhooks.incoming.receive');
 });

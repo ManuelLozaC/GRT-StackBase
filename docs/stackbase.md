@@ -75,7 +75,7 @@ Su objetivo es:
 - Request IDs propagados en header/respuesta API y rate limiting base por tipo de endpoint.
 - Security logs tenant-aware y operations overview administrativo para troubleshooting del core.
 - Error logs tecnicos y metricas internas base por tenant/modulo/categoria.
-- API tokens personales, webhooks salientes tenant-aware con secreto cifrado, sanitizacion base y preferencias persistidas de Data Engine.
+- API tokens personales, webhooks salientes/entrantes tenant-aware con secreto cifrado, sanitizacion base y preferencias persistidas de Data Engine.
 - Data Engine universal con CRUD base, filtros, busqueda, paginacion, ordenamiento y soft delete sobre recurso demo.
 - Data Engine con relaciones y custom fields sobre recursos reales.
 - Export/import CSV sobre el Data Engine con historial tenant-aware de corridas.
@@ -123,3 +123,4 @@ Su objetivo es:
 - Locale, tema y preferencias de presentacion deben poder resolverse desde settings persistidos sin tocar codigo.
 - El acceso API para integraciones debe poder salir del core sin depender de sesiones interactivas del frontend.
 - Los webhooks salientes deben declararse por modulo, persistirse por tenant y dejar trazabilidad de entrega.
+- Los webhooks entrantes deben validarse por firma, quedar aislados por tenant y dejar receipts operativos para troubleshooting.

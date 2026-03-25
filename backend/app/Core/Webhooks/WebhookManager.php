@@ -6,6 +6,8 @@ use App\Core\Metrics\MetricsRecorder;
 use App\Core\Modules\ModuleRegistry;
 use App\Core\Webhooks\Models\CoreWebhookDelivery;
 use App\Core\Webhooks\Models\CoreWebhookEndpoint;
+use App\Core\Webhooks\Models\CoreWebhookReceipt;
+use App\Core\Webhooks\Models\CoreWebhookReceiver;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
@@ -59,10 +61,28 @@ class WebhookManager
             ->get();
     }
 
+    public function receivers(?string $moduleKey = null): Collection
+    {
+        return CoreWebhookReceiver::query()
+            ->when($moduleKey, fn ($query) => $query->where('module_key', $moduleKey))
+            ->latest('id')
+            ->get();
+    }
+
     public function deliveries(?string $moduleKey = null): Collection
     {
         return CoreWebhookDelivery::query()
             ->with('actor:id,name,email')
+            ->when($moduleKey, fn ($query) => $query->where('module_key', $moduleKey))
+            ->latest('id')
+            ->limit(100)
+            ->get();
+    }
+
+    public function receipts(?string $moduleKey = null): Collection
+    {
+        return CoreWebhookReceipt::query()
+            ->with('receiver:id,source_name')
             ->when($moduleKey, fn ($query) => $query->where('module_key', $moduleKey))
             ->latest('id')
             ->limit(100)
@@ -74,6 +94,11 @@ class WebhookManager
         return CoreWebhookEndpoint::query()->create($payload);
     }
 
+    public function createReceiver(array $payload): CoreWebhookReceiver
+    {
+        return CoreWebhookReceiver::query()->create($payload);
+    }
+
     public function updateEndpoint(CoreWebhookEndpoint $endpoint, array $payload): CoreWebhookEndpoint
     {
         if (($payload['signing_secret'] ?? null) === null || ($payload['signing_secret'] ?? '') === '') {
@@ -83,6 +108,17 @@ class WebhookManager
         $endpoint->fill($payload)->save();
 
         return $endpoint->fresh();
+    }
+
+    public function updateReceiver(CoreWebhookReceiver $receiver, array $payload): CoreWebhookReceiver
+    {
+        if (($payload['signing_secret'] ?? null) === null || ($payload['signing_secret'] ?? '') === '') {
+            unset($payload['signing_secret']);
+        }
+
+        $receiver->fill($payload)->save();
+
+        return $receiver->fresh();
     }
 
     public function dispatch(string $moduleKey, string $eventKey, array $payload, ?User $actor = null): Collection
@@ -116,6 +152,20 @@ class WebhookManager
         ];
     }
 
+    public function serializeReceiver(CoreWebhookReceiver $receiver): array
+    {
+        return [
+            'id' => $receiver->id,
+            'module_key' => $receiver->module_key,
+            'event_key' => $receiver->event_key,
+            'source_name' => $receiver->source_name,
+            'is_active' => $receiver->is_active,
+            'last_received_at' => $receiver->last_received_at?->toIso8601String(),
+            'secret_mask' => Str::mask($receiver->signing_secret ?? '', '*', 3),
+            'created_at' => $receiver->created_at?->toIso8601String(),
+        ];
+    }
+
     public function serializeDelivery(CoreWebhookDelivery $delivery): array
     {
         return [
@@ -134,6 +184,84 @@ class WebhookManager
                 'email' => $delivery->actor->email,
             ] : null,
         ];
+    }
+
+    public function serializeReceipt(CoreWebhookReceipt $receipt): array
+    {
+        return [
+            'id' => $receipt->id,
+            'module_key' => $receipt->module_key,
+            'event_key' => $receipt->event_key,
+            'source_name' => $receipt->source_name,
+            'signature_status' => $receipt->signature_status,
+            'processing_status' => $receipt->processing_status,
+            'request_id' => $receipt->request_id,
+            'ip_address' => $receipt->ip_address,
+            'received_at' => $receipt->received_at?->toIso8601String(),
+            'receiver' => $receipt->receiver ? [
+                'id' => $receipt->receiver->id,
+                'source_name' => $receipt->receiver->source_name,
+            ] : null,
+        ];
+    }
+
+    public function receive(CoreWebhookReceiver $receiver): CoreWebhookReceipt
+    {
+        $rawBody = $this->request->getContent();
+        $payload = $this->request->all();
+        $signatureHeader = $this->request->header('X-StackBase-Signature', '');
+        $expectedSignature = hash_hmac('sha256', $rawBody, (string) $receiver->signing_secret);
+        $providedSignature = $this->normalizeIncomingSignature($signatureHeader);
+        $signatureStatus = hash_equals($expectedSignature, $providedSignature)
+            ? 'valid'
+            : 'invalid';
+
+        $receipt = CoreWebhookReceipt::query()->create([
+            'organizacion_id' => $receiver->organizacion_id,
+            'receiver_id' => $receiver->id,
+            'module_key' => $receiver->module_key,
+            'event_key' => $receiver->event_key,
+            'source_name' => $receiver->source_name,
+            'signature_status' => $signatureStatus,
+            'processing_status' => $signatureStatus === 'valid' ? 'accepted' : 'rejected',
+            'request_id' => $this->request->attributes->get('request_id') ?: (string) Str::uuid(),
+            'ip_address' => $this->request->ip(),
+            'request_headers' => $this->request->headers->all(),
+            'request_body' => is_array($payload) && $payload !== [] ? $payload : ['raw' => $rawBody],
+            'received_at' => now(),
+        ]);
+
+        if ($signatureStatus === 'valid') {
+            $receiver->forceFill([
+                'last_received_at' => now(),
+            ])->save();
+        }
+
+        $this->metrics->record(
+            moduleKey: $receiver->module_key,
+            eventKey: 'webhook.received.'.$receipt->processing_status,
+            eventCategory: 'integrations',
+            actor: null,
+            context: [
+                'event_key' => $receiver->event_key,
+                'receiver_id' => $receiver->id,
+                'signature_status' => $signatureStatus,
+            ],
+            organizationId: $receiver->organizacion_id,
+        );
+
+        return $receipt->fresh('receiver:id,source_name');
+    }
+
+    protected function normalizeIncomingSignature(?string $signatureHeader): string
+    {
+        $signature = trim((string) $signatureHeader);
+
+        if (str_starts_with($signature, 'sha256=')) {
+            return substr($signature, 7);
+        }
+
+        return $signature;
     }
 
     protected function dispatchToEndpoint(CoreWebhookEndpoint $endpoint, array $payload, ?User $actor = null): CoreWebhookDelivery

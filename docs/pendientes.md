@@ -67,6 +67,7 @@
 - [x] Preferencias persistidas de vistas/columnas para Data Engine.
 - [x] Metricas base de performance y tiempo de respuesta API.
 - [x] Webhooks salientes tenant-aware con secretos cifrados, entregas auditables y pantalla administrativa.
+- [x] Recepcion de webhooks tenant-aware con firma HMAC, receipts auditables y endpoint publico controlado.
 - [x] Ajustes responsive en pantallas administrativas clave (`modulos`, `operations`, `security`, `API tokens`, `webhooks`).
 
 ### Brechas principales
@@ -277,6 +278,7 @@ Estado: En progreso
 - [ ] Vista administrativa completa de logs tecnicos y de errores.
 - [x] Correlation IDs y trazabilidad tecnica base.
 - [x] Historial administrativo de entregas de webhooks salientes.
+- [x] Historial administrativo de recepciones de webhooks entrantes.
 
 ## P12. API e integraciones
 Estado: Parcial
@@ -287,7 +289,7 @@ Estado: Parcial
 - [x] Retiro de la capa HTTP legacy no enroutada fuera de `api/v1`.
 - [x] Auth API para terceros.
 - [x] Webhooks salientes.
-- [ ] Recepcion de webhooks.
+- [x] Recepcion de webhooks.
 - [x] Rate limiting base.
 - [ ] Swagger sincronizado con endpoints reales.
 
@@ -378,6 +380,6 @@ Estado: En progreso
 ## Siguiente desarrollo recomendado
 1. Scope multi-tenant consistente en modelos, jobs, archivos, auditoria y notificaciones externas.
 2. Integracion de archivos con Spaces, versionado y entidades de negocio.
-3. Completar integraciones reales de API: recepcion de webhooks y Swagger sincronizado.
-4. Completar el contrato modular con ejecucion real de hooks, assets y dashboards por modulo.
+3. Completar integraciones reales de API: Swagger sincronizado y contratos ejecutables.
+4. Completar el contrato modular con ejecucion real de assets y dashboards por modulo.
 5. Extender el Data Engine con acciones avanzadas, relaciones dependientes y custom fields realmente universales.

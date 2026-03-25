@@ -18,20 +18,39 @@ const defaultForm = () => ({
     is_active: true
 });
 
+const defaultReceiverForm = () => ({
+    id: null,
+    module_key: '',
+    event_key: '',
+    source_name: '',
+    signing_secret: '',
+    is_active: true
+});
+
 const state = reactive({
     loading: false,
     saving: false,
+    receiverSaving: false,
     testingId: null,
     dialogVisible: false,
+    receiverDialogVisible: false,
     endpoints: [],
     deliveries: [],
+    receivers: [],
+    receipts: [],
     catalog: [],
-    form: defaultForm()
+    form: defaultForm(),
+    receiverForm: defaultReceiverForm()
 });
 
 const moduleOptions = computed(() => state.catalog);
 const eventOptions = computed(() => {
     const selectedModule = state.catalog.find((moduleItem) => moduleItem.key === state.form.module_key);
+
+    return selectedModule?.events ?? [];
+});
+const receiverEventOptions = computed(() => {
+    const selectedModule = state.catalog.find((moduleItem) => moduleItem.key === state.receiverForm.module_key);
 
     return selectedModule?.events ?? [];
 });
@@ -43,6 +62,15 @@ function resetForm() {
 function openCreateDialog() {
     resetForm();
     state.dialogVisible = true;
+}
+
+function resetReceiverForm() {
+    state.receiverForm = defaultReceiverForm();
+}
+
+function openCreateReceiverDialog() {
+    resetReceiverForm();
+    state.receiverDialogVisible = true;
 }
 
 function openEditDialog(endpoint) {
@@ -60,6 +88,18 @@ function openEditDialog(endpoint) {
     state.dialogVisible = true;
 }
 
+function openEditReceiverDialog(receiver) {
+    state.receiverForm = {
+        id: receiver.id,
+        module_key: receiver.module_key,
+        event_key: receiver.event_key,
+        source_name: receiver.source_name,
+        signing_secret: '',
+        is_active: receiver.is_active
+    };
+    state.receiverDialogVisible = true;
+}
+
 watch(
     () => state.form.module_key,
     (moduleKey, previousModuleKey) => {
@@ -69,6 +109,18 @@ watch(
 
         if (!eventOptions.value.some((eventItem) => eventItem.key === state.form.event_key)) {
             state.form.event_key = eventOptions.value[0]?.key ?? '';
+        }
+    }
+);
+watch(
+    () => state.receiverForm.module_key,
+    (moduleKey, previousModuleKey) => {
+        if (moduleKey === previousModuleKey) {
+            return;
+        }
+
+        if (!receiverEventOptions.value.some((eventItem) => eventItem.key === state.receiverForm.event_key)) {
+            state.receiverForm.event_key = receiverEventOptions.value[0]?.key ?? '';
         }
     }
 );
@@ -96,11 +148,18 @@ async function loadData() {
     state.loading = true;
 
     try {
-        const [endpointsResponse, deliveriesResponse] = await Promise.all([api.get('/v1/webhooks/endpoints'), api.get('/v1/webhooks/deliveries')]);
+        const [endpointsResponse, deliveriesResponse, receiversResponse, receiptsResponse] = await Promise.all([
+            api.get('/v1/webhooks/endpoints'),
+            api.get('/v1/webhooks/deliveries'),
+            api.get('/v1/webhooks/receivers'),
+            api.get('/v1/webhooks/receipts')
+        ]);
 
         state.endpoints = endpointsResponse.data.datos ?? [];
         state.catalog = endpointsResponse.data.meta?.catalog ?? [];
         state.deliveries = deliveriesResponse.data.datos ?? [];
+        state.receivers = receiversResponse.data.datos ?? [];
+        state.receipts = receiptsResponse.data.datos ?? [];
     } finally {
         state.loading = false;
     }
@@ -147,6 +206,46 @@ async function saveEndpoint() {
     }
 }
 
+async function saveReceiver() {
+    state.receiverSaving = true;
+    const isEditing = Boolean(state.receiverForm.id);
+
+    const payload = {
+        module_key: state.receiverForm.module_key,
+        event_key: state.receiverForm.event_key,
+        source_name: state.receiverForm.source_name,
+        signing_secret: state.receiverForm.signing_secret,
+        is_active: state.receiverForm.is_active
+    };
+
+    try {
+        if (state.receiverForm.id) {
+            await api.patch(`/v1/webhooks/receivers/${state.receiverForm.id}`, payload);
+        } else {
+            await api.post('/v1/webhooks/receivers', payload);
+        }
+
+        await loadData();
+        state.receiverDialogVisible = false;
+        resetReceiverForm();
+        toast.add({
+            severity: 'success',
+            summary: isEditing ? 'Receiver actualizado' : 'Receiver creado',
+            detail: 'La configuracion de recepcion quedo guardada correctamente.',
+            life: 3000
+        });
+    } catch (error) {
+        toast.add({
+            severity: 'error',
+            summary: 'No se pudo guardar el receiver',
+            detail: error?.response?.data?.mensaje ?? 'Revisa el contrato del receiver y los datos enviados.',
+            life: 4000
+        });
+    } finally {
+        state.receiverSaving = false;
+    }
+}
+
 async function testEndpoint(endpoint) {
     state.testingId = endpoint.id;
 
@@ -183,7 +282,9 @@ function severityFor(status) {
         {
             succeeded: 'success',
             failed: 'danger',
-            pending: 'warning'
+            pending: 'warning',
+            accepted: 'success',
+            rejected: 'danger'
         }[status] ?? 'contrast'
     );
 }
@@ -198,9 +299,12 @@ onMounted(loadData);
                 <div>
                     <div class="mb-3 text-sm font-semibold uppercase tracking-[0.3em] text-sky-600">Integrations</div>
                     <h1 class="mb-3 text-3xl font-semibold text-slate-900">System Webhooks</h1>
-                    <p class="max-w-3xl text-slate-600">Administra endpoints salientes por tenant para reaccionar a eventos del core y de los modulos habilitados sin romper el contrato declarativo de StackBase.</p>
+                    <p class="max-w-3xl text-slate-600">Administra endpoints salientes y receivers entrantes por tenant para reaccionar a eventos del core y sincronizar integraciones externas sin romper el contrato declarativo de StackBase.</p>
                 </div>
-                <Button label="Nuevo endpoint" icon="pi pi-plus" @click="openCreateDialog" />
+                <div class="flex flex-wrap gap-2">
+                    <Button label="Nuevo endpoint" icon="pi pi-plus" @click="openCreateDialog" />
+                    <Button label="Nuevo receiver" icon="pi pi-download" severity="secondary" outlined @click="openCreateReceiverDialog" />
+                </div>
             </div>
         </div>
 
@@ -299,6 +403,78 @@ onMounted(loadData);
                     </DataTable>
                 </div>
             </div>
+
+            <div class="grid gap-4 xl:grid-cols-[1.5fr_1fr]">
+                <div class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+                    <div class="mb-4 flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
+                        <div>
+                            <h2 class="text-xl font-semibold text-slate-900">Receivers entrantes</h2>
+                            <p class="text-sm text-slate-500">Cada receiver expone un endpoint publico controlado por firma HMAC y aislamiento por tenant.</p>
+                        </div>
+                        <Tag severity="contrast" :value="`${state.receivers.length} receiver(s)`" />
+                    </div>
+
+                    <StateEmpty v-if="!state.receivers.length" title="Sin receivers configurados" description="Todavia no habilitaste recepcion de webhooks para el tenant activo." icon="pi pi-download" />
+
+                    <div v-else class="overflow-x-auto">
+                        <DataTable :value="state.receivers" dataKey="id">
+                            <Column field="source_name" header="Origen" style="min-width: 12rem" />
+                            <Column field="module_key" header="Modulo" style="min-width: 10rem" />
+                            <Column field="event_key" header="Evento" style="min-width: 15rem" />
+                            <Column header="Endpoint publico" style="min-width: 18rem">
+                                <template #body="slotProps">
+                                    <code>/api/v1/webhooks/incoming/{{ slotProps.data.id }}</code>
+                                </template>
+                            </Column>
+                            <Column field="last_received_at" header="Ultima recepcion" style="min-width: 12rem">
+                                <template #body="slotProps">{{ formatDateTime(slotProps.data.last_received_at) }}</template>
+                            </Column>
+                            <Column header="Estado" style="min-width: 9rem">
+                                <template #body="slotProps">
+                                    <Tag :severity="slotProps.data.is_active ? 'success' : 'secondary'" :value="slotProps.data.is_active ? 'Activo' : 'Inactivo'" />
+                                </template>
+                            </Column>
+                            <Column header="Acciones" style="min-width: 8rem">
+                                <template #body="slotProps">
+                                    <Button label="Editar" icon="pi pi-pencil" text @click="openEditReceiverDialog(slotProps.data)" />
+                                </template>
+                            </Column>
+                        </DataTable>
+                    </div>
+                </div>
+
+                <div class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+                    <div class="mb-4 flex items-center justify-between gap-3">
+                        <div>
+                            <h2 class="text-xl font-semibold text-slate-900">Recepciones recientes</h2>
+                            <p class="text-sm text-slate-500">Valida firmas, origen, request ID y estado de procesamiento.</p>
+                        </div>
+                        <Tag severity="info" :value="`${state.receipts.length} item(s)`" />
+                    </div>
+
+                    <StateEmpty v-if="!state.receipts.length" title="Sin recepciones" description="Aun no llegaron eventos externos a los receivers del tenant activo." icon="pi pi-inbox" />
+
+                    <div v-else class="space-y-3">
+                        <div v-for="receipt in state.receipts.slice(0, 8)" :key="receipt.id" class="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+                            <div class="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
+                                <div>
+                                    <div class="font-semibold text-slate-900">{{ receipt.source_name || 'Origen externo' }}</div>
+                                    <div class="text-sm text-slate-500">{{ receipt.module_key }} / {{ receipt.event_key }}</div>
+                                </div>
+                                <div class="flex flex-wrap gap-2">
+                                    <Tag :severity="receipt.signature_status === 'valid' ? 'success' : 'danger'" :value="`Firma ${receipt.signature_status}`" />
+                                    <Tag :severity="severityFor(receipt.processing_status)" :value="receipt.processing_status" />
+                                </div>
+                            </div>
+                            <div class="mt-3 grid gap-2 text-sm text-slate-600">
+                                <div><strong>Fecha:</strong> {{ formatDateTime(receipt.received_at) }}</div>
+                                <div><strong>Request ID:</strong> {{ receipt.request_id || 'n/a' }}</div>
+                                <div><strong>IP:</strong> {{ receipt.ip_address || 'n/a' }}</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </template>
 
         <Dialog v-model:visible="state.dialogVisible" modal :header="state.form.id ? 'Editar webhook' : 'Nuevo webhook'" :style="{ width: '42rem' }" @hide="resetForm">
@@ -334,6 +510,38 @@ onMounted(loadData);
             <template #footer>
                 <Button label="Cancelar" severity="secondary" outlined @click="state.dialogVisible = false" />
                 <Button label="Guardar webhook" :loading="state.saving" @click="saveEndpoint" />
+            </template>
+        </Dialog>
+
+        <Dialog v-model:visible="state.receiverDialogVisible" modal :header="state.receiverForm.id ? 'Editar receiver' : 'Nuevo receiver'" :style="{ width: '38rem' }" @hide="resetReceiverForm">
+            <div class="grid gap-4">
+                <div>
+                    <label class="mb-2 block text-sm font-semibold text-slate-600">Modulo</label>
+                    <Select v-model="state.receiverForm.module_key" :options="moduleOptions" optionLabel="name" optionValue="key" class="w-full" placeholder="Selecciona un modulo" />
+                </div>
+                <div>
+                    <label class="mb-2 block text-sm font-semibold text-slate-600">Evento</label>
+                    <Select v-model="state.receiverForm.event_key" :options="receiverEventOptions" optionLabel="label" optionValue="key" class="w-full" placeholder="Selecciona un evento" />
+                </div>
+                <div>
+                    <label class="mb-2 block text-sm font-semibold text-slate-600">Nombre del origen</label>
+                    <InputText v-model="state.receiverForm.source_name" class="w-full" placeholder="Ej. ERP, CRM, partner o bot externo" />
+                </div>
+                <div>
+                    <label class="mb-2 block text-sm font-semibold text-slate-600">
+                        {{ state.receiverForm.id ? 'Nuevo secreto (opcional)' : 'Secreto de firma' }}
+                    </label>
+                    <Password v-model="state.receiverForm.signing_secret" class="w-full" inputClass="w-full" :feedback="false" toggleMask />
+                    <small class="mt-2 block text-slate-500">Si lo dejas vacio al editar, se conserva el secreto actual.</small>
+                </div>
+                <div class="flex items-center gap-3">
+                    <ToggleSwitch v-model="state.receiverForm.is_active" />
+                    <span class="text-sm text-slate-600">Receiver activo</span>
+                </div>
+            </div>
+            <template #footer>
+                <Button label="Cancelar" severity="secondary" outlined @click="state.receiverDialogVisible = false" />
+                <Button label="Guardar receiver" :loading="state.receiverSaving" @click="saveReceiver" />
             </template>
         </Dialog>
     </div>

@@ -56,11 +56,11 @@ La metadata que llega por API declara:
 - La metadata expuesta ya incluye estado operativo basico: `dependency_status`, `blocking_dependents`, `can_enable`, `can_disable` e `is_protected`.
 - Los `settings` ya son operativos: se persisten, se administran por API/UI y pueden afectar comportamiento real del modulo.
 - La metadata backend ya expone piezas operativas del contrato (`jobs`, `webhooks`, `dashboards`, `seeders`, `assets`) aunque varias siguen siendo descriptivas y no ejecutables por runtime.
-- Los `webhooks` ya son operativos para salidas: cada modulo puede declarar eventos disponibles y el shell administrativo consume ese catalogo sin wiring manual adicional.
+- Los `webhooks` ya son operativos para salidas y recepcion declarativa: cada modulo puede declarar eventos disponibles y el shell administrativo consume ese catalogo sin wiring manual adicional.
 - El shell administrativo ya consume esta metadata junto con vistas core de `System Modules`, `Security Logs` y `Operations Overview` sin reintroducir wiring legacy.
 
 ## Deuda restante del contrato
 - generalizar el contrato para futuros modulos sin wiring adicional
 - soportar permisos por modulo de forma operativa, no solo descriptiva
-- convertir `seeders`, `assets`, `dashboards` y recepcion de `hooks/webhooks` en runtime realmente ejecutable por modulo
+- convertir `seeders`, `assets` y `dashboards` en runtime realmente ejecutable por modulo
 - reducir aun mas el registro local frontend a solo vistas realmente necesarias

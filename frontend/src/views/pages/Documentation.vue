@@ -19,7 +19,7 @@
                         <li>Servicios de archivos, jobs, auditoria y notificaciones internas/multicanal base</li>
                         <li>Request IDs, rate limiting base y vistas operativas de seguridad/operations para soporte</li>
                         <li>Error logs, metricas internas y formato locale-aware ya forman parte del core operativo</li>
-                        <li>API tokens, webhooks salientes tenant-aware, sanitizacion base y performance metrics ya existen como base de integracion y operacion</li>
+                        <li>API tokens, webhooks salientes/entrantes tenant-aware, sanitizacion base y performance metrics ya existen como base de integracion y operacion</li>
                         <li>Respuesta estandar en `api/v1`</li>
                     </ul>
                 </div>
@@ -40,7 +40,7 @@
                         <li>El shell ya incluye `Security Logs` y `Operations Overview` para visibilidad del tenant activo</li>
                         <li>La shell administrativa ya suma `Error Logs` y `Usage Metrics` sin depender de wiring legacy</li>
                         <li>El Data Engine ya permite persistir columnas visibles por usuario y la cuenta ya gestiona `API Tokens`</li>
-                        <li>La shell administrativa ya suma `System Webhooks` para endpoints salientes y troubleshooting de entregas</li>
+                        <li>La shell administrativa ya suma `System Webhooks` para endpoints salientes, receivers entrantes y troubleshooting de entregas/recepciones</li>
                     </ul>
                 </div>
             </div>
@@ -52,7 +52,7 @@
                         <li>Generalizar el contrato modular para futuros modulos</li>
                         <li>Propagacion tenant consistente en todo el dominio</li>
                         <li>Storage real con Spaces</li>
-                        <li>Operaciones pesadas async, recepcion de webhooks e integraciones externas reales</li>
+                        <li>Operaciones pesadas async e integraciones externas reales mas profundas</li>
                     </ul>
                 </div>
             </div>
