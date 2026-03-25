@@ -20,7 +20,7 @@ Fecha de referencia: `2026-03-25`
 - Data Engine con CRUD, relaciones, custom fields e import/export
 - recursos base del dominio ya expuestos en backend por Data Engine
 - settings globales, por organizacion y por usuario
-- multi-rol, impersonacion y administracion base de usuarios
+- multi-rol, impersonacion y administracion operativa de usuarios
 - observabilidad base: request IDs, logs, metricas y operations overview
 - webhooks salientes y entrantes
 - OpenAPI JSON
@@ -45,6 +45,7 @@ Fecha de referencia: `2026-03-25`
 - `DatabaseSeeder` ya usa una sola entrada oficial de instalacion
 - pruebas de bootstrap idempotente ya agregadas al backend
 - recursos base del dominio ya existen en backend para oficinas, personas y asignaciones laborales
+- la pantalla administrativa de usuarios ya permite alta, edicion, activacion y reset de contrasena
 
 ## Fases vigentes
 

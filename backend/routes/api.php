@@ -84,6 +84,10 @@ Route::prefix('v1')->group(function (): void {
 
         Route::middleware('permission:users.manage_roles')->group(function (): void {
             Route::get('/users', [UserManagementController::class, 'index']);
+            Route::post('/users', [UserManagementController::class, 'store'])->middleware('throttle:data-writes');
+            Route::patch('/users/{user}', [UserManagementController::class, 'update'])->middleware('throttle:data-writes');
+            Route::patch('/users/{user}/status', [UserManagementController::class, 'updateStatus'])->middleware('throttle:data-writes');
+            Route::post('/users/{user}/reset-password', [UserManagementController::class, 'resetPassword'])->middleware('throttle:data-writes');
             Route::patch('/users/{user}/roles', [UserManagementController::class, 'updateRoles']);
         });
 

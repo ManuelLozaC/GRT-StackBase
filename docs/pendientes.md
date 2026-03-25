@@ -136,6 +136,7 @@ Estado: En progreso
 - [x] Guardas frontend conectadas a auth real.
 - [x] Nuevo permiso operativo `settings.manage`.
 - [x] Administracion de usuarios con sync de roles e impersonacion.
+- [x] Gestion operativa de usuarios con alias, persona vinculada, estado y reset de contrasena.
 
 ## P2. Usuarios, organizaciones y tenancy
 Estado: En progreso
@@ -395,15 +396,15 @@ Estado: En progreso
 
 ## Objetivos inmediatos desde aqui en adelante
 1. Aplicar en codigo la decision `organizacion = empresa` y definir la estructura laboral final.
-2. Completar los CRUDs base de organizaciones, oficinas, personas, usuarios y asignaciones laborales.
+2. Completar el cierre funcional de organizaciones, oficinas, personas y asignaciones laborales en frontend.
 3. Seguir con tenancy transversal en modelos, jobs, archivos y auditoria.
 4. Integrar Spaces y endurecer la operacion local -> Droplet.
 5. Mantener visibles los objetivos de mediano plazo: pruebas frontend, CI y release 1.0.
 
 ## Indicador de avance global
 
-- Avance global estimado del proyecto: `80%`
-- Trabajo restante estimado para cerrar esta version base: `20%`
+- Avance global estimado del proyecto: `83%`
+- Trabajo restante estimado para cerrar esta version base: `17%`
 
 Lectura del porcentaje:
 

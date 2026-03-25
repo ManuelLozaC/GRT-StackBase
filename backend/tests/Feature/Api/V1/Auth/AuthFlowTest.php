@@ -4,6 +4,7 @@ namespace Tests\Feature\Api\V1\Auth;
 
 use App\Core\Auth\Services\AccessTokenService;
 use App\Models\Organizacion;
+use App\Models\Persona;
 use App\Models\User;
 use Database\Seeders\RolePermissionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -289,6 +290,82 @@ class AuthFlowTest extends TestCase
             ->assertOk()
             ->assertJsonPath('datos.user.email', 'admin@stackbase.local')
             ->assertJsonPath('datos.user.impersonation.active', false);
+    }
+
+    public function test_admin_can_create_update_activate_and_reset_users(): void
+    {
+        $this->seed(RolePermissionSeeder::class);
+
+        $organizacion = Organizacion::query()->create([
+            'nombre' => 'Tenant Admin',
+            'slug' => 'tenant-admin',
+        ]);
+
+        $admin = User::factory()->create([
+            'email' => 'admin@stackbase.local',
+            'organizacion_activa_id' => $organizacion->id,
+        ]);
+        $admin->organizaciones()->attach($organizacion->id);
+        $admin->assignRole('admin');
+
+        $persona = Persona::query()->create([
+            'organizacion_id' => $organizacion->id,
+            'nombres' => 'Maria',
+            'apellido_paterno' => 'Suarez',
+            'correo' => 'maria@test.dev',
+        ]);
+
+        $adminToken = app(AccessTokenService::class)->createForUser($admin, 'phpunit-admin');
+
+        $createResponse = $this->withHeader('Authorization', 'Bearer '.$adminToken)
+            ->postJson('/api/v1/users', [
+                'persona_id' => $persona->id,
+                'name' => 'Maria Suarez',
+                'alias' => 'msuarez',
+                'email' => 'maria.suarez@test.dev',
+                'telefono' => '70000012',
+                'activo' => true,
+                'roles' => ['admin'],
+                'password' => 'Password123',
+                'password_confirmation' => 'Password123',
+            ])
+            ->assertOk()
+            ->assertJsonPath('datos.alias', 'msuarez')
+            ->assertJsonPath('datos.persona.id', $persona->id);
+
+        $userId = $createResponse->json('datos.id');
+
+        $this->withHeader('Authorization', 'Bearer '.$adminToken)
+            ->patchJson('/api/v1/users/'.$userId, [
+                'name' => 'Maria Suarez Actualizada',
+                'telefono' => '70000013',
+                'activo' => false,
+            ])
+            ->assertOk()
+            ->assertJsonPath('datos.name', 'Maria Suarez Actualizada')
+            ->assertJsonPath('datos.activo', false);
+
+        $this->withHeader('Authorization', 'Bearer '.$adminToken)
+            ->patchJson('/api/v1/users/'.$userId.'/status', [
+                'activo' => true,
+            ])
+            ->assertOk()
+            ->assertJsonPath('datos.activo', true);
+
+        $this->withHeader('Authorization', 'Bearer '.$adminToken)
+            ->postJson('/api/v1/users/'.$userId.'/reset-password', [
+                'password' => 'NuevaPassword123',
+                'password_confirmation' => 'NuevaPassword123',
+            ])
+            ->assertOk()
+            ->assertJsonPath('datos.primer_acceso_pendiente', true);
+
+        $this->postJson('/api/v1/auth/login', [
+            'email' => 'msuarez',
+            'password' => 'NuevaPassword123',
+        ])
+            ->assertOk()
+            ->assertJsonPath('datos.user.email', 'maria.suarez@test.dev');
     }
 
     public function test_user_can_create_list_and_revoke_api_tokens(): void

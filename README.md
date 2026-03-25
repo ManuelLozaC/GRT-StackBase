@@ -26,7 +26,7 @@ Resolver una sola vez las capacidades transversales del producto y reutilizarlas
 - Data Engine tenant-aware con relaciones, custom fields e import/export
 - recursos base del dominio ya expuestos en backend por Data Engine
 - settings globales, por organizacion y por usuario
-- multi-rol, administracion de usuarios e impersonacion
+- multi-rol, administracion de usuarios, reset de contrasena e impersonacion
 - observabilidad base: request IDs, security logs, error logs y metrics
 - webhooks salientes y entrantes, API tokens y OpenAPI JSON
 - bootstrap oficial inicial con `GRT SRL`, `TalentHub` y `Manuel Loza`
