@@ -8,6 +8,7 @@ return [
             'version' => '0.1.0',
             'enabled' => true,
             'is_demo' => false,
+            'protected' => true,
             'provider' => App\Modules\CorePlatform\CorePlatformServiceProvider::class,
             'dependencies' => [],
             'permissions' => [],
@@ -31,6 +32,7 @@ return [
             'version' => '0.1.0',
             'enabled' => false,
             'is_demo' => true,
+            'protected' => false,
             'provider' => App\Modules\DemoPlatform\DemoPlatformServiceProvider::class,
             'dependencies' => [
                 'core-platform',

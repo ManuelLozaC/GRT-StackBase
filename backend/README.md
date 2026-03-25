@@ -14,8 +14,9 @@ Backend API-first construido con Laravel 12.
 - Solo se mantiene activa la capa HTTP alineada a `api/v1`; el API legacy previo fue retirado.
 - Seeders iniciales de permisos alineados en un solo flujo (`RolePermissionSeeder`).
 - Metadata modular ampliada en `config/modules.php` con dependencias, permisos, settings y features.
+- Dependencias modulares basicas bloqueadas al activar/desactivar; `core-platform` queda protegido.
 - Listado de modulos disponible para cualquier usuario autenticado; el toggle sigue protegido por permiso.
-- `TenantContext` compartido para request autenticado y jobs base.
+- `TenantContext` compartido para request autenticado, jobs base, notificaciones internas y descargas base.
 - Migraciones fundacionales separadas por responsabilidad.
 - Registro de modulos.
 - Persistencia de modulos en `system_modules`.
@@ -59,7 +60,7 @@ php artisan config:clear
 ```
 
 ## Verificacion reciente
-- `php artisan test` pasando con 24 tests.
+- `php artisan test` pasando con 26 tests.
 - Integridad de migraciones corregida para evitar duplicados y desalineacion del esquema base.
 - Arbol HTTP legacy no enroutado eliminado para reducir deriva arquitectonica.
 - Bootstrap RBAC inicial sin duplicidad de seeders.

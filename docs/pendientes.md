@@ -37,6 +37,9 @@
 - [x] Branding residual del template retirado de metadatos principales.
 - [x] Estructura laboral legacy retirada del runtime activo.
 - [x] Catalogos y modelos inactivos (`paises/ciudades/oficinas/personas`) retirados de la base fundacional del core.
+- [x] Bloqueo operativo basico de dependencias entre modulos al activar/desactivar.
+- [x] Retiro de la fachada `authStore`; frontend ya consume stores separados directamente.
+- [x] Tenancy mas consistente en notificaciones internas y descargas de archivos base.
 
 ### Brechas principales
 - [ ] RBAC completo.
@@ -75,8 +78,8 @@ Estado: En progreso
 - [ ] Contrato formal de una demo por capacidad transversal.
 - [x] Carga de menus y rutas del `Demo Module` desde manifest declarativa frontend.
 - [x] Carga de menus y rutas del `Demo Module` desde metadata declarativa backend/API.
-- [ ] Orden de carga y dependencias entre modulos.
-- [ ] Bloqueo operativo de dependencias entre modulos al activar/desactivar.
+- [x] Orden de carga y dependencias entre modulos para el bootstrap actual.
+- [x] Bloqueo operativo de dependencias entre modulos al activar/desactivar.
 - [x] Exponer metadata modular extendida por API para bootstrap frontend.
 
 ## P1. Identidad y acceso
@@ -109,6 +112,7 @@ Estado: En progreso
 - [ ] Tenant activo por request en todos los servicios backend.
 - [ ] Configuracion por tenant.
 - [ ] Scope multi-tenant consistente en modelos, jobs, archivos y auditoria.
+- [x] Extender tenancy base a notificaciones y descargas de archivos para reducir filtros manuales por organizacion.
 - [x] Base fundacional de tenancy adelgazada para no mezclar catalogos de ubicacion o personas no usados por el core.
 - [x] `TenantContext` compartido para request autenticado y jobs base.
 
@@ -277,6 +281,7 @@ Estado: En progreso
 - [x] Manifest unica del `Demo Module` en frontend para evitar duplicacion de rutas/menu.
 - [x] Metadata modular backend ampliada con `dependencies`, `permissions`, `settings` y `features`.
 - [x] Separar stores de sesion, tenant y permisos.
+- [x] Retirar la capa de compatibilidad `authStore` y consumir stores especializados directamente.
 - [x] Separar migraciones fundacionales por responsabilidad (`organizaciones`, `users`, `organizacion_user`).
 - [x] Depurar `core-menu` para dejar solo shell realmente transversal del producto.
 - [x] Convertir bootstrap modular frontend a metadata consumida por API.
@@ -325,4 +330,4 @@ Estado: Pendiente
 2. CRUD universal base del core.
 3. Integracion de archivos con Spaces y entidades de negocio.
 4. Export/import demo funcional.
-5. Bloqueo operativo de dependencias entre modulos y ajustes finales del contrato modular.
+5. Completar el contrato modular con settings, permisos operativos, seeds y assets por modulo.

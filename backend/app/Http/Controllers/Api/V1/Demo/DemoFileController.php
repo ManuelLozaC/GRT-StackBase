@@ -161,7 +161,6 @@ class DemoFileController extends Controller
         $downloads = FileDownload::query()
             ->with(['file:id,uuid,original_name,size_bytes'])
             ->where('user_id', $user->id)
-            ->where('organizacion_id', $user->organizacion_activa_id)
             ->latest('downloaded_at')
             ->get();
 

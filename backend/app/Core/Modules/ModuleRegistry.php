@@ -3,6 +3,7 @@
 namespace App\Core\Modules;
 
 use App\Core\Modules\Models\SystemModule;
+use DomainException;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Schema;
 use Throwable;
@@ -31,14 +32,17 @@ class ModuleRegistry
             ->map(fn (SystemModule $module): array => $module->toRegistryArray())
             ->keyBy('key');
 
-        return $defaults
+        $catalog = $defaults
             ->map(fn (array $module, string $key): array => array_merge(
                 $module,
                 $persisted->get($key, []),
             ))
             ->merge(
                 $persisted->except($defaults->keys()),
-            )
+            );
+
+        return $catalog
+            ->map(fn (array $module): array => $this->decorateModule($module, $catalog))
             ->values();
     }
 
@@ -60,11 +64,17 @@ class ModuleRegistry
 
     public function setEnabled(string $key, bool $enabled): ?array
     {
-        $module = $this->all()
-            ->firstWhere('key', $key);
+        $catalog = $this->all()->keyBy('key');
+        $module = $catalog->get($key);
 
         if ($module === null) {
             return null;
+        }
+
+        if ($enabled) {
+            $this->assertCanBeEnabled($module);
+        } else {
+            $this->assertCanBeDisabled($module);
         }
 
         if (! $this->canUsePersistence()) {
@@ -87,10 +97,8 @@ class ModuleRegistry
         ]);
         $record->save();
 
-        return array_merge(
-            $this->normalizeModule($key, $this->modules[$key] ?? []),
-            $record->toRegistryArray(),
-        );
+        return $this->all()
+            ->firstWhere('key', $key);
     }
 
     protected function syncDefaults(): void
@@ -121,6 +129,7 @@ class ModuleRegistry
         return array_merge([
             'key' => $key,
             'enabled' => false,
+            'protected' => false,
             'dependencies' => [],
             'permissions' => [],
             'settings' => [],
@@ -130,6 +139,77 @@ class ModuleRegistry
                 'routes' => [],
             ],
         ], $module);
+    }
+
+    protected function decorateModule(array $module, Collection $catalog): array
+    {
+        $dependencyKeys = collect($module['dependencies'] ?? [])->values();
+        $missingDependencies = $dependencyKeys
+            ->reject(fn (string $dependencyKey): bool => $catalog->has($dependencyKey))
+            ->values()
+            ->all();
+        $disabledDependencies = $dependencyKeys
+            ->filter(fn (string $dependencyKey): bool => $catalog->has($dependencyKey))
+            ->filter(fn (string $dependencyKey): bool => ! (bool) ($catalog->get($dependencyKey)['enabled'] ?? false))
+            ->values()
+            ->all();
+        $blockingDependents = $catalog
+            ->filter(function (array $candidate, string $candidateKey) use ($module): bool {
+                return $candidateKey !== $module['key']
+                    && (bool) ($candidate['enabled'] ?? false)
+                    && in_array($module['key'], $candidate['dependencies'] ?? [], true);
+            })
+            ->keys()
+            ->values()
+            ->all();
+
+        return array_merge($module, [
+            'is_protected' => (bool) ($module['protected'] ?? false),
+            'dependency_status' => [
+                'missing' => $missingDependencies,
+                'disabled' => $disabledDependencies,
+                'ready' => $missingDependencies === [] && $disabledDependencies === [],
+            ],
+            'blocking_dependents' => $blockingDependents,
+            'can_enable' => $missingDependencies === [] && $disabledDependencies === [],
+            'can_disable' => ! (bool) ($module['protected'] ?? false) && $blockingDependents === [],
+        ]);
+    }
+
+    protected function assertCanBeEnabled(array $module): void
+    {
+        $missingDependencies = $module['dependency_status']['missing'] ?? [];
+        $disabledDependencies = $module['dependency_status']['disabled'] ?? [];
+
+        if ($missingDependencies !== []) {
+            throw new DomainException(sprintf(
+                'No se puede habilitar el modulo porque faltan dependencias: %s.',
+                implode(', ', $missingDependencies),
+            ));
+        }
+
+        if ($disabledDependencies !== []) {
+            throw new DomainException(sprintf(
+                'No se puede habilitar el modulo porque requiere dependencias activas: %s.',
+                implode(', ', $disabledDependencies),
+            ));
+        }
+    }
+
+    protected function assertCanBeDisabled(array $module): void
+    {
+        if ((bool) ($module['is_protected'] ?? false)) {
+            throw new DomainException('No se puede deshabilitar un modulo protegido del core.');
+        }
+
+        $blockingDependents = $module['blocking_dependents'] ?? [];
+
+        if ($blockingDependents !== []) {
+            throw new DomainException(sprintf(
+                'No se puede deshabilitar el modulo mientras existan dependientes activos: %s.',
+                implode(', ', $blockingDependents),
+            ));
+        }
     }
 
     protected function canUsePersistence(): bool

@@ -1,5 +1,5 @@
 <script setup>
-import { authStore } from '@/core/auth/authStore';
+import { sessionStore } from '@/core/auth/sessionStore';
 import FloatingConfigurator from '@/components/FloatingConfigurator.vue';
 import { useToast } from 'primevue/usetoast';
 import { reactive, ref } from 'vue';
@@ -22,7 +22,7 @@ async function submitRegister() {
     loading.value = true;
 
     try {
-        await authStore.register(form);
+        await sessionStore.register(form);
 
         toast.add({
             severity: 'success',

@@ -1,13 +1,13 @@
 <script setup>
-import { authStore } from '@/core/auth/authStore';
+import { sessionStore } from '@/core/auth/sessionStore';
 import { moduleCatalog } from '@/core/modules/moduleCatalog';
 import { notificationStore } from '@/core/notifications/notificationStore';
 import { onMounted } from 'vue';
 
 onMounted(async () => {
-    await authStore.initialize();
+    await sessionStore.initialize();
 
-    if (authStore.isAuthenticated.value) {
+    if (sessionStore.isAuthenticated.value) {
         await moduleCatalog.loadModules();
         await notificationStore.loadNotifications();
     }

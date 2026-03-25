@@ -3,11 +3,17 @@
 namespace App\Core\Notifications\Services;
 
 use App\Core\Notifications\Models\CoreNotification;
+use App\Core\Tenancy\TenantContext;
 use App\Models\User;
 use Illuminate\Support\Str;
 
 class NotificationCenter
 {
+    public function __construct(
+        protected TenantContext $tenantContext,
+    ) {
+    }
+
     public function createInternal(
         User $recipient,
         string $title,
@@ -19,7 +25,7 @@ class NotificationCenter
     ): CoreNotification {
         return CoreNotification::query()->create([
             'uuid' => (string) Str::uuid(),
-            'organizacion_id' => $recipient->organizacion_activa_id,
+            'organizacion_id' => $this->tenantContext->organizationId($recipient),
             'recipient_id' => $recipient->id,
             'created_by' => $creator?->id,
             'channel' => 'internal',
@@ -46,7 +52,6 @@ class NotificationCenter
     {
         return CoreNotification::query()
             ->where('recipient_id', $user->id)
-            ->where('organizacion_id', $user->organizacion_activa_id)
             ->whereNull('read_at')
             ->update([
                 'read_at' => now(),

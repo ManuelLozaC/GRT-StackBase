@@ -1,4 +1,5 @@
-import { authStore } from '@/core/auth/authStore';
+import { accessStore } from '@/core/auth/accessStore';
+import { sessionStore } from '@/core/auth/sessionStore';
 import { moduleCatalog } from '@/core/modules/moduleCatalog';
 import { coreRoutes } from '@/core/router/core-routes';
 import { createRouter, createWebHistory } from 'vue-router';
@@ -23,9 +24,9 @@ function ensureModuleRoutesRegistered() {
 }
 
 router.beforeEach(async (to) => {
-    await authStore.initialize();
+    await sessionStore.initialize();
 
-    if (authStore.isAuthenticated.value) {
+    if (sessionStore.isAuthenticated.value) {
         await moduleCatalog.loadModules();
         ensureModuleRoutesRegistered();
 
@@ -36,7 +37,7 @@ router.beforeEach(async (to) => {
 
     const requiresAuth = to.matched.some((record) => record.meta.requiresAuth);
 
-    if (requiresAuth && !authStore.isAuthenticated.value) {
+    if (requiresAuth && !sessionStore.isAuthenticated.value) {
         return {
             name: 'login',
             query: {
@@ -45,7 +46,7 @@ router.beforeEach(async (to) => {
         };
     }
 
-    if (['login', 'register', 'forgotPassword', 'resetPassword'].includes(to.name) && authStore.isAuthenticated.value) {
+    if (['login', 'register', 'forgotPassword', 'resetPassword'].includes(to.name) && sessionStore.isAuthenticated.value) {
         return {
             name: 'dashboard'
         };
@@ -53,7 +54,7 @@ router.beforeEach(async (to) => {
 
     const requiredPermission = to.meta?.permissionKey;
 
-    if (requiredPermission && !authStore.hasPermission(requiredPermission)) {
+    if (requiredPermission && !accessStore.hasPermission(requiredPermission)) {
         return {
             name: 'accessDenied'
         };

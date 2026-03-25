@@ -27,7 +27,6 @@ class NotificationController extends Controller
         $user = $request->user();
         $notifications = CoreNotification::query()
             ->where('recipient_id', $user->id)
-            ->where('organizacion_id', $user->organizacion_activa_id)
             ->latest('id')
             ->limit(50)
             ->get();

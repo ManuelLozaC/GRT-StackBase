@@ -1,5 +1,5 @@
 <script setup>
-import { authStore } from '@/core/auth/authStore';
+import { sessionStore } from '@/core/auth/sessionStore';
 import FloatingConfigurator from '@/components/FloatingConfigurator.vue';
 import { useToast } from 'primevue/usetoast';
 import { ref } from 'vue';
@@ -18,7 +18,7 @@ async function submitLogin() {
     loading.value = true;
 
     try {
-        await authStore.login({
+        await sessionStore.login({
             email: email.value,
             password: password.value,
             device_name: checked.value ? 'frontend-remember' : 'frontend-session'

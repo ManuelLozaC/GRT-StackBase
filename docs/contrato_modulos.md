@@ -47,10 +47,11 @@ La metadata que llega por API declara:
 - `demo-platform` ya consume metadata de rutas y menu desde backend/API.
 - `frontend/src/modules/registry.js` solo resuelve componentes locales por `viewKey`.
 - `moduleCatalog` ya construye menu y rutas desde la respuesta de `GET /api/v1/modules`.
-- `ModuleRegistry` ya normaliza metadata modular en backend y la conserva al togglear modulos.
+- `ModuleRegistry` ya normaliza metadata modular en backend, conserva metadata al togglear y bloquea dependencias invalidas.
+- La metadata expuesta ya incluye estado operativo basico: `dependency_status`, `blocking_dependents`, `can_enable`, `can_disable` e `is_protected`.
 
 ## Deuda restante del contrato
 - generalizar el contrato para futuros modulos sin wiring adicional
-- declarar dependencias entre modulos y bloquear activaciones invalidas
 - soportar permisos y settings por modulo de forma operativa, no solo descriptiva
+- soportar seeds, assets, dashboards y hooks por modulo
 - reducir aun mas el registro local frontend a solo vistas realmente necesarias

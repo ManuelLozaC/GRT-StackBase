@@ -52,6 +52,18 @@ class ModuleManagementTest extends TestCase
             ]);
     }
 
+    public function test_it_rejects_disabling_a_protected_core_module(): void
+    {
+        $this
+            ->withHeader('Authorization', 'Bearer '.$this->issueToken(true))
+            ->patchJson('/api/v1/modules/core-platform', [
+                'enabled' => false,
+            ])
+            ->assertStatus(422)
+            ->assertJsonPath('estado', 'error')
+            ->assertJsonPath('mensaje', 'No se puede deshabilitar un modulo protegido del core.');
+    }
+
     public function test_it_allows_authenticated_user_to_list_modules_without_permission(): void
     {
         $this

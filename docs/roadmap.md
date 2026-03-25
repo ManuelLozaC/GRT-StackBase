@@ -25,10 +25,13 @@ Fecha de referencia: `2026-03-25`
 - Base fundacional del core adelgazada: catalogos y modelos inactivos de ubicacion/personas retirados del arranque modular.
 - Primer paso del contrato modular formal: metadata backend ampliada y manifest unica del `Demo Module` en frontend.
 - Contrato modular consumido por API para bootstrap del `Demo Module`, stores de auth separados y tenancy base reforzada con `TenantContext`.
+- Contrato modular endurecido con dependencias operativas, modulos protegidos del core y feedback explicito en administracion.
 - Registro modular inicial con `core-platform` y `demo-platform`.
 - Persistencia de modulos en base de datos y toggle por API.
 - Pantalla de administracion de modulos en frontend.
 - `Demo Module` inicial con guard de acceso por estado del modulo.
+- Frontend ya consume `sessionStore`, `tenantStore` y `accessStore` directamente, sin fachada `authStore`.
+- Tenancy base extendida a notificaciones internas y descargas de archivos para reducir filtros manuales por organizacion.
 - Base de archivos en core con upload, descarga directa, signed URLs e historial.
 - Base de jobs en core con dispatch, estados, logs y demo funcional.
 - Base de auditoria transversal con eventos para modulos, archivos y jobs.
@@ -38,8 +41,8 @@ Fecha de referencia: `2026-03-25`
 - Build frontend y tests backend pasando.
 
 ### En progreso
-- Estructura `core/modules` ya creada y el `Demo Module` ya usa bootstrap por API; el contrato de modulos todavia debe crecer para futuros modulos.
-- Tenancy base ya existe, pero falta propagarla de forma consistente a modelos, jobs, archivos y auditoria.
+- Estructura `core/modules` ya creada y el `Demo Module` ya usa bootstrap por API; el contrato de modulos ya bloquea dependencias basicas, pero todavia debe crecer para futuros modulos.
+- Tenancy base ya existe y se reforzo en notificaciones/descargas, pero falta propagarla de forma consistente a todo el dominio.
 - `Demo Module` ya existe y ya contiene demos funcionales de archivos, jobs, auditoria y notificaciones. Sigue pendiente export/import.
 - Persisten deudas operativas menores ligadas sobre todo a tenancy transversal, UX global y definicion formal del contrato modular.
 
@@ -62,6 +65,7 @@ Estado: En progreso
 - [x] Bootstrap inicial del `Demo Module` desde metadata backend/API.
 - [ ] Contrato formal de demos por capacidad transversal.
 - [x] Bootstrap modular desde API para no duplicar metadata del `Demo Module`.
+- [x] Dependencias modulares basicas bloqueadas al habilitar o deshabilitar modulos.
 
 ## Fase 1. Identidad y acceso
 Estado: En progreso
@@ -79,7 +83,7 @@ Estado: En progreso
 
 - Organizaciones base, membresias y organizacion activa ya implementadas.
 - Empresas, sucursales, equipos y relaciones usuario-empresa.
-- Tenant activo por request en todos los servicios aun pendiente.
+- Tenant activo por request en todos los servicios aun pendiente de cierre total.
 - Configuracion por tenant.
 - Seed inicial coherente para ambientes locales y demo.
 
@@ -135,6 +139,6 @@ El backlog detallado vive en `docs/pendientes.md`.
 ## Resumen actual
 - Logrado: kernel modular, auth API, registro, reset de password, RBAC inicial, tenancy base, archivos, jobs, auditoria y notificaciones internas ya funcionan en backend y frontend con demos activables desde `Demo Module`; ademas la integridad del repositorio quedo estabilizada, la capa legacy principal fue retirada y todo quedo verificado con tests/build.
 - Pendiente: completar multi-tenant transversal, CRUD universal, export/import, integraciones de storage y notificaciones multicanal, mas observabilidad y seguridad operativa, y generalizar el contrato `core + modules` para nuevos modulos.
-- Pendiente tecnico residual: seguir endureciendo el core en tenancy transversal, CRUD generico, dependencias modulares operativas y catalogos universales realmente necesarios.
+- Pendiente tecnico residual: seguir endureciendo el core en tenancy transversal, CRUD generico, settings/permisos operativos por modulo y catalogos universales realmente necesarios.
 
-Avance global estimado del roadmap: 82% completado.
+Avance global estimado del roadmap: 86% completado.

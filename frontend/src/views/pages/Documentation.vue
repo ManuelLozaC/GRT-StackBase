@@ -11,9 +11,9 @@
                 <div class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm h-full">
                     <div class="text-sm font-semibold text-slate-500 uppercase mb-3">Core</div>
                     <ul class="space-y-3 text-slate-700 list-disc pl-5">
-                        <li>Autenticacion API con stores separados de sesion, tenant y permisos</li>
-                        <li>Tenancy base reforzada con `TenantContext` en request y jobs</li>
-                        <li>Modulos instalables consumidos por API como fuente de verdad</li>
+                        <li>Autenticacion API consumida desde stores separados de sesion, tenant y permisos</li>
+                        <li>Tenancy base reforzada con `TenantContext` en request, jobs, notificaciones y archivos base</li>
+                        <li>Modulos instalables consumidos por API como fuente de verdad y con dependencias operativas</li>
                         <li>Servicios de archivos, jobs, auditoria y notificaciones</li>
                         <li>Respuesta estandar en `api/v1`</li>
                     </ul>

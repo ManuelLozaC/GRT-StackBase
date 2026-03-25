@@ -12,7 +12,66 @@ onMounted(async () => {
 const modules = computed(() => moduleCatalog.state.items);
 const loading = computed(() => moduleCatalog.state.loading);
 
+function dependencySummary(moduleItem) {
+    if (!moduleItem.dependencies?.length) {
+        return 'Sin dependencias';
+    }
+
+    return moduleItem.dependencies.join(', ');
+}
+
+function featureSummary(moduleItem) {
+    if (!moduleItem.features?.length) {
+        return [];
+    }
+
+    return moduleItem.features;
+}
+
+function getBlockingMessage(moduleItem) {
+    if (moduleItem.dependency_status?.missing?.length) {
+        return `Faltan dependencias declaradas: ${moduleItem.dependency_status.missing.join(', ')}.`;
+    }
+
+    if (moduleItem.dependency_status?.disabled?.length) {
+        return `Debes activar primero: ${moduleItem.dependency_status.disabled.join(', ')}.`;
+    }
+
+    if (moduleItem.blocking_dependents?.length) {
+        return `No puede deshabilitarse mientras sigan activos: ${moduleItem.blocking_dependents.join(', ')}.`;
+    }
+
+    if (moduleItem.is_protected) {
+        return 'Modulo protegido del core.';
+    }
+
+    return null;
+}
+
+function isToggleDisabled(moduleItem) {
+    if (moduleItem.enabled) {
+        return !moduleItem.can_disable;
+    }
+
+    return !moduleItem.can_enable;
+}
+
 async function onToggle(moduleItem) {
+    if (isToggleDisabled(moduleItem)) {
+        const message = getBlockingMessage(moduleItem);
+
+        if (message) {
+            toast.add({
+                severity: 'warn',
+                summary: 'Accion bloqueada',
+                detail: message,
+                life: 3500
+            });
+        }
+
+        return;
+    }
+
     const nextValue = !moduleItem.enabled;
 
     try {
@@ -55,6 +114,22 @@ async function onToggle(moduleItem) {
             </Column>
             <Column field="description" header="Descripcion" style="min-width: 24rem" />
             <Column field="version" header="Version" style="min-width: 8rem" />
+            <Column header="Contrato" style="min-width: 18rem">
+                <template #body="slotProps">
+                    <div class="flex flex-col gap-2">
+                        <small class="text-color-secondary">
+                            <span class="font-semibold text-color">Dependencias:</span>
+                            {{ dependencySummary(slotProps.data) }}
+                        </small>
+                        <div class="flex flex-wrap gap-2" v-if="featureSummary(slotProps.data).length">
+                            <Tag v-for="feature in featureSummary(slotProps.data)" :key="feature" severity="secondary" :value="feature" />
+                        </div>
+                        <small v-if="getBlockingMessage(slotProps.data)" class="text-orange-600">
+                            {{ getBlockingMessage(slotProps.data) }}
+                        </small>
+                    </div>
+                </template>
+            </Column>
             <Column header="Tipo" style="min-width: 8rem">
                 <template #body="slotProps">
                     <Tag :severity="slotProps.data.is_demo ? 'warning' : 'info'" :value="slotProps.data.is_demo ? 'Demo' : 'Core'" />
@@ -63,7 +138,7 @@ async function onToggle(moduleItem) {
             <Column header="Estado" style="min-width: 10rem">
                 <template #body="slotProps">
                     <div class="flex items-center gap-3">
-                        <ToggleSwitch :modelValue="slotProps.data.enabled" @update:modelValue="onToggle(slotProps.data)" />
+                        <ToggleSwitch :modelValue="slotProps.data.enabled" :disabled="isToggleDisabled(slotProps.data)" @update:modelValue="onToggle(slotProps.data)" />
                         <Tag :severity="slotProps.data.enabled ? 'success' : 'secondary'" :value="slotProps.data.enabled ? 'Activo' : 'Inactivo'" />
                     </div>
                 </template>

@@ -19,7 +19,8 @@ Frontend construido con Vue 3, Vite y PrimeVue.
 - Branding principal alineado a `GRT StackBase`.
 - Toolchain frontend actualizado a `Vite 6.4.1`.
 - `Demo Module` ya se bootstrappea desde metadata modular entregada por API.
-- Stores separados para sesion, tenant y permisos.
+- Stores consumidos por responsabilidad: sesion, tenant y permisos, sin fachada `authStore`.
+- Pantalla de modulos informa dependencias, features y bloqueos operativos antes de togglear.
 
 ## Pantallas relevantes hoy
 - `/admin/modules`

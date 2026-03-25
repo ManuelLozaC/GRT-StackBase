@@ -7,6 +7,7 @@ use App\Core\Http\Concerns\ApiResponse;
 use App\Core\Modules\ModuleRegistry;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\V1\UpdateModuleStatusRequest;
+use DomainException;
 use Illuminate\Http\JsonResponse;
 
 class ModuleController extends Controller
@@ -34,10 +35,17 @@ class ModuleController extends Controller
         ModuleRegistry $modules,
         string $moduleKey,
     ): JsonResponse {
-        $module = $modules->setEnabled(
-            key: $moduleKey,
-            enabled: (bool) $request->boolean('enabled'),
-        );
+        try {
+            $module = $modules->setEnabled(
+                key: $moduleKey,
+                enabled: (bool) $request->boolean('enabled'),
+            );
+        } catch (DomainException $exception) {
+            return $this->errorResponse(
+                message: $exception->getMessage(),
+                status: 422,
+            );
+        }
 
         if ($module === null) {
             return $this->errorResponse(

@@ -78,8 +78,9 @@ Su objetivo es:
 - Metadata modular backend consumida por API para construir rutas y menu del `Demo Module`.
 - Frontend modular reducido a registro local de vistas; ya no define metadata duplicada de navegacion.
 - Metadata modular backend ampliada con `dependencies`, `permissions`, `settings`, `features` y `frontend.routes`.
-- Stores frontend separados en sesion, tenant y permisos.
-- `TenantContext` backend compartido entre request autenticado y jobs base.
+- Dependencias modulares basicas bloqueadas para no habilitar/deshabilitar modulos en estados invalidos.
+- Stores frontend consumidos directamente por responsabilidad: sesion, tenant y permisos.
+- `TenantContext` backend compartido entre request autenticado, jobs, notificaciones internas y descargas base.
 
 ## Contenedores previstos
 - `app`: backend Laravel
@@ -98,3 +99,4 @@ Su objetivo es:
 - Las ayudas de desarrollo deben quedar condicionadas por entorno para no contaminar produccion.
 - Cada modulo debe poder declararse una sola vez por capa y evitar duplicacion de wiring manual.
 - El backend debe ser la fuente de verdad de metadata modular; frontend solo resuelve vistas locales.
+- La administracion no debe permitir activar modulos con dependencias rotas ni desactivar modulos protegidos del core.
