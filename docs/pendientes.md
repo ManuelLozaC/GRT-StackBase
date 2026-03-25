@@ -386,3 +386,21 @@ Estado: En progreso
 3. Rehacer el bootstrap oficial con Manuel Loza, GRT SRL y TalentHub.
 4. Cerrar scope multi-tenant consistente en modelos, jobs, archivos, auditoria y notificaciones externas.
 5. Integrar archivos con Spaces, versionado y entidades de negocio.
+
+## Objetivos inmediatos desde aqui en adelante
+1. Cerrar por completo la limpieza documental residual y evitar volver a abrir documentos paralelos.
+2. Aplicar en codigo la decision `organizacion = empresa` y definir la estructura laboral final.
+3. Reemplazar el bootstrap demo por el bootstrap oficial del stack base.
+4. Completar los CRUDs base de organizaciones, oficinas, personas, usuarios y asignaciones laborales.
+5. Seguir con tenancy transversal, Spaces y endurecimiento operativo local -> Droplet.
+
+## Indicador de avance global
+
+- Avance global estimado del proyecto: `72%`
+- Trabajo restante estimado para cerrar esta version base: `28%`
+
+Lectura del porcentaje:
+
+- el nucleo de plataforma ya existe y es util
+- el mayor volumen pendiente ya no es exploratorio, sino de cierre y consolidacion
+- este porcentaje debe actualizarse siempre que se cierre un bloque relevante del backlog
