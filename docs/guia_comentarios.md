@@ -1,41 +1,52 @@
-GUÍA DE COMENTARIOS Y SWAGGEREstándar de Documentación Automática | Versión: 1.0
+# GUIA DE COMENTARIOS Y SWAGGER
+> Estandar para documentar la API real de StackBase.
 
-🎯 1. ObjetivoGarantizar que toda la API esté documentada automáticamente mediante OpenAPI 3.0. Esto permite que el Frontend y la IA entiendan los datos sin consultar al desarrollador del Backend.
+## Objetivo
+Mantener OpenAPI alineado con el codigo para que frontend, QA e IA puedan consumir el backend sin ambiguedades.
 
-🛠️ 2. Estructura de Modelos (@OA\Schema)Cada modelo debe contener un bloque de comentario superior que describa todas sus propiedades.Reglas de Oro:Ejemplos Reales: Todo campo debe tener un example.Tipado Estricto: Definir type y, si aplica, format (int64, email, date-time).Nomenclatura: Las propiedades en el JSON deben ser idénticas a las de la base de datos (snake_case).Ejemplo de Propiedad Estándar:PHP * @OA\Property(
- * property="email",
- * type="string",
- * format="email",
- * description="Correo electrónico principal",
- * example="usuario@premiojoven.org"
- * )
- * 
-📊 3. Tabla de Tipos y FormatosUsa esta referencia para mantener la consistencia en todo el proyecto:Dato en BDTipo OpenAPIFormatoEjemploID / FKintegerint64example=101UUIDstringuuidexample="550e8400-e29b..."Texto Largostring(ninguno)example="Notas del lead..."Fechasstringdate-timeexample="2026-03-01 10:00:00"Booleanosboolean(ninguno)example=trueDecimalesnumberfloatexample=1500.50
+## Que documentar
+### Modelos expuestos por API
+- propiedades
+- tipos
+- formatos
+- ejemplos
+- relaciones relevantes
 
-🔗 4. Relaciones y Objetos AnidadosCuando un modelo devuelve una relación (Eager Loading), se debe documentar como un object o un array.Objeto Simple (BelongsTo):PHP * @OA\Property(
- * property="vendedor",
- * type="object",
- * @OA\Property(property="id", type="integer", example=1),
- * @OA\Property(property="nombre", type="string", example="Juan")
- * )
-Colección (HasMany):PHP * @OA\Property(
- * property="etiquetas",
- * type="array",
- * @OA\Items(ref="#/components/schemas/Etiqueta")
- * )
+### Endpoints
+- path y metodo
+- parametros
+- body esperado
+- respuesta exitosa
+- errores comunes
 
-🛣️ 5. Documentación de EndpointsEn los controladores, cada método debe especificar su respuesta exitosa vinculándola al Schema del modelo.PHP/**
- * @OA\Get(
- * path="/api/clientes/{id}",
- * summary="Obtener un cliente específico",
- * tags={"Clientes"},
- * @OA\Parameter(name="id", in="path", required=true, @OA\Schema(type="integer")),
- * @OA\Response(
- * response=200,
- * description="Operación exitosa",
- * @OA\JsonContent(ref="#/components/schemas/Cliente")
- * )
- * )
- */
+## Formato de respuesta
+Todos los endpoints deben documentar el envelope comun:
+- `estado`
+- `datos`
+- `mensaje`
+- `meta`
+- `errores`
 
-🤖 6. Instrucción para la IA (Prompting)Cuando pidas a la IA generar código, añade siempre esta instrucción:"Genera el modelo y los comentarios de Swagger siguiendo estrictamente las reglas de docs/guia_comentarios.md e incluye ejemplos reales para cada propiedad."
+## Tipos recomendados
+| Dato | OpenAPI type | format | Ejemplo |
+| :--- | :--- | :--- | :--- |
+| ID interno | `integer` | `int64` | `101` |
+| UUID | `string` | `uuid` | `"550e8400-e29b..."` |
+| Fecha/hora | `string` | `date-time` | `"2026-03-24T21:00:00Z"` |
+| Booleano | `boolean` | - | `true` |
+| Decimal | `number` | `float` | `1500.50` |
+
+## Ejemplo de endpoint
+Para endpoints como `/api/v1/modules` se debe documentar:
+- arreglo de modulos
+- `key`
+- `name`
+- `description`
+- `version`
+- `enabled`
+- `is_demo`
+
+## Regla de mantenimiento
+- No se documentan endpoints imaginarios.
+- Primero existe el endpoint real; despues se documenta.
+- Si cambia el contrato JSON, Swagger se actualiza en el mismo cambio.

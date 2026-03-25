@@ -1,26 +1,80 @@
-# 🚀 STACKBASE: Arquitectura Maestra
-> **Entidad:** Premio Joven | **Versión:** 1.0
+# STACKBASE
+> Arquitectura maestra del proyecto.
 
-## 📑 1. Resumen Tecnológico
-| Capa | Tecnología |
+## Objetivo
+Construir una plataforma base reutilizable para multiples sistemas, donde las capacidades genericas vivan en el core y las necesidades de negocio entren como modulos plug-in.
+
+## Arquitectura general
+### Core Platform
+Resuelve capacidades compartidas:
+- identidad y acceso
+- tenancy
+- configuracion
+- archivos
+- jobs
+- notificaciones
+- auditoria
+- seguridad
+- API base
+- UX transversal
+
+### Modules
+Cada modulo puede declarar:
+- rutas
+- pantallas
+- menus
+- permisos
+- migraciones
+- settings
+- jobs
+- dashboards
+
+### Demo Module
+Modulo especial orientado a pruebas tecnicas del core.
+
+Su objetivo es:
+- validar capacidades genericas antes de usarlas en negocio
+- servir para QA tecnico
+- ayudar al onboarding
+- poder activarse o desactivarse desde administracion
+
+## Stack tecnologico actual
+| Capa | Tecnologia |
 | :--- | :--- |
-| **Infraestructura** | DigitalOcean (Droplet + Spaces S3) |
-| **Backend** | PHP 8.3 + Laravel 11 |
-| **Frontend** | Vue.js 3 + Vite |
-| **Datos / BI** | MySQL 8 + Meilisearch |
-| **Procesos** | Redis + Laravel Reverb |
+| Infraestructura | Docker Compose |
+| Backend | PHP 8.3 + Laravel 12 |
+| Frontend | Vue 3 + Vite + PrimeVue |
+| Base de datos | MySQL 8 |
+| Cache / Jobs | Redis |
+| Busqueda | Meilisearch |
+| Storage | S3 compatible / DigitalOcean Spaces |
+| Documentacion API | L5 Swagger |
 
-## 🏗️ 2. Arquitectura de Contenedores (Docker)
-1. **`nginx-proxy-manager`**: Gestión de dominios y SSL.
-2. **`app-server`**: Procesamiento PHP-FPM.
-3. **`db-mysql`**: Almacenamiento persistente.
-4. **`redis-queue`**: Tareas en segundo plano.
-5. **`meilisearch-engine`**: Motor de búsqueda de alta velocidad.
+## Implementado hoy
+- API `v1` base.
+- Healthcheck.
+- Login, logout y `me`.
+- Organizaciones base y cambio de organizacion activa.
+- Core de archivos con upload, descarga directa, signed URL e historial.
+- Core de jobs con dispatch, ejecucion inmediata demo y trazabilidad basica.
+- Core de auditoria con eventos transversales y consulta demo.
+- Core de notificaciones internas con bandeja, lectura y contador basico.
+- Registro de modulos.
+- Persistencia de estado de modulos.
+- Admin de modulos.
+- Guard de acceso a modulos deshabilitados.
+- `Demo Module` con landing y demos funcionales de notificaciones, archivos, jobs y auditoria.
 
-## 📁 3. Almacenamiento de Objetos (DigitalOcean Spaces)
-* **Cero Almacenamiento Local:** Los archivos de usuario NO se guardan en el Droplet.
-* **Driver S3:** Se utiliza el driver de Laravel para Spaces.
-* **Persistencia:** Los archivos sobreviven a la eliminación o reinicio de los contenedores.
+## Contenedores previstos
+- `app`: backend Laravel
+- `web`: nginx
+- `db`: MySQL
+- `redis`: colas y cache
+- `search`: Meilisearch
+- `frontend`: Vite dev server
 
-## 🔄 4. Ciclo de Vida (CI/CD)
-* **GitHub Actions**: Validación de estilo -> Pruebas (Pest/Vitest) -> Despliegue automático al Droplet.
+## Principios de crecimiento
+- El core no contiene logica de negocio especifica.
+- Los modulos consumen servicios del core.
+- Las funcionalidades genericas importantes deben tener demo.
+- La documentacion debe reflejar estado real del codigo.

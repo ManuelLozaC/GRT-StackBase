@@ -1,0 +1,105 @@
+<?php
+
+namespace Tests\Feature\Api\V1\Demo;
+
+use App\Core\Notifications\Services\NotificationCenter;
+use App\Models\Organizacion;
+use App\Models\User;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Tests\TestCase;
+
+class DemoNotificationFlowTest extends TestCase
+{
+    use RefreshDatabase;
+
+    public function test_user_can_create_and_list_demo_notifications(): void
+    {
+        [$user, $token] = $this->authenticateUser();
+
+        $this->withHeader('Authorization', 'Bearer '.$token)
+            ->postJson('/api/v1/demo/notifications', [
+                'title' => 'Nueva exportacion lista',
+                'message' => 'La exportacion de demo termino correctamente.',
+                'level' => 'success',
+            ])
+            ->assertOk()
+            ->assertJsonPath('datos.level', 'success');
+
+        $this->withHeader('Authorization', 'Bearer '.$token)
+            ->getJson('/api/v1/notifications')
+            ->assertOk()
+            ->assertJsonPath('meta.total', 1)
+            ->assertJsonPath('meta.unread_count', 1)
+            ->assertJsonFragment([
+                'title' => 'Nueva exportacion lista',
+                'level' => 'success',
+            ]);
+    }
+
+    public function test_user_can_mark_notification_as_read(): void
+    {
+        [$user, $token] = $this->authenticateUser();
+        $notification = app(NotificationCenter::class)->createInternal(
+            recipient: $user,
+            title: 'Demo pendiente',
+            message: 'Marca esta notificacion como leida.',
+        );
+
+        $this->withHeader('Authorization', 'Bearer '.$token)
+            ->patchJson('/api/v1/notifications/'.$notification->uuid.'/read')
+            ->assertOk()
+            ->assertJsonPath('datos.read_at', fn ($value) => ! empty($value));
+    }
+
+    public function test_user_can_mark_all_notifications_as_read(): void
+    {
+        [$user, $token] = $this->authenticateUser();
+
+        app(NotificationCenter::class)->createInternal(
+            recipient: $user,
+            title: 'Demo 1',
+            message: 'Primera notificacion.',
+        );
+
+        app(NotificationCenter::class)->createInternal(
+            recipient: $user,
+            title: 'Demo 2',
+            message: 'Segunda notificacion.',
+        );
+
+        $this->withHeader('Authorization', 'Bearer '.$token)
+            ->postJson('/api/v1/notifications/read-all')
+            ->assertOk()
+            ->assertJsonPath('datos.updated_count', 2);
+
+        $this->withHeader('Authorization', 'Bearer '.$token)
+            ->getJson('/api/v1/notifications')
+            ->assertOk()
+            ->assertJsonPath('meta.unread_count', 0);
+    }
+
+    protected function authenticateUser(): array
+    {
+        $organizacion = Organizacion::query()->create([
+            'nombre' => 'Acme Notifications',
+            'slug' => 'acme-notifications',
+        ]);
+
+        $user = User::factory()->create([
+            'organizacion_activa_id' => $organizacion->id,
+        ]);
+
+        $user->organizaciones()->attach($organizacion->id);
+
+        $loginResponse = $this->postJson('/api/v1/auth/login', [
+            'email' => $user->email,
+            'password' => 'password',
+            'device_name' => 'phpunit',
+        ]);
+
+        return [
+            $user,
+            $loginResponse->json('datos.token'),
+        ];
+    }
+}

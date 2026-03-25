@@ -2,8 +2,12 @@
 
 namespace App\Models;
 
+use App\Core\Auth\Models\PersonalAccessToken;
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Spatie\Permission\Traits\HasRoles;
@@ -23,7 +27,7 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
-        'organizacion_id',
+        'organizacion_activa_id',
     ];
 
     /**
@@ -47,5 +51,21 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
         ];
+    }
+
+    public function accessTokens(): HasMany
+    {
+        return $this->hasMany(PersonalAccessToken::class);
+    }
+
+    public function organizaciones(): BelongsToMany
+    {
+        return $this->belongsToMany(Organizacion::class)
+            ->withTimestamps();
+    }
+
+    public function organizacionActiva(): BelongsTo
+    {
+        return $this->belongsTo(Organizacion::class, 'organizacion_activa_id');
     }
 }

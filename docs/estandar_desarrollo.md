@@ -1,24 +1,53 @@
-# 🛠️ ESTÁNDAR DE DESARROLLO
-> Reglas de nomenclatura, lógica y comunicación.
+# ESTANDAR DE DESARROLLO
+> Reglas base para mantener coherencia tecnica en StackBase.
 
-## 🔤 1. Nomenclatura (En Español)
-* **Clases:** `PascalCase` (Ej: `ServicioFacturacion`).
-* **Métodos / Variables:** `camelCase` (Ej: `calcularTotal`).
-* **Tablas / Columnas:** `snake_case` y plural (Ej: `usuarios`, `fecha_pago`).
-* **Tipado:** Uso obligatorio de `declare(strict_types=1);` y tipos de retorno.
+## Nomenclatura
+- Clases: `PascalCase`
+- Metodos y variables: `camelCase`
+- Tablas y columnas: `snake_case`
+- Keys publicas de modulos: `kebab-case`
 
-## 🏗️ 2. Patrones de Arquitectura
-* **Acciones (`PascalCase`):** Prohibida la lógica en controladores. Cada tarea es una clase única (Ej: `CrearUsuarioAccion`).
-* **API JSON:** Formato único de respuesta: `{ estado, datos, mensaje, meta, errores }`.
+## Arquitectura
+- El backend es `API-first`.
+- El core resuelve lo transversal.
+- Los modulos agregan logica de negocio o demos.
+- No se agrega una feature generica directamente dentro de un modulo de negocio.
 
-## 📂 3. Gestión de Archivos (Storage)
-Todos los archivos se guardan en **DigitalOcean Spaces** siguiendo esta ruta obligatoria:
-`{año}/{mes}/{entidad}/{id}/{tipo_documento}/{nombre_archivo}`
+## Respuesta API
+Toda respuesta JSON debe seguir este formato:
 
-* **Entidades:** `prospecto`, `cliente`, `factura`, etc.
-* **Tipos:** `comprobante_pago`, `dni`, `logo`, etc.
-* **Ejemplo:** `2024/05/prospecto/150/comprobante_pago/recibo.pdf`
+```json
+{
+  "estado": "ok|error",
+  "datos": {},
+  "mensaje": "texto opcional",
+  "meta": {},
+  "errores": []
+}
+```
 
-## 🤖 4. Guía para IA
-* **API First**: El Backend solo entrega JSON.
-* **Descargas Pesadas:** Los Excel/CSV se generan en `/tmp`, se suben a Spaces y se borran del servidor local inmediatamente. Entrega siempre un "Enlace Firmado" temporal.
+## Reglas para modulos
+- Todo modulo debe declararse en el registro de modulos.
+- Todo modulo debe poder activarse o desactivarse.
+- Todo modulo debe definir sus rutas, menus y dependencias de forma explicita.
+- Los modulos deshabilitados no deben ser accesibles desde la UI.
+
+## Regla para demos
+- Toda capacidad transversal importante debe tener una demo en `Demo Module`.
+- Las demos deben servir para validacion tecnica y QA.
+- Una demo visual sin flujo funcional no se considera terminada.
+
+## Storage
+Los archivos del usuario deben vivir en storage compatible con S3.
+
+Ruta objetivo:
+`{anio}/{mes}/{entidad}/{id}/{tipo}/{archivo}`
+
+## Testing
+- Toda pieza nueva del core debe tener al menos pruebas base.
+- Los endpoints nuevos deben tener tests feature.
+- Las demos funcionales deben tener como minimo verificacion de acceso y flujo principal.
+
+## Documentacion
+- Si cambia la arquitectura, se actualizan `docs/roadmap.md`, `docs/pendientes.md` y `docs/stackbase.md`.
+- Si cambia el contrato de API, se actualiza `docs/guia_comentarios.md`.
