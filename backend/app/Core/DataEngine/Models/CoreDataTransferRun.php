@@ -51,6 +51,11 @@ class CoreDataTransferRun extends Model
         });
     }
 
+    public function getRouteKeyName(): string
+    {
+        return 'uuid';
+    }
+
     public function organizacion(): BelongsTo
     {
         return $this->belongsTo(Organizacion::class);

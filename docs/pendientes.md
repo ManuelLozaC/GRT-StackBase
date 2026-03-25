@@ -44,6 +44,7 @@
 - [x] Limpieza de branding residual visible (`README` raiz y restos `SAKAI` del shell/landing).
 - [x] Settings operativos por modulo con persistencia, API y UI administrativa.
 - [x] Export/import CSV sobre el Data Engine con historial tenant-aware de corridas.
+- [x] Exportaciones `Excel/PDF` y modo `async` sobre el Data Engine con demo dentro de `Demo Module`.
 
 ### Brechas principales
 - [ ] RBAC completo.
@@ -210,14 +211,15 @@ Estado: En progreso
 ## P9. Exportacion e importacion
 Estado: En progreso
 
-- [ ] Exportar a Excel.
+- [x] Exportar a Excel.
 - [x] Exportar a CSV.
-- [ ] Exportar a PDF.
-- [ ] Exportaciones pesadas async.
+- [x] Exportar a PDF.
+- [x] Exportaciones async base con cola y descarga diferida.
+- [ ] Exportaciones pesadas async con worker/observabilidad mas profunda.
 - [x] Importacion masiva CSV sobre recurso del Data Engine.
 - [x] Validacion previa segun metadata del recurso.
 - [x] Logs de importacion y exportacion por corrida.
-- [ ] Demo funcional de export/import dentro del `Demo Module`.
+- [x] Demo funcional de export/import dentro del `Demo Module`.
 
 ## P10. Busqueda y filtros avanzados
 Estado: Pendiente
@@ -338,4 +340,4 @@ Estado: Pendiente
 2. Integracion de archivos con Spaces y entidades de negocio.
 3. Completar el contrato modular con permisos operativos, seeds y assets por modulo.
 4. Extender el Data Engine con relaciones, custom fields y acciones avanzadas.
-5. Llevar export/import a demo funcional independiente dentro del `Demo Module` y preparar modos async.
+5. Endurecer exportaciones async con workers supervisados, observabilidad y formatos/importaciones mas ricas si se justifican.

@@ -36,6 +36,7 @@ Fecha de referencia: `2026-03-25`
 - Aislamiento por tenant validado con pruebas automatizadas en notificaciones, archivos, descargas y auditoria demo.
 - Data Engine real implementado con recurso demo, CRUD universal base, filtros, busqueda, paginacion, ordenamiento y soft delete.
 - Export/import CSV ya operativo sobre el Data Engine con historial de corridas tenant-aware.
+- Exportaciones `Excel/PDF` y modo `async` ya operativos sobre el Data Engine y demostrables desde `Demo Module`.
 - Limpieza residual completada en branding/documentacion raiz y restos visuales del shell legacy.
 - Base de archivos en core con upload, descarga directa, signed URLs e historial.
 - Base de jobs en core con dispatch, estados, logs y demo funcional.
@@ -50,12 +51,12 @@ Fecha de referencia: `2026-03-25`
 - Tenancy base ya existe y se reforzo en notificaciones/descargas, pero falta propagarla de forma consistente a todo el dominio.
 - El frontend ya refresca el catalogo modular completo tras toggles para no conservar estados operativos stale.
 - Los settings modulares ya son operativos, pero todavia faltan permisos operativos, seeds y assets dentro del contrato formal.
-- `Demo Module` ya existe y ya contiene demos funcionales de archivos, jobs, auditoria y notificaciones. Export/import ya existe en el `Data Engine`, pero aun no se separa como demo propia dentro del modulo demo.
+- `Demo Module` ya existe y ya contiene demos funcionales de archivos, jobs, auditoria, notificaciones y transferencias/exportaciones.
 - Persisten deudas operativas menores ligadas sobre todo a tenancy transversal, UX global y definicion formal del contrato modular.
 
 ### Aun pendiente
 - Multi-tenant completo.
-- Capacidades avanzadas del Data Engine: relaciones, custom fields, Excel/PDF y modos async.
+- Capacidades avanzadas del Data Engine: relaciones, custom fields y endurecimiento de exportaciones/importaciones mas pesadas.
 - Archivos, notificaciones, jobs avanzados, auditoria y seguridad.
 
 ## Fases
@@ -98,7 +99,7 @@ Estado: En progreso
 Estado: En progreso
 
 - CRUD universal y filtros.
-- Export/import CSV base sobre el Data Engine con historial tenant-aware.
+- Export/import `CSV / Excel / PDF` base sobre el Data Engine con historial tenant-aware y modo `async`.
 - Archivos base ya implementados; falta Spaces, versionado real y asociaciones de negocio.
 - Jobs base ya implementados; faltan workers supervisados, cron, reintentos operativos y propagacion completa de tenant/actor.
 - Notificaciones internas base ya implementadas; faltan email, WhatsApp/SMS, push y preferencias por usuario.
@@ -122,7 +123,7 @@ Estado: En progreso
 - Demo de jobs ya implementada.
 - Demo de auditoria ya implementada.
 - Demo de notificaciones ya implementada.
-- Export/import CSV ya validado en `Data Engine`; falta demo independiente dentro de `Demo Module`.
+- Demo de export/import ya implementada dentro de `Demo Module`.
 - Demo de auditoria y logs.
 
 Cada demo debe permitir validar la capacidad tecnica antes de usarla en modulos de negocio.
@@ -145,8 +146,8 @@ Un nuevo sistema debe poder ensamblarse con:
 El backlog detallado vive en `docs/pendientes.md`.
 
 ## Resumen actual
-- Logrado: kernel modular, auth API, registro, reset de password, RBAC inicial, tenancy base, archivos, jobs, auditoria y notificaciones internas ya funcionan en backend y frontend con demos activables desde `Demo Module`; ademas la integridad del repositorio quedo estabilizada, la capa legacy principal fue retirada, el contrato modular ya evita estados invalidos, el aislamiento por tenant quedo cubierto con pruebas automatizadas y el `Data Engine` ya soporta export/import CSV con historial de corridas.
+- Logrado: kernel modular, auth API, registro, reset de password, RBAC inicial, tenancy base, archivos, jobs, auditoria y notificaciones internas ya funcionan en backend y frontend con demos activables desde `Demo Module`; ademas la integridad del repositorio quedo estabilizada, la capa legacy principal fue retirada, el contrato modular ya evita estados invalidos, el aislamiento por tenant quedo cubierto con pruebas automatizadas y el `Data Engine` ya soporta export/import `CSV / Excel / PDF` con historial de corridas y modo `async`.
 - Pendiente: completar multi-tenant transversal, integraciones de storage y notificaciones multicanal, mas observabilidad y seguridad operativa, y generalizar el contrato `core + modules` para nuevos modulos.
-- Pendiente tecnico residual: seguir endureciendo el core en tenancy transversal, ampliar el CRUD generico hacia relaciones/custom fields, llevar export/import a Excel/PDF/async y a una demo dedicada, permisos operativos por modulo y catalogos universales realmente necesarios.
+- Pendiente tecnico residual: seguir endureciendo el core en tenancy transversal, ampliar el CRUD generico hacia relaciones/custom fields, robustecer exportaciones/importaciones pesadas y async en operacion real, permisos operativos por modulo y catalogos universales realmente necesarios.
 
-Avance global estimado del roadmap: 95% completado.
+Avance global estimado del roadmap: 97% completado.

@@ -14,13 +14,15 @@ const demoCapabilities = [
     },
     {
         title: 'CRUD generico y filtros',
-        status: 'Pendiente',
-        description: 'Permitira validar tablas, formularios, filtros guardados y serializacion uniforme.'
+        status: 'Funcional',
+        description: 'Valida el Data Engine tenant-aware con tabla, formulario, filtros, busqueda, ordenamiento y soft delete.',
+        to: '/platform/data-engine'
     },
     {
         title: 'Exportaciones e importaciones',
-        status: 'Pendiente',
-        description: 'Servira para probar CSV, Excel, PDF y flujos asincronos de gran volumen.'
+        status: 'Funcional',
+        description: 'Permite probar CSV, Excel, PDF, historial de corridas e inicio de exportaciones asincronas sobre el recurso demo.',
+        to: '/demo/transfers'
     },
     {
         title: 'Jobs y procesos asincronos',

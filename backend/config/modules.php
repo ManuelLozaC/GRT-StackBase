@@ -73,6 +73,7 @@ return [
                 'demo.files',
                 'demo.jobs',
                 'demo.audit',
+                'demo.transfers',
             ],
             'frontend' => [
                 'navigation' => [
@@ -127,6 +128,16 @@ return [
                         'menu' => [
                             'label' => 'Audit Demo',
                             'icon' => 'pi pi-fw pi-history',
+                        ],
+                    ],
+                    [
+                        'path' => '/demo/transfers',
+                        'name' => 'demo-transfers',
+                        'view' => 'demo.transfers',
+                        'meta' => [],
+                        'menu' => [
+                            'label' => 'Transfers Demo',
+                            'icon' => 'pi pi-fw pi-download',
                         ],
                     ],
                 ],

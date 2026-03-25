@@ -4,11 +4,15 @@ namespace Tests\Feature\Api\V1;
 
 use App\Core\Auth\Services\AccessTokenService;
 use App\Core\DataEngine\Models\CoreDataTransferRun;
+use App\Core\DataEngine\Services\DataTransferManager;
 use App\Core\Modules\ModuleRegistry;
+use App\Core\Tenancy\TenantContext;
+use App\Jobs\DataEngine\ProcessDataExportRun;
 use App\Models\Organizacion;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
 class DataResourceFlowTest extends TestCase
@@ -189,6 +193,35 @@ class DataResourceFlowTest extends TestCase
         ]);
     }
 
+    public function test_user_can_export_demo_contacts_in_excel_and_pdf_formats(): void
+    {
+        [$user, $token] = $this->authenticateUser();
+        app(ModuleRegistry::class)->setEnabled('demo-platform', true);
+
+        $this->withHeader('Authorization', 'Bearer '.$token)
+            ->postJson('/api/v1/data/demo-contacts', [
+                'nombre' => 'Acme Lead',
+                'email' => 'lead@acme.test',
+                'estado' => 'active',
+                'prioridad' => 'medium',
+            ])
+            ->assertOk();
+
+        $excelResponse = $this->withHeader('Authorization', 'Bearer '.$token)
+            ->get('/api/v1/data/demo-contacts/export?format=excel');
+
+        $excelResponse->assertOk();
+        $this->assertStringContainsString('application/vnd.ms-excel', (string) $excelResponse->headers->get('content-type'));
+        $this->assertStringContainsString('<table', (string) $excelResponse->getContent());
+
+        $pdfResponse = $this->withHeader('Authorization', 'Bearer '.$token)
+            ->get('/api/v1/data/demo-contacts/export?format=pdf');
+
+        $pdfResponse->assertOk();
+        $this->assertSame('application/pdf', $pdfResponse->headers->get('content-type'));
+        $this->assertStringStartsWith('%PDF-', (string) $pdfResponse->getContent());
+    }
+
     public function test_user_can_import_demo_contacts_from_csv_and_list_transfer_history(): void
     {
         [$user, $token] = $this->authenticateUser();
@@ -279,6 +312,57 @@ CSV);
             ->assertOk()
             ->assertJsonPath('meta.total', 1)
             ->assertJsonPath('datos.0.file_name', 'secondary.csv');
+    }
+
+    public function test_user_can_queue_async_export_and_download_result(): void
+    {
+        Storage::fake('local');
+
+        [$user, $token] = $this->authenticateUser();
+        app(ModuleRegistry::class)->setEnabled('demo-platform', true);
+
+        $this->withHeader('Authorization', 'Bearer '.$token)
+            ->postJson('/api/v1/data/demo-contacts', [
+                'nombre' => 'Async Contact',
+                'email' => 'async@test.dev',
+                'estado' => 'lead',
+                'prioridad' => 'high',
+            ])
+            ->assertOk();
+
+        $queueResponse = $this->withHeader('Authorization', 'Bearer '.$token)
+            ->getJson('/api/v1/data/demo-contacts/export?format=pdf&mode=async');
+
+        $queueResponse
+            ->assertOk()
+            ->assertJsonPath('datos.status', 'queued')
+            ->assertJsonPath('datos.mode', 'async')
+            ->assertJsonPath('datos.format', 'pdf');
+
+        $run = CoreDataTransferRun::query()->latest('id')->firstOrFail();
+
+        $job = new ProcessDataExportRun($run->id);
+        $job->handle(
+            app(DataTransferManager::class),
+            app(\App\Core\DataEngine\DataResourceRegistry::class),
+            app(TenantContext::class),
+        );
+
+        $run = $run->fresh();
+
+        $this->assertSame('completed', $run->status);
+        $this->assertNotNull($run->metadata['storage_path'] ?? null);
+        Storage::disk('local')->assertExists($run->metadata['storage_path']);
+
+        $downloadResponse = $this->withHeader('Authorization', 'Bearer '.$token)
+            ->get('/api/v1/data/transfers/'.$run->uuid.'/download');
+
+        $downloadResponse->assertOk();
+        $this->assertSame('application/pdf', $downloadResponse->headers->get('content-type'));
+        $content = method_exists($downloadResponse, 'streamedContent')
+            ? (string) $downloadResponse->streamedContent()
+            : (string) $downloadResponse->getContent();
+        $this->assertStringStartsWith('%PDF-', $content);
     }
 
     protected function authenticateUser(): array

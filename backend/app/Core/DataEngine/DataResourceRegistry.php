@@ -29,6 +29,14 @@ class DataResourceRegistry
             ->firstWhere('key', $key);
     }
 
+    public function findConfigured(string $key): ?array
+    {
+        $resource = $this->modulesAreReady()
+            ->get($key);
+
+        return $resource ? $this->normalizeResource($key, $resource) : null;
+    }
+
     public function toFrontendPayload(?User $user = null): array
     {
         return $this->available($user)
@@ -100,6 +108,16 @@ class DataResourceRegistry
             'searchable_fields' => collect($normalizedFields)->where('searchable', true)->pluck('key')->values()->all(),
             'sortable_fields' => collect($normalizedFields)->where('sortable', true)->pluck('key')->values()->all(),
         ]);
+    }
+
+    protected function modulesAreReady(): Collection
+    {
+        return collect($this->resources)
+            ->filter(function (array $resource, string $key): bool {
+                $normalized = $this->normalizeResource($key, $resource);
+
+                return $this->isModuleEnabled($normalized);
+            });
     }
 
     protected function isModuleEnabled(array $resource): bool

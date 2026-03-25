@@ -22,7 +22,7 @@ Resolver una sola vez las capacidades transversales del producto y reutilizarlas
 - Registro modular con `core-platform` y `demo-platform`.
 - Administracion de modulos con activacion/desactivacion, dependencias operativas y settings por modulo.
 - `Demo Module` para probar capacidades genericas antes de llevarlas a modulos de negocio.
-- Data Engine real con CRUD base tenant-aware sobre un recurso demo y export/import CSV con historial.
+- Data Engine real con CRUD base tenant-aware sobre un recurso demo, export/import `CSV / Excel / PDF`, historial y modo `async`.
 
 ## Documentacion principal
 
@@ -47,4 +47,4 @@ npm run build
 - tenancy transversal completa
 - storage real con Spaces
 - notificaciones multicanal
-- evolucion del Data Engine hacia relaciones, custom fields, Excel/PDF y acciones avanzadas
+- evolucion del Data Engine hacia relaciones, custom fields y operaciones avanzadas/masivas

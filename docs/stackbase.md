@@ -72,12 +72,14 @@ Su objetivo es:
 - Core de notificaciones internas con bandeja, lectura y contador basico.
 - Data Engine universal con CRUD base, filtros, busqueda, paginacion, ordenamiento y soft delete sobre recurso demo.
 - Export/import CSV sobre el Data Engine con historial tenant-aware de corridas.
+- Exportaciones `Excel/PDF` y modo `async` sobre el Data Engine, con demo dedicada en el `Demo Module`.
 - Registro de modulos.
 - Persistencia de estado de modulos.
 - Admin de modulos.
 - Guard de acceso a modulos deshabilitados.
 - `Demo Module` con landing y demos funcionales de notificaciones, archivos, jobs y auditoria.
 - `Data Engine` con recurso demo operable y transferencias CSV trazables.
+- `Demo Module` con demo especifica para transferencias, formatos `CSV / Excel / PDF` y corridas async.
 - Metadata modular backend consumida por API para construir rutas y menu del `Demo Module`.
 - Frontend modular reducido a registro local de vistas; ya no define metadata duplicada de navegacion.
 - Metadata modular backend ampliada con `dependencies`, `permissions`, `settings`, `features` y `frontend.routes`.

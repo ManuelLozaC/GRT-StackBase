@@ -35,6 +35,8 @@ Route::prefix('v1')->group(function (): void {
         Route::get('/data/{resourceKey}/export', [DataResourceController::class, 'export']);
         Route::post('/data/{resourceKey}/import', [DataResourceController::class, 'import']);
         Route::get('/data/{resourceKey}/transfers', [DataResourceController::class, 'transfers']);
+        Route::get('/data/transfers/{transferRun}/download', [DataResourceController::class, 'downloadTransfer'])
+            ->name('api.v1.data.transfers.download');
         Route::get('/data/{resourceKey}/{recordId}', [DataResourceController::class, 'show']);
         Route::match(['put', 'patch'], '/data/{resourceKey}/{recordId}', [DataResourceController::class, 'update']);
         Route::delete('/data/{resourceKey}/{recordId}', [DataResourceController::class, 'destroy']);

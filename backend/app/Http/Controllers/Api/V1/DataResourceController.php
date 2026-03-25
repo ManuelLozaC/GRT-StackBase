@@ -3,9 +3,11 @@
 namespace App\Http\Controllers\Api\V1;
 
 use App\Core\DataEngine\DataResourceRegistry;
+use App\Core\DataEngine\Models\CoreDataTransferRun;
 use App\Core\DataEngine\Services\DataTransferManager;
 use App\Core\Http\Concerns\ApiResponse;
 use App\Http\Controllers\Controller;
+use App\Jobs\DataEngine\ProcessDataExportRun;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\JsonResponse;
@@ -100,11 +102,30 @@ class DataResourceController extends Controller
             return $this->resourceNotFoundResponse();
         }
 
-        $query = $this->buildResourceQuery($request, $resource);
-        $export = $this->transfers->export($resource, $query, $request->user());
+        $format = $this->normalizeExportFormat((string) $request->query('format', 'csv'));
+        $mode = strtolower((string) $request->query('mode', 'sync'));
 
-        return response($export['csv'], 200, [
-            'Content-Type' => 'text/csv; charset=UTF-8',
+        if ($mode === 'async') {
+            $run = $this->transfers->queueExport(
+                $resource,
+                $this->exportCriteriaFromRequest($request),
+                $format,
+                $request->user(),
+            );
+
+            ProcessDataExportRun::dispatch($run->id);
+
+            return $this->successResponse(
+                data: $this->transfers->serializeRun($run),
+                message: 'Exportacion encolada correctamente',
+            );
+        }
+
+        $query = $this->buildResourceQuery($request, $resource);
+        $export = $this->transfers->export($resource, $query, $format, $request->user());
+
+        return response($export['content'], 200, [
+            'Content-Type' => $export['mime_type'],
             'Content-Disposition' => sprintf('attachment; filename="%s"', $export['file_name']),
         ]);
     }
@@ -157,6 +178,25 @@ class DataResourceController extends Controller
                 'total' => count($runs),
             ],
         );
+    }
+
+    public function downloadTransfer(Request $request, CoreDataTransferRun $transferRun)
+    {
+        if ($transferRun->type !== 'export') {
+            return $this->errorResponse(
+                message: 'Solo las exportaciones generan archivos descargables.',
+                status: 422,
+            );
+        }
+
+        try {
+            return $this->transfers->downloadStoredArtifact($transferRun);
+        } catch (\Throwable $exception) {
+            return $this->errorResponse(
+                message: $exception->getMessage(),
+                status: 404,
+            );
+        }
     }
 
     public function store(Request $request, string $resourceKey): JsonResponse
@@ -237,14 +277,7 @@ class DataResourceController extends Controller
 
     protected function buildResourceQuery(Request $request, array $resource): Builder
     {
-        $modelClass = $resource['model'];
-        /** @var Builder $query */
-        $query = $modelClass::query();
-        $this->applySearch($query, $request, $resource);
-        $this->applyFilters($query, $request, $resource);
-        $this->applySorting($query, $request, $resource);
-
-        return $query;
+        return $this->transfers->buildQueryFromCriteria($resource, $this->exportCriteriaFromRequest($request));
     }
 
     protected function validatePayload(Request $request, array $resource, bool $updating = false): array
@@ -349,6 +382,21 @@ class DataResourceController extends Controller
             message: 'Recurso no encontrado o no disponible',
             status: 404,
         );
+    }
+
+    protected function exportCriteriaFromRequest(Request $request): array
+    {
+        return [
+            'q' => $request->query('q'),
+            'filters' => $request->input('filters', []),
+            'sort_by' => $request->query('sort_by'),
+            'sort_direction' => $request->query('sort_direction'),
+        ];
+    }
+
+    protected function normalizeExportFormat(string $format): string
+    {
+        return in_array($format, ['csv', 'excel', 'pdf'], true) ? $format : 'csv';
     }
 
     protected function recordNotFoundResponse(): JsonResponse

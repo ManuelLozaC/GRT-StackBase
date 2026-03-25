@@ -24,6 +24,7 @@ Frontend construido con Vue 3, Vite y PrimeVue.
 - El catalogo modular frontend se refresca completo tras togglear para no dejar estados derivados desactualizados.
 - `Data Engine` ya consume metadata de recursos y opera CRUD real sobre el recurso demo.
 - `Data Engine` ya permite exportar/importar CSV y consultar historial de corridas del recurso activo.
+- `Demo Module` ya incluye `Transfers Demo` para probar `CSV / Excel / PDF` y modo `async`.
 - La administracion de modulos ya permite editar settings persistidos por modulo.
 
 ## Pantallas relevantes hoy
@@ -37,6 +38,7 @@ Frontend construido con Vue 3, Vite y PrimeVue.
 - `/demo/files`
 - `/demo/jobs`
 - `/demo/audit`
+- `/demo/transfers`
 
 ## Comandos utiles
 ```bash
@@ -48,9 +50,9 @@ npm audit --audit-level=moderate
 ```
 
 ## Nota
-La administracion de modulos ya esta conectada a autenticacion real y al permiso `modules.manage`. Para ver jobs en cola procesarse realmente en local, el backend necesita un worker activo con `php artisan queue:work --queue=demo`.
+La administracion de modulos ya esta conectada a autenticacion real y al permiso `modules.manage`. Para ver jobs y exportaciones async procesarse realmente en local, el backend necesita un worker activo con `php artisan queue:work --queue=data-exports,demo`.
 
-El siguiente paso visible en frontend es extender el `Data Engine` con relaciones, custom fields y export/import avanzado, ya sobre una base real y no sobre placeholders.
+El siguiente paso visible en frontend es extender el `Data Engine` con relaciones, custom fields y operaciones masivas avanzadas, ya sobre una base real y no sobre placeholders.
 
 Validacion reciente:
 - `npm run lint` en verde.
