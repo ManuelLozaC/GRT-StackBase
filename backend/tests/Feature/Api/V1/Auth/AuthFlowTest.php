@@ -199,11 +199,13 @@ class AuthFlowTest extends TestCase
         $token = app(AccessTokenService::class)->createForUser($user, 'phpunit');
 
         $this->withHeader('Authorization', 'Bearer '.$token)
-            ->patchJson('/api/v1/auth/active-organization', [
-                'organizacion_id' => $organizacionB->id,
+            ->patchJson('/api/v1/auth/active-company', [
+                'empresa_id' => $organizacionB->id,
             ])
             ->assertOk()
-            ->assertJsonPath('datos.organizacion_activa.slug', 'acme-norte');
+            ->assertJsonPath('datos.organizacion_activa.slug', 'acme-norte')
+            ->assertJsonPath('datos.empresa_activa.slug', 'acme-norte')
+            ->assertJsonPath('mensaje', 'Empresa activa actualizada');
 
         $this->assertDatabaseHas('users', [
             'id' => $user->id,

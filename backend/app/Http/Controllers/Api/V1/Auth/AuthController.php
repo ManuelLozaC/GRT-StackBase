@@ -266,7 +266,7 @@ class AuthController extends Controller
     {
         /** @var User $user */
         $user = $request->user();
-        $organizacionId = $request->integer('organizacion_id');
+        $organizacionId = $request->integer('empresa_id') ?: $request->integer('organizacion_id');
 
         $hasAccess = $user->organizaciones()
             ->whereKey($organizacionId)
@@ -309,7 +309,7 @@ class AuthController extends Controller
 
         return $this->successResponse(
             data: $this->transformUser($user->fresh()),
-            message: 'Organizacion activa actualizada',
+            message: 'Empresa activa actualizada',
         );
     }
 

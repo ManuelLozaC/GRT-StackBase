@@ -170,6 +170,7 @@ Estado: En progreso
 - [x] Base de contexto laboral por usuario con `asignacion_laboral_activa` y cambio explicito dentro de la organizacion activa.
 - [x] Catalogo visible del Data Engine ya prioriza `Empresas` y `Oficinas`, ocultando recursos transicionales del legado.
 - [x] Payloads principales de auth y shell frontend ya exponen y muestran `empresa_activa` / `empresas` como lenguaje visible del dominio.
+- [x] Auth y frontend ya pueden operar con alias tecnicos `empresa_id` y `active-company` sin romper compatibilidad legacy.
 - [x] Selector visual de contexto laboral activo en topbar y dashboard.
 - [x] RBAC contextual inicial reutiliza las mismas claves de permiso del sistema a traves de metadata por asignacion.
 
@@ -416,8 +417,8 @@ Estado: En progreso
 
 ## Indicador de avance global
 
-- Avance global estimado del proyecto: `94%`
-- Trabajo restante estimado para cerrar esta version base: `6%`
+- Avance global estimado del proyecto: `95%`
+- Trabajo restante estimado para cerrar esta version base: `5%`
 
 Lectura del porcentaje:
 

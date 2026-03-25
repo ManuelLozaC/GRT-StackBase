@@ -12,8 +12,8 @@ async function switchActiveOrganization(organizationId) {
     state.switchingOrganization = true;
 
     try {
-        const response = await api.patch('/v1/auth/active-organization', {
-            organizacion_id: organizationId
+        const response = await api.patch('/v1/auth/active-company', {
+            empresa_id: organizationId
         });
 
         sessionStore.setUser(response.data.datos);
