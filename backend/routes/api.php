@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\V1\Auth\AuthController;
+use App\Http\Controllers\Api\V1\DataResourceController;
 use App\Http\Controllers\Api\V1\Demo\DemoAuditController;
 use App\Http\Controllers\Api\V1\Demo\DemoFileController;
 use App\Http\Controllers\Api\V1\Demo\DemoJobController;
@@ -27,6 +28,13 @@ Route::prefix('v1')->group(function (): void {
     });
 
     Route::middleware(['auth-token', 'tenant-context'])->group(function (): void {
+        Route::get('/data/resources', [DataResourceController::class, 'resources']);
+        Route::get('/data/{resourceKey}', [DataResourceController::class, 'index']);
+        Route::post('/data/{resourceKey}', [DataResourceController::class, 'store']);
+        Route::get('/data/{resourceKey}/{recordId}', [DataResourceController::class, 'show']);
+        Route::match(['put', 'patch'], '/data/{resourceKey}/{recordId}', [DataResourceController::class, 'update']);
+        Route::delete('/data/{resourceKey}/{recordId}', [DataResourceController::class, 'destroy']);
+
         Route::get('/notifications', [NotificationController::class, 'index']);
         Route::patch('/notifications/{notification}/read', [NotificationController::class, 'markAsRead']);
         Route::post('/notifications/read-all', [NotificationController::class, 'markAllAsRead']);

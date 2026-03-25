@@ -22,6 +22,7 @@ Frontend construido con Vue 3, Vite y PrimeVue.
 - Stores consumidos por responsabilidad: sesion, tenant y permisos, sin fachada `authStore`.
 - Pantalla de modulos informa dependencias, features y bloqueos operativos antes de togglear.
 - El catalogo modular frontend se refresca completo tras togglear para no dejar estados derivados desactualizados.
+- `Data Engine` ya consume metadata de recursos y opera CRUD real sobre el recurso demo.
 
 ## Pantallas relevantes hoy
 - `/admin/modules`
@@ -47,7 +48,7 @@ npm audit --audit-level=moderate
 ## Nota
 La administracion de modulos ya esta conectada a autenticacion real y al permiso `modules.manage`. Para ver jobs en cola procesarse realmente en local, el backend necesita un worker activo con `php artisan queue:work --queue=demo`.
 
-El siguiente paso visible en frontend es construir el nuevo motor CRUD del core, ya sin arrastrar el mantenimiento heredado del template.
+El siguiente paso visible en frontend es extender el `Data Engine` con relaciones, custom fields y export/import, ya sobre una base real y no sobre placeholders.
 
 Validacion reciente:
 - `npm run lint` en verde.

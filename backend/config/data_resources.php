@@ -1,0 +1,101 @@
+<?php
+
+use App\Modules\DemoPlatform\Models\DemoContact;
+
+return [
+    'demo-contacts' => [
+        'name' => 'Demo Contacts',
+        'description' => 'Recurso demo del Data Engine para validar CRUD universal, filtros, busqueda y soft delete.',
+        'source_module' => 'demo-platform',
+        'permission_key' => null,
+        'model' => DemoContact::class,
+        'default_sort' => [
+            'field' => 'nombre',
+            'direction' => 'asc',
+        ],
+        'capabilities' => [
+            'create' => true,
+            'update' => true,
+            'delete' => true,
+        ],
+        'fields' => [
+            [
+                'key' => 'nombre',
+                'label' => 'Nombre',
+                'type' => 'text',
+                'rules' => ['required', 'string', 'max:120'],
+                'sortable' => true,
+                'searchable' => true,
+                'table' => true,
+                'form' => true,
+            ],
+            [
+                'key' => 'email',
+                'label' => 'Email',
+                'type' => 'email',
+                'rules' => ['nullable', 'email', 'max:180'],
+                'sortable' => true,
+                'searchable' => true,
+                'table' => true,
+                'form' => true,
+            ],
+            [
+                'key' => 'telefono',
+                'label' => 'Telefono',
+                'type' => 'text',
+                'rules' => ['nullable', 'string', 'max:40'],
+                'searchable' => true,
+                'table' => true,
+                'form' => true,
+            ],
+            [
+                'key' => 'empresa',
+                'label' => 'Empresa',
+                'type' => 'text',
+                'rules' => ['nullable', 'string', 'max:140'],
+                'sortable' => true,
+                'searchable' => true,
+                'table' => true,
+                'form' => true,
+            ],
+            [
+                'key' => 'estado',
+                'label' => 'Estado',
+                'type' => 'select',
+                'rules' => ['required', 'in:lead,active,inactive'],
+                'sortable' => true,
+                'filterable' => true,
+                'table' => true,
+                'form' => true,
+                'options' => [
+                    ['label' => 'Lead', 'value' => 'lead'],
+                    ['label' => 'Activo', 'value' => 'active'],
+                    ['label' => 'Inactivo', 'value' => 'inactive'],
+                ],
+            ],
+            [
+                'key' => 'prioridad',
+                'label' => 'Prioridad',
+                'type' => 'select',
+                'rules' => ['required', 'in:low,medium,high'],
+                'sortable' => true,
+                'filterable' => true,
+                'table' => true,
+                'form' => true,
+                'options' => [
+                    ['label' => 'Baja', 'value' => 'low'],
+                    ['label' => 'Media', 'value' => 'medium'],
+                    ['label' => 'Alta', 'value' => 'high'],
+                ],
+            ],
+            [
+                'key' => 'notas',
+                'label' => 'Notas',
+                'type' => 'textarea',
+                'rules' => ['nullable', 'string', 'max:500'],
+                'table' => false,
+                'form' => true,
+            ],
+        ],
+    ],
+];

@@ -70,6 +70,7 @@ Su objetivo es:
 - Core de jobs con dispatch, ejecucion inmediata demo y trazabilidad basica.
 - Core de auditoria con eventos transversales y consulta demo.
 - Core de notificaciones internas con bandeja, lectura y contador basico.
+- Data Engine universal con CRUD base, filtros, busqueda, paginacion, ordenamiento y soft delete sobre recurso demo.
 - Registro de modulos.
 - Persistencia de estado de modulos.
 - Admin de modulos.

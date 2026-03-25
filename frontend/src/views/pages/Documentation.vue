@@ -14,6 +14,7 @@
                         <li>Autenticacion API consumida desde stores separados de sesion, tenant y permisos</li>
                         <li>Tenancy base reforzada con `TenantContext` en request, jobs, notificaciones y archivos base</li>
                         <li>Modulos instalables consumidos por API como fuente de verdad y con dependencias operativas</li>
+                        <li>Data Engine universal con CRUD demo reutilizable por metadata</li>
                         <li>Servicios de archivos, jobs, auditoria y notificaciones</li>
                         <li>Respuesta estandar en `api/v1`</li>
                     </ul>
@@ -29,6 +30,7 @@
                         <li>Demo funcional de jobs</li>
                         <li>Demo funcional de auditoria</li>
                         <li>Demo funcional de notificaciones</li>
+                        <li>Recurso demo activo para validar el CRUD universal</li>
                     </ul>
                 </div>
             </div>
@@ -37,7 +39,7 @@
                 <div class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm h-full">
                     <div class="text-sm font-semibold text-slate-500 uppercase mb-3">Siguiente foco</div>
                     <ul class="space-y-3 text-slate-700 list-disc pl-5">
-                        <li>Motor CRUD universal</li>
+                        <li>Custom fields y relaciones sobre el Data Engine</li>
                         <li>Generalizar el contrato modular para futuros modulos</li>
                         <li>Propagacion tenant consistente en todo el dominio</li>
                         <li>Storage real con Spaces</li>

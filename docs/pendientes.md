@@ -45,7 +45,7 @@
 ### Brechas principales
 - [ ] RBAC completo.
 - [ ] Multi-tenant operativo completo en todo el dominio.
-- [ ] CRUD universal conectado a backend.
+- [x] CRUD universal conectado a backend.
 - [ ] Sistema real de archivos.
 - [ ] Extender archivos hacia Spaces, versionado avanzado y descargas pesadas async.
 - [ ] Jobs avanzados.
@@ -115,6 +115,7 @@ Estado: En progreso
 - [ ] Scope multi-tenant consistente en modelos, jobs, archivos y auditoria.
 - [x] Extender tenancy base a notificaciones y descargas de archivos para reducir filtros manuales por organizacion.
 - [x] Cubrir con tests el aislamiento por tenant en archivos, descargas, notificaciones y auditoria demo.
+- [x] Cubrir con tests el aislamiento por tenant en el recurso demo del CRUD universal.
 - [x] Base fundacional de tenancy adelgazada para no mezclar catalogos de ubicacion o personas no usados por el core.
 - [x] `TenantContext` compartido para request autenticado y jobs base.
 
@@ -129,19 +130,20 @@ Estado: Pendiente
 - [ ] UI administrativa de settings.
 
 ## P4. Motor de datos y CRUD universal
-Estado: Pendiente
+Estado: En progreso
 
-- [ ] CRUD generico backend.
-- [ ] Paginacion.
-- [ ] Ordenamiento.
-- [ ] Filtros dinamicos.
-- [ ] Busqueda global.
-- [ ] Validacion backend estandar.
-- [ ] Serializacion uniforme.
+- [x] CRUD generico backend.
+- [x] Paginacion.
+- [x] Ordenamiento.
+- [x] Filtros dinamicos.
+- [x] Busqueda global.
+- [x] Validacion backend estandar.
+- [x] Serializacion uniforme.
 - [ ] Campos personalizados.
-- [ ] Componentes frontend reutilizables de tabla y formulario.
+- [x] Componentes frontend reutilizables de tabla y formulario.
 - [x] Retirar el CRUD historico del template de la navegacion principal.
-- [ ] Implementar el nuevo motor CRUD del core con contrato reutilizable para modulos.
+- [x] Implementar el nuevo motor CRUD del core con contrato reutilizable para modulos.
+- [ ] Extender el Data Engine a relaciones, acciones y custom fields.
 
 ## P5. Gestion de archivos
 Estado: En progreso
@@ -330,7 +332,7 @@ Estado: Pendiente
 
 ## Siguiente desarrollo recomendado
 1. Scope multi-tenant consistente en modelos, jobs, archivos y auditoria.
-2. CRUD universal base del core.
+2. Export/import demo funcional.
 3. Integracion de archivos con Spaces y entidades de negocio.
-4. Export/import demo funcional.
-5. Completar el contrato modular con settings, permisos operativos, seeds y assets por modulo.
+4. Completar el contrato modular con settings, permisos operativos, seeds y assets por modulo.
+5. Extender el Data Engine con relaciones, custom fields y acciones avanzadas.
