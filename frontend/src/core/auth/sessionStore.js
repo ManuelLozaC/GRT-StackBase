@@ -1,6 +1,7 @@
 import api, { setApiAccessToken } from '@/service/api';
 import { moduleCatalog } from '@/core/modules/moduleCatalog';
 import { notificationStore } from '@/core/notifications/notificationStore';
+import { settingsStore } from '@/core/settings/settingsStore';
 import { computed, reactive } from 'vue';
 
 const STORAGE_KEY = 'stackbase.auth';
@@ -63,6 +64,7 @@ function clearSession() {
     setApiAccessToken(null);
     moduleCatalog.reset();
     notificationStore.reset();
+    settingsStore.reset();
     persistSession();
 }
 

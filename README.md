@@ -23,6 +23,7 @@ Resolver una sola vez las capacidades transversales del producto y reutilizarlas
 - Administracion de modulos con activacion/desactivacion, dependencias operativas y settings por modulo.
 - `Demo Module` para probar capacidades genericas antes de llevarlas a modulos de negocio.
 - Data Engine real con CRUD base tenant-aware sobre un recurso demo, export/import `CSV / Excel / PDF`, historial y modo `async`.
+- Settings globales, por organizacion y por usuario ya operativos desde UI/API.
 
 ## Documentacion principal
 

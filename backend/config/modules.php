@@ -11,7 +11,10 @@ return [
             'protected' => true,
             'provider' => App\Modules\CorePlatform\CorePlatformServiceProvider::class,
             'dependencies' => [],
-            'permissions' => [],
+            'permissions' => [
+                'modules.manage',
+                'settings.manage',
+            ],
             'settings' => [
                 [
                     'key' => 'support_email',
@@ -45,7 +48,9 @@ return [
             'dependencies' => [
                 'core-platform',
             ],
-            'permissions' => [],
+            'permissions' => [
+                'demo.access',
+            ],
             'settings' => [
                 [
                     'key' => 'default_file_ttl_minutes',

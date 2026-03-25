@@ -45,6 +45,10 @@
 - [x] Settings operativos por modulo con persistencia, API y UI administrativa.
 - [x] Export/import CSV sobre el Data Engine con historial tenant-aware de corridas.
 - [x] Exportaciones `Excel/PDF` y modo `async` sobre el Data Engine con demo dentro de `Demo Module`.
+- [x] Settings globales, por organizacion y por usuario con bootstrap frontend.
+- [x] Feature flags base del core sin tocar codigo.
+- [x] Banner global y manejo global de errores HTTP en el shell.
+- [x] Preferencias de usuario para tema, formato y notificaciones base.
 
 ### Brechas principales
 - [ ] RBAC completo.
@@ -86,6 +90,7 @@ Estado: En progreso
 - [x] Orden de carga y dependencias entre modulos para el bootstrap actual.
 - [x] Bloqueo operativo de dependencias entre modulos al activar/desactivar.
 - [x] Exponer metadata modular extendida por API para bootstrap frontend.
+- [x] Soportar permisos operativos declarados por modulo para seed/bootstrap.
 
 ## P1. Identidad y acceso
 Estado: En progreso
@@ -101,6 +106,7 @@ Estado: En progreso
 - [ ] Multi-rol por usuario.
 - [ ] Impersonacion con auditoria.
 - [x] Guardas frontend conectadas a auth real.
+- [x] Nuevo permiso operativo `settings.manage`.
 
 ## P2. Usuarios, organizaciones y tenancy
 Estado: En progreso
@@ -115,7 +121,7 @@ Estado: En progreso
 - [ ] Migraciones de equipos.
 - [ ] Unificar concepto organizacion / empresa segun modelo final.
 - [ ] Tenant activo por request en todos los servicios backend.
-- [ ] Configuracion por tenant.
+- [x] Configuracion por tenant.
 - [ ] Scope multi-tenant consistente en modelos, jobs, archivos y auditoria.
 - [x] Extender tenancy base a notificaciones y descargas de archivos para reducir filtros manuales por organizacion.
 - [x] Cubrir con tests el aislamiento por tenant en archivos, descargas, notificaciones y auditoria demo.
@@ -126,12 +132,14 @@ Estado: En progreso
 ## P3. Configuracion del sistema
 Estado: En progreso
 
-- [ ] Variables globales persistentes.
+- [x] Variables globales persistentes.
 - [x] Configuracion por modulo.
-- [ ] Feature flags.
+- [x] Feature flags.
 - [ ] Parametros dinamicos sin deploy.
-- [ ] Configuracion por usuario.
+- [x] Configuracion por usuario.
+- [x] Configuracion por organizacion.
 - [x] UI administrativa de settings.
+- [x] Bootstrap frontend de settings y preferencias.
 
 ## P4. Motor de datos y CRUD universal
 Estado: En progreso
@@ -178,7 +186,7 @@ Estado: En progreso
 - [ ] Email.
 - [ ] SMS / WhatsApp.
 - [ ] Push si aplica.
-- [ ] Preferencias por usuario.
+- [x] Preferencias por usuario.
 - [ ] Historial avanzado y reintentos por canal.
 
 ## P7. UX transversal
@@ -186,10 +194,10 @@ Estado: Parcial
 
 - [x] Toast base.
 - [x] Confirmaciones base.
-- [ ] Alerts y banners globales.
+- [x] Alerts y banners globales.
 - [ ] Skeleton loaders.
 - [ ] Empty states reales.
-- [ ] Manejo global de errores HTTP.
+- [x] Manejo global de errores HTTP.
 - [ ] Feedback optimista/pesimista estandarizado.
 
 ## P8. Jobs y procesos en segundo plano

@@ -1,6 +1,7 @@
 import { accessStore } from '@/core/auth/accessStore';
 import { sessionStore } from '@/core/auth/sessionStore';
 import { moduleCatalog } from '@/core/modules/moduleCatalog';
+import { settingsStore } from '@/core/settings/settingsStore';
 import { coreRoutes } from '@/core/router/core-routes';
 import { createRouter, createWebHistory } from 'vue-router';
 
@@ -27,6 +28,7 @@ router.beforeEach(async (to) => {
     await sessionStore.initialize();
 
     if (sessionStore.isAuthenticated.value) {
+        await settingsStore.initialize();
         await moduleCatalog.loadModules();
         ensureModuleRoutesRegistered();
 

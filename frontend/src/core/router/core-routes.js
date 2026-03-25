@@ -30,12 +30,25 @@ export const coreRoutes = [
                 component: () => import('@/views/pages/Documentation.vue')
             },
             {
+                path: '/account/preferences',
+                name: 'my-preferences',
+                component: () => import('@/views/pages/MyPreferences.vue')
+            },
+            {
                 path: '/admin/modules',
                 name: 'system-modules',
                 meta: {
                     permissionKey: 'modules.manage'
                 },
                 component: () => import('@/views/pages/SystemModules.vue')
+            },
+            {
+                path: '/admin/settings',
+                name: 'system-settings',
+                meta: {
+                    permissionKey: 'settings.manage'
+                },
+                component: () => import('@/views/pages/SystemSettings.vue')
             }
         ]
     },

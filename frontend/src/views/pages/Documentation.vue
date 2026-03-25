@@ -15,6 +15,7 @@
                         <li>Tenancy base reforzada con `TenantContext` en request, jobs, notificaciones y archivos base</li>
                         <li>Modulos instalables consumidos por API como fuente de verdad y con dependencias operativas</li>
                         <li>Data Engine universal con CRUD demo reutilizable por metadata y transferencias `CSV / Excel / PDF` auditables</li>
+                        <li>Settings globales, por organizacion y por usuario con feature flags base</li>
                         <li>Servicios de archivos, jobs, auditoria y notificaciones</li>
                         <li>Respuesta estandar en `api/v1`</li>
                     </ul>
@@ -31,6 +32,7 @@
                         <li>Demo funcional de auditoria</li>
                         <li>Demo funcional de notificaciones</li>
                         <li>Recurso demo activo para validar CRUD universal, export/import y corridas async</li>
+                        <li>Shell con banner global y feedback HTTP transversal</li>
                     </ul>
                 </div>
             </div>

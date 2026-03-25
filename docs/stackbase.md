@@ -73,6 +73,7 @@ Su objetivo es:
 - Data Engine universal con CRUD base, filtros, busqueda, paginacion, ordenamiento y soft delete sobre recurso demo.
 - Export/import CSV sobre el Data Engine con historial tenant-aware de corridas.
 - Exportaciones `Excel/PDF` y modo `async` sobre el Data Engine, con demo dedicada en el `Demo Module`.
+- Settings globales, por organizacion y por usuario con feature flags base y bootstrap frontend.
 - Registro de modulos.
 - Persistencia de estado de modulos.
 - Admin de modulos.
@@ -88,6 +89,7 @@ Su objetivo es:
 - `TenantContext` backend compartido entre request autenticado, jobs, notificaciones internas y descargas base.
 - Suite automatizada validando aislamiento por tenant en notificaciones, archivos, descargas y auditoria demo.
 - Settings modulares operativos con persistencia, API administrativa y efecto real en el `Demo Module`.
+- Banner global, preferencias persistidas y manejo global de errores HTTP ya forman parte del shell.
 
 ## Contenedores previstos
 - `app`: backend Laravel

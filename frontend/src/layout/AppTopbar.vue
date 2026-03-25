@@ -1,5 +1,7 @@
 <script setup>
+import { accessStore } from '@/core/auth/accessStore';
 import { sessionStore } from '@/core/auth/sessionStore';
+import { settingsStore } from '@/core/settings/settingsStore';
 import { tenantStore } from '@/core/auth/tenantStore';
 import { notificationStore } from '@/core/notifications/notificationStore';
 import { useLayout } from '@/layout/composables/layout';
@@ -14,6 +16,7 @@ const { toggleMenu, toggleDarkMode, isDarkTheme } = useLayout();
 const organizations = computed(() => tenantStore.organizations.value);
 const activeOrganizationId = computed(() => tenantStore.activeOrganization.value?.id ?? '');
 const unreadNotifications = computed(() => notificationStore.unreadCount.value);
+const canManageSettings = computed(() => accessStore.hasPermission('settings.manage'));
 
 async function logout() {
     await sessionStore.logout();
@@ -53,6 +56,36 @@ async function openNotifications() {
         name: 'demo-notifications'
     });
 }
+
+async function openPreferences() {
+    await router.push({
+        name: 'my-preferences'
+    });
+}
+
+async function openSystemSettings() {
+    await router.push({
+        name: 'system-settings'
+    });
+}
+
+async function toggleThemePreference() {
+    toggleDarkMode();
+
+    if (!sessionStore.isAuthenticated.value) {
+        return;
+    }
+
+    const nextTheme = isDarkTheme.value ? 'dark' : 'light';
+
+    try {
+        await settingsStore.updateUser({
+            theme: nextTheme
+        });
+    } catch {
+        // El toggle visual ya se aplico; si la persistencia falla no bloqueamos la UX local.
+    }
+}
 </script>
 
 <template>
@@ -72,7 +105,7 @@ async function openNotifications() {
                     <i class="pi pi-bell"></i>
                     <span v-if="unreadNotifications > 0" class="topbar-bell-badge">{{ unreadNotifications }}</span>
                 </button>
-                <button type="button" class="layout-topbar-action" @click="toggleDarkMode">
+                <button type="button" class="layout-topbar-action" @click="toggleThemePreference">
                     <i :class="['pi', { 'pi-moon': isDarkTheme, 'pi-sun': !isDarkTheme }]"></i>
                 </button>
                 <div class="relative">
@@ -107,6 +140,14 @@ async function openNotifications() {
                     <button type="button" class="layout-topbar-action">
                         <i class="pi pi-user"></i>
                         <span>{{ sessionStore.state.user?.name || 'Profile' }}</span>
+                    </button>
+                    <button type="button" class="layout-topbar-action" @click="openPreferences">
+                        <i class="pi pi-sliders-h"></i>
+                        <span>Preferencias</span>
+                    </button>
+                    <button v-if="canManageSettings" type="button" class="layout-topbar-action" @click="openSystemSettings">
+                        <i class="pi pi-cog"></i>
+                        <span>System Settings</span>
                     </button>
                     <button type="button" class="layout-topbar-action">
                         <i class="pi pi-envelope"></i>

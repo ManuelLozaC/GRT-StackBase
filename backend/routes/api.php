@@ -10,6 +10,7 @@ use App\Http\Controllers\Api\V1\HealthCheckController;
 use App\Http\Controllers\Api\V1\ModuleController;
 use App\Http\Controllers\Api\V1\ModuleSettingController;
 use App\Http\Controllers\Api\V1\NotificationController;
+use App\Http\Controllers\Api\V1\SettingController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('v1')->group(function (): void {
@@ -44,6 +45,9 @@ Route::prefix('v1')->group(function (): void {
         Route::get('/notifications', [NotificationController::class, 'index']);
         Route::patch('/notifications/{notification}/read', [NotificationController::class, 'markAsRead']);
         Route::post('/notifications/read-all', [NotificationController::class, 'markAllAsRead']);
+        Route::get('/settings/bootstrap', [SettingController::class, 'bootstrap']);
+        Route::get('/settings/me', [SettingController::class, 'me']);
+        Route::patch('/settings/me', [SettingController::class, 'updateMe']);
 
         Route::prefix('demo')->group(function (): void {
             Route::get('/audit', [DemoAuditController::class, 'index']);
@@ -63,6 +67,13 @@ Route::prefix('v1')->group(function (): void {
             Route::patch('/modules/{moduleKey}', [ModuleController::class, 'updateStatus']);
             Route::get('/modules/{moduleKey}/settings', [ModuleSettingController::class, 'show']);
             Route::patch('/modules/{moduleKey}/settings', [ModuleSettingController::class, 'update']);
+        });
+
+        Route::middleware('permission:settings.manage')->group(function (): void {
+            Route::get('/settings/global', [SettingController::class, 'global']);
+            Route::patch('/settings/global', [SettingController::class, 'updateGlobal']);
+            Route::get('/settings/organization', [SettingController::class, 'organization']);
+            Route::patch('/settings/organization', [SettingController::class, 'updateOrganization']);
         });
     });
 

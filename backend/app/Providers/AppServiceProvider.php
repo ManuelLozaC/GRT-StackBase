@@ -5,6 +5,7 @@ namespace App\Providers;
 use App\Core\DataEngine\DataResourceRegistry;
 use App\Core\DataEngine\Services\DataTransferManager;
 use App\Core\Modules\ModuleSettingsManager;
+use App\Core\Settings\CoreSettingsManager;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -31,6 +32,12 @@ class AppServiceProvider extends ServiceProvider
             return new DataTransferManager(
                 $app->make(\App\Core\Tenancy\TenantContext::class),
                 $app->make(\App\Core\Audit\Services\AuditLogger::class),
+            );
+        });
+
+        $this->app->singleton(CoreSettingsManager::class, function (): CoreSettingsManager {
+            return new CoreSettingsManager(
+                config('core_settings', []),
             );
         });
     }

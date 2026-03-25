@@ -26,6 +26,7 @@ Frontend construido con Vue 3, Vite y PrimeVue.
 - `Data Engine` ya permite exportar/importar CSV y consultar historial de corridas del recurso activo.
 - `Demo Module` ya incluye `Transfers Demo` para probar `CSV / Excel / PDF` y modo `async`.
 - La administracion de modulos ya permite editar settings persistidos por modulo.
+- Ya existe panel de `System Settings`, preferencias del usuario, banner global y manejo global de errores HTTP.
 
 ## Pantallas relevantes hoy
 - `/admin/modules`
@@ -39,6 +40,8 @@ Frontend construido con Vue 3, Vite y PrimeVue.
 - `/demo/jobs`
 - `/demo/audit`
 - `/demo/transfers`
+- `/admin/settings`
+- `/account/preferences`
 
 ## Comandos utiles
 ```bash

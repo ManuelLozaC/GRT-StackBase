@@ -1,0 +1,144 @@
+<?php
+
+return [
+    'global' => [
+        [
+            'key' => 'support_email',
+            'label' => 'Email de soporte',
+            'type' => 'text',
+            'default' => 'soporte@stackbase.local',
+            'help' => 'Contacto general visible para soporte operativo.',
+        ],
+        [
+            'key' => 'app_banner_enabled',
+            'label' => 'Banner global activo',
+            'type' => 'toggle',
+            'default' => false,
+            'help' => 'Permite mostrar un banner global a todos los usuarios autenticados.',
+        ],
+        [
+            'key' => 'app_banner_message',
+            'label' => 'Mensaje del banner global',
+            'type' => 'text',
+            'default' => '',
+            'help' => 'Texto breve del banner transversal del sistema.',
+        ],
+        [
+            'key' => 'app_banner_severity',
+            'label' => 'Severidad del banner global',
+            'type' => 'select',
+            'default' => 'info',
+            'options' => [
+                ['label' => 'Info', 'value' => 'info'],
+                ['label' => 'Success', 'value' => 'success'],
+                ['label' => 'Warning', 'value' => 'warn'],
+                ['label' => 'Danger', 'value' => 'danger'],
+            ],
+        ],
+        [
+            'key' => 'feature_global_error_toasts',
+            'label' => 'Toasts globales de error HTTP',
+            'type' => 'toggle',
+            'default' => true,
+            'help' => 'Muestra feedback global cuando una llamada HTTP falla.',
+        ],
+        [
+            'key' => 'feature_notifications_email',
+            'label' => 'Canal email habilitado',
+            'type' => 'toggle',
+            'default' => false,
+            'help' => 'Flag operativo para preparar el canal email.',
+        ],
+        [
+            'key' => 'feature_notifications_whatsapp',
+            'label' => 'Canal WhatsApp habilitado',
+            'type' => 'toggle',
+            'default' => false,
+            'help' => 'Flag operativo para preparar el canal WhatsApp.',
+        ],
+    ],
+    'organization' => [
+        [
+            'key' => 'locale',
+            'label' => 'Locale por defecto',
+            'type' => 'select',
+            'default' => 'es-BO',
+            'options' => [
+                ['label' => 'Español (Bolivia)', 'value' => 'es-BO'],
+                ['label' => 'Español (España)', 'value' => 'es-ES'],
+                ['label' => 'English (US)', 'value' => 'en-US'],
+            ],
+        ],
+        [
+            'key' => 'date_format',
+            'label' => 'Formato de fecha',
+            'type' => 'select',
+            'default' => 'DD/MM/YYYY',
+            'options' => [
+                ['label' => 'DD/MM/YYYY', 'value' => 'DD/MM/YYYY'],
+                ['label' => 'YYYY-MM-DD', 'value' => 'YYYY-MM-DD'],
+                ['label' => 'MM/DD/YYYY', 'value' => 'MM/DD/YYYY'],
+            ],
+        ],
+        [
+            'key' => 'currency_code',
+            'label' => 'Moneda por defecto',
+            'type' => 'select',
+            'default' => 'BOB',
+            'options' => [
+                ['label' => 'Boliviano (BOB)', 'value' => 'BOB'],
+                ['label' => 'Dólar (USD)', 'value' => 'USD'],
+                ['label' => 'Euro (EUR)', 'value' => 'EUR'],
+            ],
+        ],
+    ],
+    'user' => [
+        [
+            'key' => 'theme',
+            'label' => 'Tema',
+            'type' => 'select',
+            'default' => 'system',
+            'options' => [
+                ['label' => 'System', 'value' => 'system'],
+                ['label' => 'Light', 'value' => 'light'],
+                ['label' => 'Dark', 'value' => 'dark'],
+            ],
+        ],
+        [
+            'key' => 'date_format',
+            'label' => 'Formato de fecha preferido',
+            'type' => 'select',
+            'default' => 'inherit',
+            'options' => [
+                ['label' => 'Heredar de la organizacion', 'value' => 'inherit'],
+                ['label' => 'DD/MM/YYYY', 'value' => 'DD/MM/YYYY'],
+                ['label' => 'YYYY-MM-DD', 'value' => 'YYYY-MM-DD'],
+                ['label' => 'MM/DD/YYYY', 'value' => 'MM/DD/YYYY'],
+            ],
+        ],
+        [
+            'key' => 'dense_tables',
+            'label' => 'Tablas compactas',
+            'type' => 'toggle',
+            'default' => false,
+        ],
+        [
+            'key' => 'notifications_internal',
+            'label' => 'Notificaciones internas',
+            'type' => 'toggle',
+            'default' => true,
+        ],
+        [
+            'key' => 'notifications_email',
+            'label' => 'Notificaciones por email',
+            'type' => 'toggle',
+            'default' => false,
+        ],
+        [
+            'key' => 'notifications_whatsapp',
+            'label' => 'Notificaciones por WhatsApp',
+            'type' => 'toggle',
+            'default' => false,
+        ],
+    ],
+];

@@ -30,6 +30,7 @@ Backend API-first construido con Laravel 12.
 - Data Engine universal con registro declarativo de recursos y CRUD base tenant-aware.
 - Export/import CSV sobre recursos del Data Engine con historial tenant-aware de corridas.
 - Exportaciones `Excel/PDF` y exportacion async con artefactos descargables por cola.
+- Settings globales, por organizacion y por usuario con bootstrap para frontend.
 - `core-platform` y `demo-platform` declarados.
 
 ## Endpoints base actuales
@@ -41,6 +42,13 @@ Backend API-first construido con Laravel 12.
 - `GET /api/v1/auth/me`
 - `POST /api/v1/auth/logout`
 - `PATCH /api/v1/auth/active-organization`
+- `GET /api/v1/settings/bootstrap`
+- `GET /api/v1/settings/me`
+- `PATCH /api/v1/settings/me`
+- `GET /api/v1/settings/global`
+- `PATCH /api/v1/settings/global`
+- `GET /api/v1/settings/organization`
+- `PATCH /api/v1/settings/organization`
 - `GET /api/v1/data/resources`
 - `GET /api/v1/data/{resourceKey}`
 - `POST /api/v1/data/{resourceKey}`
@@ -77,7 +85,7 @@ php artisan config:clear
 ```
 
 ## Verificacion reciente
-- `php artisan test` pasando con 40 tests.
+- `php artisan test` pasando con 42 tests.
 - Integridad de migraciones corregida para evitar duplicados y desalineacion del esquema base.
 - Arbol HTTP legacy no enroutado eliminado para reducir deriva arquitectonica.
 - Bootstrap RBAC inicial sin duplicidad de seeders.

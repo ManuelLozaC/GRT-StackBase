@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { uiFeedbackStore } from '@/core/ui/uiFeedbackStore';
 
 let accessToken = null;
 
@@ -21,5 +22,14 @@ api.interceptors.request.use((config) => {
 export function setApiAccessToken(token) {
     accessToken = token;
 }
+
+api.interceptors.response.use(
+    (response) => response,
+    (error) => {
+        uiFeedbackStore.reportHttpError(error);
+
+        return Promise.reject(error);
+    }
+);
 
 export default api;

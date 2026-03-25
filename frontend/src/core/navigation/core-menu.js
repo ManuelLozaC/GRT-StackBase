@@ -21,6 +21,11 @@ export const coreMenu = [
                 label: 'Documentation',
                 icon: 'pi pi-fw pi-book',
                 to: '/start/documentation'
+            },
+            {
+                label: 'My Preferences',
+                icon: 'pi pi-fw pi-sliders-h',
+                to: '/account/preferences'
             }
         ]
     },
@@ -32,6 +37,12 @@ export const coreMenu = [
                 icon: 'pi pi-fw pi-cog',
                 to: '/admin/modules',
                 permissionKey: 'modules.manage'
+            },
+            {
+                label: 'System Settings',
+                icon: 'pi pi-fw pi-sliders-v',
+                to: '/admin/settings',
+                permissionKey: 'settings.manage'
             }
         ]
     }

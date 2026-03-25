@@ -14,9 +14,12 @@ class RolePermissionSeeder extends Seeder
     {
         app(PermissionRegistrar::class)->forgetCachedPermissions();
 
-        $permissions = [
-            'modules.manage',
-        ];
+        $permissions = collect(config('modules.installed', []))
+            ->flatMap(fn (array $module): array => $module['permissions'] ?? [])
+            ->push('modules.manage', 'settings.manage')
+            ->unique()
+            ->values()
+            ->all();
 
         foreach ($permissions as $permissionName) {
             Permission::query()->firstOrCreate([

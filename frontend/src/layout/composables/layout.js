@@ -20,6 +20,25 @@ const layoutState = reactive({
 });
 
 export function useLayout() {
+    const resolveDarkModeForPreference = (theme) => {
+        if (theme === 'dark') {
+            return true;
+        }
+
+        if (theme === 'light') {
+            return false;
+        }
+
+        return window.matchMedia?.('(prefers-color-scheme: dark)').matches ?? false;
+    };
+
+    const applyThemePreference = (theme) => {
+        const darkMode = resolveDarkModeForPreference(theme);
+
+        layoutConfig.darkTheme = darkMode;
+        document.documentElement.classList.toggle('app-dark', darkMode);
+    };
+
     const toggleDarkMode = () => {
         if (!document.startViewTransition) {
             executeDarkModeToggle();
@@ -27,7 +46,7 @@ export function useLayout() {
             return;
         }
 
-        document.startViewTransition(() => executeDarkModeToggle(event));
+        document.startViewTransition(() => executeDarkModeToggle());
     };
 
     const executeDarkModeToggle = () => {
@@ -81,6 +100,7 @@ export function useLayout() {
         hideMobileMenu,
         changeMenuMode,
         isDesktop,
-        hasOpenOverlay
+        hasOpenOverlay,
+        applyThemePreference
     };
 }
