@@ -5,8 +5,8 @@ namespace Tests\Feature\Api\V1\Auth;
 use App\Core\Auth\Services\AccessTokenService;
 use App\Models\Organizacion;
 use App\Models\User;
+use Database\Seeders\RolePermissionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Facades\Password;
 use Tests\TestCase;
 
 class AuthFlowTest extends TestCase
@@ -203,5 +203,63 @@ class AuthFlowTest extends TestCase
             ])
             ->assertStatus(403)
             ->assertJsonPath('estado', 'error');
+    }
+
+    public function test_admin_can_list_users_update_roles_and_impersonate(): void
+    {
+        $this->seed(RolePermissionSeeder::class);
+
+        $organizacion = Organizacion::query()->create([
+            'nombre' => 'Tenant Admin',
+            'slug' => 'tenant-admin',
+        ]);
+
+        $admin = User::factory()->create([
+            'email' => 'admin@stackbase.local',
+            'organizacion_activa_id' => $organizacion->id,
+        ]);
+        $admin->organizaciones()->attach($organizacion->id);
+        $admin->assignRole('admin');
+
+        $targetUser = User::factory()->create([
+            'email' => 'member@stackbase.local',
+            'organizacion_activa_id' => $organizacion->id,
+        ]);
+        $targetUser->organizaciones()->attach($organizacion->id);
+
+        $adminToken = app(AccessTokenService::class)->createForUser($admin, 'phpunit-admin');
+
+        $this->withHeader('Authorization', 'Bearer '.$adminToken)
+            ->getJson('/api/v1/users')
+            ->assertOk()
+            ->assertJsonPath('meta.available_roles.0', 'admin');
+
+        $this->withHeader('Authorization', 'Bearer '.$adminToken)
+            ->patchJson('/api/v1/users/'.$targetUser->id.'/roles', [
+                'roles' => ['admin'],
+            ])
+            ->assertOk()
+            ->assertJsonPath('datos.roles.0', 'admin');
+
+        $impersonationResponse = $this->withHeader('Authorization', 'Bearer '.$adminToken)
+            ->postJson('/api/v1/auth/impersonate/'.$targetUser->id)
+            ->assertOk()
+            ->assertJsonPath('datos.user.email', 'member@stackbase.local')
+            ->assertJsonPath('datos.user.impersonation.active', true);
+
+        $impersonatedToken = $impersonationResponse->json('datos.token');
+
+        $this->withHeader('Authorization', 'Bearer '.$impersonatedToken)
+            ->getJson('/api/v1/auth/me')
+            ->assertOk()
+            ->assertJsonPath('datos.email', 'member@stackbase.local')
+            ->assertJsonPath('datos.impersonation.active', true)
+            ->assertJsonPath('datos.impersonation.impersonated_by.email', 'admin@stackbase.local');
+
+        $this->withHeader('Authorization', 'Bearer '.$impersonatedToken)
+            ->postJson('/api/v1/auth/impersonation/leave')
+            ->assertOk()
+            ->assertJsonPath('datos.user.email', 'admin@stackbase.local')
+            ->assertJsonPath('datos.user.impersonation.active', false);
     }
 }

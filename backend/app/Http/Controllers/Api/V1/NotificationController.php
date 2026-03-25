@@ -26,6 +26,7 @@ class NotificationController extends Controller
         /** @var User $user */
         $user = $request->user();
         $notifications = CoreNotification::query()
+            ->with('deliveries')
             ->where('recipient_id', $user->id)
             ->latest('id')
             ->limit(50)
@@ -106,6 +107,16 @@ class NotificationController extends Controller
             'message' => $notification->message,
             'action_url' => $notification->action_url,
             'metadata' => $notification->metadata,
+            'deliveries' => $notification->deliveries
+                ->map(fn ($delivery): array => [
+                    'channel' => $delivery->channel,
+                    'status' => $delivery->status,
+                    'destination' => $delivery->destination,
+                    'status_detail' => $delivery->status_detail,
+                    'processed_at' => $delivery->processed_at?->toIso8601String(),
+                ])
+                ->values()
+                ->all(),
             'read_at' => $notification->read_at?->toIso8601String(),
             'created_at' => $notification->created_at?->toIso8601String(),
         ];

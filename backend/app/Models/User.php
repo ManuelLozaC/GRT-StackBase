@@ -50,4 +50,10 @@ class User extends Authenticatable
     {
         return $this->belongsTo(Organizacion::class, 'organizacion_activa_id');
     }
+
+    public function equipos(): BelongsToMany
+    {
+        return $this->belongsToMany(Equipo::class)
+            ->withTimestamps();
+    }
 }

@@ -8,6 +8,7 @@ use App\Traits\MultiTenantable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class CoreNotification extends Model
 {
@@ -55,5 +56,10 @@ class CoreNotification extends Model
     public function creator(): BelongsTo
     {
         return $this->belongsTo(User::class, 'created_by');
+    }
+
+    public function deliveries(): HasMany
+    {
+        return $this->hasMany(CoreNotificationDelivery::class, 'notification_id');
     }
 }

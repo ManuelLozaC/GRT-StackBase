@@ -11,6 +11,7 @@ use App\Http\Controllers\Api\V1\ModuleController;
 use App\Http\Controllers\Api\V1\ModuleSettingController;
 use App\Http\Controllers\Api\V1\NotificationController;
 use App\Http\Controllers\Api\V1\SettingController;
+use App\Http\Controllers\Api\V1\UserManagementController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('v1')->group(function (): void {
@@ -62,6 +63,14 @@ Route::prefix('v1')->group(function (): void {
         });
 
         Route::get('/modules', [ModuleController::class, 'index']);
+
+        Route::middleware('permission:users.impersonate')->post('/auth/impersonate/{user}', [UserManagementController::class, 'impersonate']);
+        Route::post('/auth/impersonation/leave', [UserManagementController::class, 'leaveImpersonation']);
+
+        Route::middleware('permission:users.manage_roles')->group(function (): void {
+            Route::get('/users', [UserManagementController::class, 'index']);
+            Route::patch('/users/{user}/roles', [UserManagementController::class, 'updateRoles']);
+        });
 
         Route::middleware('permission:modules.manage')->group(function (): void {
             Route::patch('/modules/{moduleKey}', [ModuleController::class, 'updateStatus']);

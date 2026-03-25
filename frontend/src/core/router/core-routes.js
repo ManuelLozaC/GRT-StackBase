@@ -49,6 +49,14 @@ export const coreRoutes = [
                     permissionKey: 'settings.manage'
                 },
                 component: () => import('@/views/pages/SystemSettings.vue')
+            },
+            {
+                path: '/admin/users',
+                name: 'user-administration',
+                meta: {
+                    permissionKey: 'users.manage_roles'
+                },
+                component: () => import('@/views/pages/UserAdministration.vue')
             }
         ]
     },

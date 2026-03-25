@@ -37,6 +37,16 @@ function featureSummary(moduleItem) {
     return moduleItem.features;
 }
 
+function operationalSummary(moduleItem) {
+    return [
+        `${moduleItem.permissions?.length ?? 0} permisos`,
+        `${moduleItem.settings?.length ?? 0} settings`,
+        `${moduleItem.jobs?.length ?? 0} jobs`,
+        `${moduleItem.webhooks?.length ?? 0} webhooks`,
+        `${moduleItem.dashboards?.length ?? 0} dashboards`
+    ];
+}
+
 function getBlockingMessage(moduleItem) {
     if (moduleItem.dependency_status?.missing?.length) {
         return `Faltan dependencias declaradas: ${moduleItem.dependency_status.missing.join(', ')}.`;
@@ -202,6 +212,9 @@ async function onToggle(moduleItem) {
                         </small>
                         <div class="flex flex-wrap gap-2" v-if="featureSummary(slotProps.data).length">
                             <Tag v-for="feature in featureSummary(slotProps.data)" :key="feature" severity="secondary" :value="feature" />
+                        </div>
+                        <div class="flex flex-wrap gap-2">
+                            <Tag v-for="item in operationalSummary(slotProps.data)" :key="item" severity="contrast" :value="item" />
                         </div>
                         <small v-if="getBlockingMessage(slotProps.data)" class="text-orange-600">
                             {{ getBlockingMessage(slotProps.data) }}

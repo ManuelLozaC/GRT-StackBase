@@ -26,7 +26,7 @@ class DemoNotificationController extends Controller
     {
         /** @var User $user */
         $user = $request->user();
-        $notification = $this->notifications->createInternal(
+        $result = $this->notifications->createMultichannel(
             recipient: $user,
             title: $request->string('title')->toString(),
             message: $request->string('message')->toString(),
@@ -37,29 +37,40 @@ class DemoNotificationController extends Controller
             metadata: [
                 'source' => 'demo-platform',
             ],
+            channels: $request->input('channels', ['internal']),
         );
+        $notification = $result['notification'];
+        $deliveries = $result['deliveries'];
 
         $this->auditLogger->record(
             eventKey: 'demo.notification.created',
             actor: $user,
             entityType: 'core_notification',
-            entityKey: $notification->uuid,
+            entityKey: $notification?->uuid ?? 'multichannel-demo',
             summary: 'Se genero una notificacion demo',
             sourceModule: 'demo-platform',
             context: [
-                'level' => $notification->level,
-                'title' => $notification->title,
+                'level' => $notification?->level,
+                'title' => $notification?->title ?? $request->string('title')->toString(),
+                'channels' => $deliveries->pluck('channel')->all(),
             ],
         );
 
         return $this->successResponse(
             data: [
-                'uuid' => $notification->uuid,
-                'title' => $notification->title,
-                'message' => $notification->message,
-                'level' => $notification->level,
-                'read_at' => $notification->read_at?->toIso8601String(),
-                'created_at' => $notification->created_at?->toIso8601String(),
+                'uuid' => $notification?->uuid,
+                'title' => $notification?->title ?? $request->string('title')->toString(),
+                'message' => $notification?->message ?? $request->string('message')->toString(),
+                'level' => $notification?->level ?? $request->string('level')->toString(),
+                'deliveries' => $deliveries->map(fn ($delivery): array => [
+                    'channel' => $delivery->channel,
+                    'status' => $delivery->status,
+                    'destination' => $delivery->destination,
+                    'status_detail' => $delivery->status_detail,
+                    'processed_at' => $delivery->processed_at?->toIso8601String(),
+                ])->values()->all(),
+                'read_at' => $notification?->read_at?->toIso8601String(),
+                'created_at' => $notification?->created_at?->toIso8601String(),
             ],
             message: 'Notificacion demo creada',
         );

@@ -14,6 +14,9 @@ return [
             'permissions' => [
                 'modules.manage',
                 'settings.manage',
+                'users.manage_roles',
+                'users.impersonate',
+                'tenancy.manage',
             ],
             'settings' => [
                 [
@@ -32,6 +35,13 @@ return [
                 'audit',
                 'notifications',
             ],
+            'jobs' => [],
+            'webhooks' => [],
+            'dashboards' => [],
+            'seeders' => [
+                Database\Seeders\RolePermissionSeeder::class,
+            ],
+            'assets' => [],
             'frontend' => [
                 'navigation' => null,
                 'routes' => [],
@@ -80,6 +90,14 @@ return [
                 'demo.audit',
                 'demo.transfers',
             ],
+            'jobs' => [
+                App\Jobs\Demo\ProcessDemoJobRun::class,
+                App\Jobs\DataEngine\ProcessDataExportRun::class,
+            ],
+            'webhooks' => [],
+            'dashboards' => [],
+            'seeders' => [],
+            'assets' => [],
             'frontend' => [
                 'navigation' => [
                     'label' => 'Demo',

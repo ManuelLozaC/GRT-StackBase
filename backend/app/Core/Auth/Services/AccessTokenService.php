@@ -8,7 +8,7 @@ use Illuminate\Support\Str;
 
 class AccessTokenService
 {
-    public function createForUser(User $user, string $name = 'frontend', ?int $ttlMinutes = null): string
+    public function createForUser(User $user, string $name = 'frontend', ?int $ttlMinutes = null, array $metadata = []): string
     {
         $plainTextToken = Str::random(64);
 
@@ -17,6 +17,7 @@ class AccessTokenService
             'name' => $name,
             'token' => hash('sha256', $plainTextToken),
             'expires_at' => $ttlMinutes ? now()->addMinutes($ttlMinutes) : null,
+            'metadata' => $metadata,
         ]);
 
         return $plainTextToken;

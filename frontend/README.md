@@ -22,11 +22,13 @@ Frontend construido con Vue 3, Vite y PrimeVue.
 - Stores consumidos por responsabilidad: sesion, tenant y permisos, sin fachada `authStore`.
 - Pantalla de modulos informa dependencias, features y bloqueos operativos antes de togglear.
 - El catalogo modular frontend se refresca completo tras togglear para no dejar estados derivados desactualizados.
-- `Data Engine` ya consume metadata de recursos y opera CRUD real sobre el recurso demo.
+- `Data Engine` ya consume metadata de recursos y opera CRUD real con relaciones y custom fields sobre recursos demo y estructuras tenant.
 - `Data Engine` ya permite exportar/importar CSV y consultar historial de corridas del recurso activo.
 - `Demo Module` ya incluye `Transfers Demo` para probar `CSV / Excel / PDF` y modo `async`.
 - La administracion de modulos ya permite editar settings persistidos por modulo.
 - Ya existe panel de `System Settings`, preferencias del usuario, banner global y manejo global de errores HTTP.
+- Ya existe administracion de usuarios con multi-rol e impersonacion.
+- El shell ya usa skeleton loaders y empty states reutilizables en pantallas reales.
 
 ## Pantallas relevantes hoy
 - `/admin/modules`
@@ -41,6 +43,7 @@ Frontend construido con Vue 3, Vite y PrimeVue.
 - `/demo/audit`
 - `/demo/transfers`
 - `/admin/settings`
+- `/admin/users`
 - `/account/preferences`
 
 ## Comandos utiles
@@ -55,7 +58,7 @@ npm audit --audit-level=moderate
 ## Nota
 La administracion de modulos ya esta conectada a autenticacion real y al permiso `modules.manage`. Para ver jobs y exportaciones async procesarse realmente en local, el backend necesita un worker activo con `php artisan queue:work --queue=data-exports,demo`.
 
-El siguiente paso visible en frontend es extender el `Data Engine` con relaciones, custom fields y operaciones masivas avanzadas, ya sobre una base real y no sobre placeholders.
+El siguiente paso visible en frontend es profundizar el `Data Engine` en acciones avanzadas/masivas, cerrar feedback optimista/pesimista y seguir bajando integraciones reales de canales externos.
 
 Validacion reciente:
 - `npm run lint` en verde.

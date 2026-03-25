@@ -43,6 +43,12 @@ export const coreMenu = [
                 icon: 'pi pi-fw pi-sliders-v',
                 to: '/admin/settings',
                 permissionKey: 'settings.manage'
+            },
+            {
+                label: 'Users',
+                icon: 'pi pi-fw pi-users',
+                to: '/admin/users',
+                permissionKey: 'users.manage_roles'
             }
         ]
     }

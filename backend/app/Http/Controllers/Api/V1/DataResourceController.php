@@ -272,12 +272,16 @@ class DataResourceController extends Controller
     {
         $modelClass = $resource['model'];
 
-        return $modelClass::query()->whereKey($recordId)->first();
+        return $modelClass::query()
+            ->with($this->resourceRelations($resource))
+            ->whereKey($recordId)
+            ->first();
     }
 
     protected function buildResourceQuery(Request $request, array $resource): Builder
     {
-        return $this->transfers->buildQueryFromCriteria($resource, $this->exportCriteriaFromRequest($request));
+        return $this->transfers->buildQueryFromCriteria($resource, $this->exportCriteriaFromRequest($request))
+            ->with($this->resourceRelations($resource));
     }
 
     protected function validatePayload(Request $request, array $resource, bool $updating = false): array
@@ -287,7 +291,7 @@ class DataResourceController extends Controller
 
     protected function validationRules(array $resource, bool $updating = false): array
     {
-        return collect($resource['form_fields'])
+        $rules = collect($resource['form_fields'])
             ->mapWithKeys(function (array $field) use ($updating): array {
                 $fieldRules = $field['rules'] ?? [];
 
@@ -299,6 +303,19 @@ class DataResourceController extends Controller
                 return [$field['key'] => $fieldRules];
             })
             ->all();
+
+        foreach ($resource['custom_fields'] ?? [] as $field) {
+            $fieldRules = $field['rules'] ?? [];
+
+            if ($updating) {
+                $fieldRules = array_values(array_filter($fieldRules, fn (mixed $rule): bool => $rule !== 'required'));
+                array_unshift($fieldRules, 'sometimes');
+            }
+
+            $rules['custom_fields.'.$field['key']] = $fieldRules;
+        }
+
+        return $rules;
     }
 
     protected function applySearch(Builder $query, Request $request, array $resource): void
@@ -358,7 +375,22 @@ class DataResourceController extends Controller
 
         foreach ($resource['fields'] as $field) {
             $payload[$field['key']] = $this->normalizeValue($record->getAttribute($field['key']));
+
+            if (($field['type'] ?? 'text') === 'relation' && is_array($field['relation'] ?? null)) {
+                $displayKey = $field['relation']['display_key'] ?? $field['key'].'_label';
+                $relationName = $field['relation']['name'] ?? null;
+                $labelField = $field['relation']['label_field'] ?? 'nombre';
+                $payload[$displayKey] = $relationName
+                    ? data_get($record->getRelationValue($relationName), $labelField)
+                    : null;
+            }
         }
+
+        $payload['custom_fields'] = collect($resource['custom_fields'] ?? [])
+            ->mapWithKeys(fn (array $field): array => [
+                $field['key'] => data_get($record->getAttribute('custom_fields') ?? [], $field['key']),
+            ])
+            ->all();
 
         return $payload + [
             'created_at' => $this->normalizeValue($record->getAttribute('created_at')),
@@ -405,5 +437,14 @@ class DataResourceController extends Controller
             message: 'Registro no encontrado',
             status: 404,
         );
+    }
+
+    protected function resourceRelations(array $resource): array
+    {
+        return collect($resource['relation_fields'] ?? [])
+            ->pluck('relation.name')
+            ->filter(fn (mixed $relation): bool => is_string($relation) && $relation !== '')
+            ->values()
+            ->all();
     }
 }

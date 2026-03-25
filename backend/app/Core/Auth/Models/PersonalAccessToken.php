@@ -15,6 +15,7 @@ class PersonalAccessToken extends Model
         return [
             'last_used_at' => 'datetime',
             'expires_at' => 'datetime',
+            'metadata' => 'array',
         ];
     }
 

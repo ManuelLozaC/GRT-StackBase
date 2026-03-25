@@ -24,6 +24,11 @@ Campos soportados hoy:
 - `permissions`
 - `settings`
 - `features`
+- `jobs`
+- `webhooks`
+- `dashboards`
+- `seeders`
+- `assets`
 - `frontend.navigation`
 - `frontend.routes`
 
@@ -50,9 +55,10 @@ La metadata que llega por API declara:
 - `ModuleRegistry` ya normaliza metadata modular en backend, conserva metadata al togglear y bloquea dependencias invalidas.
 - La metadata expuesta ya incluye estado operativo basico: `dependency_status`, `blocking_dependents`, `can_enable`, `can_disable` e `is_protected`.
 - Los `settings` ya son operativos: se persisten, se administran por API/UI y pueden afectar comportamiento real del modulo.
+- La metadata backend ya expone piezas operativas del contrato (`jobs`, `webhooks`, `dashboards`, `seeders`, `assets`) aunque varias siguen siendo descriptivas y no ejecutables por runtime.
 
 ## Deuda restante del contrato
 - generalizar el contrato para futuros modulos sin wiring adicional
 - soportar permisos por modulo de forma operativa, no solo descriptiva
-- soportar seeds, assets, dashboards y hooks por modulo
+- convertir `seeders`, `assets`, `dashboards` y `hooks/webhooks` en runtime realmente ejecutable por modulo
 - reducir aun mas el registro local frontend a solo vistas realmente necesarias

@@ -10,6 +10,7 @@ use App\Core\Tenancy\TenantContext;
 use App\Jobs\DataEngine\ProcessDataExportRun;
 use App\Models\Organizacion;
 use App\Models\User;
+use Database\Seeders\RolePermissionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
@@ -363,6 +364,70 @@ CSV);
             ? (string) $downloadResponse->streamedContent()
             : (string) $downloadResponse->getContent();
         $this->assertStringStartsWith('%PDF-', $content);
+    }
+
+    public function test_admin_can_manage_tenant_structures_and_use_relations_and_custom_fields(): void
+    {
+        $this->seed(RolePermissionSeeder::class);
+
+        [$user, $token] = $this->authenticateUser();
+        $user->assignRole('admin');
+        app(ModuleRegistry::class)->setEnabled('demo-platform', true);
+
+        $companyResponse = $this->withHeader('Authorization', 'Bearer '.$token)
+            ->postJson('/api/v1/data/tenant-companies', [
+                'nombre' => 'Acme Corp',
+                'slug' => 'acme-corp',
+            ])
+            ->assertOk();
+
+        $companyId = $companyResponse->json('datos.id');
+
+        $branchResponse = $this->withHeader('Authorization', 'Bearer '.$token)
+            ->postJson('/api/v1/data/tenant-branches', [
+                'nombre' => 'Casa Matriz',
+                'slug' => 'casa-matriz',
+                'empresa_id' => $companyId,
+            ])
+            ->assertOk();
+
+        $branchId = $branchResponse->json('datos.id');
+
+        $teamResponse = $this->withHeader('Authorization', 'Bearer '.$token)
+            ->postJson('/api/v1/data/tenant-teams', [
+                'nombre' => 'Ventas B2B',
+                'slug' => 'ventas-b2b',
+                'sucursal_id' => $branchId,
+            ])
+            ->assertOk();
+
+        $contactResponse = $this->withHeader('Authorization', 'Bearer '.$token)
+            ->postJson('/api/v1/data/demo-contacts', [
+                'nombre' => 'Relacion Demo',
+                'estado' => 'active',
+                'prioridad' => 'high',
+                'empresa_id' => $companyId,
+                'sucursal_id' => $branchId,
+                'equipo_id' => $teamResponse->json('datos.id'),
+                'custom_fields' => [
+                    'segmento' => 'Enterprise',
+                    'canal_origen' => 'web',
+                    'presupuesto_estimado' => '25000',
+                ],
+            ])
+            ->assertOk();
+
+        $recordId = $contactResponse->json('datos.id');
+
+        $this->withHeader('Authorization', 'Bearer '.$token)
+            ->getJson('/api/v1/data/demo-contacts/'.$recordId)
+            ->assertOk()
+            ->assertJsonPath('datos.empresa_id', $companyId)
+            ->assertJsonPath('datos.empresa_id_label', 'Acme Corp')
+            ->assertJsonPath('datos.sucursal_id_label', 'Casa Matriz')
+            ->assertJsonPath('datos.equipo_id_label', 'Ventas B2B')
+            ->assertJsonPath('datos.custom_fields.segmento', 'Enterprise')
+            ->assertJsonPath('datos.custom_fields.canal_origen', 'web');
     }
 
     protected function authenticateUser(): array

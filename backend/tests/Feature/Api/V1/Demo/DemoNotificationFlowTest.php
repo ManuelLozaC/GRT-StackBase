@@ -4,6 +4,7 @@ namespace Tests\Feature\Api\V1\Demo;
 
 use App\Core\Modules\ModuleSettingsManager;
 use App\Core\Notifications\Services\NotificationCenter;
+use App\Core\Settings\CoreSettingsManager;
 use App\Models\Organizacion;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -150,6 +151,41 @@ class DemoNotificationFlowTest extends TestCase
             ])
             ->assertOk()
             ->assertJsonPath('datos.level', 'warning');
+    }
+
+    public function test_demo_notification_logs_multichannel_deliveries(): void
+    {
+        [$user, $token] = $this->authenticateUser();
+
+        app(CoreSettingsManager::class)->update('global', [
+            'feature_notifications_email' => true,
+            'feature_notifications_whatsapp' => true,
+        ]);
+
+        app(CoreSettingsManager::class)->update('user', [
+            'notifications_email' => true,
+            'notifications_whatsapp' => false,
+        ], null, $user->id);
+
+        $this->withHeader('Authorization', 'Bearer '.$token)
+            ->postJson('/api/v1/demo/notifications', [
+                'title' => 'Canales demo',
+                'message' => 'Debe registrar entregas por canal.',
+                'channels' => ['internal', 'email', 'whatsapp'],
+            ])
+            ->assertOk()
+            ->assertJsonPath('datos.deliveries.0.channel', 'internal')
+            ->assertJsonPath('datos.deliveries.0.status', 'delivered')
+            ->assertJsonPath('datos.deliveries.1.channel', 'email')
+            ->assertJsonPath('datos.deliveries.1.status', 'simulated')
+            ->assertJsonPath('datos.deliveries.2.channel', 'whatsapp')
+            ->assertJsonPath('datos.deliveries.2.status', 'skipped_preference');
+
+        $this->assertDatabaseHas('core_notification_deliveries', [
+            'channel' => 'email',
+            'status' => 'simulated',
+            'recipient_id' => $user->id,
+        ]);
     }
 
     protected function authenticateUser(): array

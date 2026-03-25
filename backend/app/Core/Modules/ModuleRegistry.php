@@ -134,6 +134,11 @@ class ModuleRegistry
             'permissions' => [],
             'settings' => [],
             'features' => [],
+            'jobs' => [],
+            'webhooks' => [],
+            'dashboards' => [],
+            'seeders' => [],
+            'assets' => [],
             'frontend' => [
                 'navigation' => null,
                 'routes' => [],

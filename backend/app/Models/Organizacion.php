@@ -36,4 +36,19 @@ class Organizacion extends Model
     {
         return $this->hasMany(User::class, 'organizacion_activa_id');
     }
+
+    public function empresas(): HasMany
+    {
+        return $this->hasMany(Empresa::class);
+    }
+
+    public function sucursales(): HasMany
+    {
+        return $this->hasMany(Sucursal::class);
+    }
+
+    public function equipos(): HasMany
+    {
+        return $this->hasMany(Equipo::class);
+    }
 }

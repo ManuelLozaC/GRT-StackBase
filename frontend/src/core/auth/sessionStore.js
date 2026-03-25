@@ -127,6 +127,22 @@ async function logout() {
     }
 }
 
+async function impersonate(userId) {
+    const response = await api.post(`/v1/auth/impersonate/${userId}`);
+    setSession(response.data.datos.token, response.data.datos.user);
+    await Promise.all([settingsStore.initialize(true), moduleCatalog.loadModules(true), notificationStore.loadNotifications()]);
+
+    return state.user;
+}
+
+async function leaveImpersonation() {
+    const response = await api.post('/v1/auth/impersonation/leave');
+    setSession(response.data.datos.token, response.data.datos.user);
+    await Promise.all([settingsStore.initialize(true), moduleCatalog.loadModules(true), notificationStore.loadNotifications()]);
+
+    return state.user;
+}
+
 export const sessionStore = {
     state,
     user: computed(() => state.user),
@@ -137,6 +153,8 @@ export const sessionStore = {
     login,
     register,
     logout,
+    impersonate,
+    leaveImpersonation,
     setSession,
     setUser,
     clearSession

@@ -1,7 +1,10 @@
 <script setup>
+import StateEmpty from '@/components/core/StateEmpty.vue';
+import StateSkeleton from '@/components/core/StateSkeleton.vue';
 import { notificationStore } from '@/core/notifications/notificationStore';
+import { settingsStore } from '@/core/settings/settingsStore';
 import api from '@/service/api';
-import { reactive } from 'vue';
+import { computed, reactive } from 'vue';
 import { useToast } from 'primevue/usetoast';
 
 const toast = useToast();
@@ -10,8 +13,27 @@ const form = reactive({
     title: 'Proceso completado',
     message: 'La demo genero una notificacion interna correctamente.',
     level: 'info',
-    action_url: '/demo/notifications'
+    action_url: '/demo/notifications',
+    channels: ['internal']
 });
+const channelOptions = computed(() => [
+    {
+        label: 'Internal',
+        value: 'internal'
+    },
+    {
+        label: `Email ${settingsStore.featureFlags.value.feature_notifications_email ? '' : '(flag off)'}`,
+        value: 'email'
+    },
+    {
+        label: `WhatsApp ${settingsStore.featureFlags.value.feature_notifications_whatsapp ? '' : '(flag off)'}`,
+        value: 'whatsapp'
+    },
+    {
+        label: `Push ${settingsStore.featureFlags.value.feature_notifications_push ? '' : '(flag off)'}`,
+        value: 'push'
+    }
+]);
 
 async function createNotification() {
     await api.post('/v1/demo/notifications', form);
@@ -70,6 +92,17 @@ function resolveSeverity(level) {
 
     return 'info';
 }
+
+function resolveDeliverySeverity(status) {
+    return (
+        {
+            delivered: 'success',
+            simulated: 'info',
+            skipped_disabled: 'warning',
+            skipped_preference: 'secondary'
+        }[status] ?? 'contrast'
+    );
+}
 </script>
 
 <template>
@@ -100,7 +133,7 @@ function resolveSeverity(level) {
             <div class="card flex flex-col gap-4">
                 <div>
                     <h3 class="m-0 mb-2">Generar notificacion demo</h3>
-                    <p class="m-0 text-sm text-color-secondary">Crea una notificacion interna para el usuario actual en la organizacion activa.</p>
+                    <p class="m-0 text-sm text-color-secondary">Crea una notificacion para el usuario actual y prueba el enrutamiento por canales del core.</p>
                 </div>
 
                 <input v-model="form.title" type="text" class="demo-input" placeholder="Titulo" />
@@ -114,6 +147,11 @@ function resolveSeverity(level) {
                         <option value="warning">Warning</option>
                         <option value="danger">Danger</option>
                     </select>
+                </label>
+
+                <label class="demo-field">
+                    <span>Canales</span>
+                    <MultiSelect v-model="form.channels" :options="channelOptions" optionLabel="label" optionValue="value" display="chip" class="w-full" />
                 </label>
 
                 <input v-model="form.action_url" type="text" class="demo-input" placeholder="URL de accion opcional" />
@@ -137,7 +175,9 @@ function resolveSeverity(level) {
                     </div>
                 </div>
 
-                <div v-if="notificationStore.state.items.length === 0" class="demo-empty-state">Todavia no hay notificaciones. Genera una desde la demo para probar el flujo.</div>
+                <StateSkeleton v-if="notificationStore.state.loading" />
+
+                <StateEmpty v-else-if="notificationStore.state.items.length === 0" title="Todavia no hay notificaciones" description="Genera una desde la demo para probar el flujo interno y los canales operativos." icon="pi pi-bell" />
 
                 <div v-else class="demo-notification-list">
                     <article v-for="notification in notificationStore.state.items" :key="notification.uuid" class="demo-notification-card" :class="{ unread: !notification.read_at }">
@@ -152,6 +192,10 @@ function resolveSeverity(level) {
                         </div>
 
                         <p class="text-sm mb-3 mt-3">{{ notification.message }}</p>
+
+                        <div v-if="notification.deliveries?.length" class="demo-deliveries">
+                            <Tag v-for="delivery in notification.deliveries" :key="`${notification.uuid}-${delivery.channel}`" :severity="resolveDeliverySeverity(delivery.status)" :value="`${delivery.channel}: ${delivery.status}`" />
+                        </div>
 
                         <div class="demo-card-footer">
                             <span class="text-sm text-color-secondary">
@@ -244,7 +288,6 @@ function resolveSeverity(level) {
     cursor: not-allowed;
 }
 
-.demo-empty-state,
 .demo-notification-card {
     border: 1px solid var(--surface-border);
     border-radius: 1rem;
@@ -278,5 +321,12 @@ function resolveSeverity(level) {
     color: var(--primary-color);
     font-weight: 600;
     text-decoration: none;
+}
+
+.demo-deliveries {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    margin-bottom: 1rem;
 }
 </style>

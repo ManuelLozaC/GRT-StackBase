@@ -38,6 +38,11 @@ Fecha de referencia: `2026-03-25`
 - Export/import CSV ya operativo sobre el Data Engine con historial de corridas tenant-aware.
 - Exportaciones `Excel/PDF` y modo `async` ya operativos sobre el Data Engine y demostrables desde `Demo Module`.
 - Settings globales, por organizacion y por usuario ya operativos con bootstrap frontend, feature flags base y banner/error global.
+- Multi-rol por usuario, administracion operativa de usuarios e impersonacion con auditoria ya disponibles.
+- Estructuras tenant base (`empresas`, `sucursales`, `equipos`) ya disponibles y gestionables desde el Data Engine.
+- Data Engine ya soporta relaciones y custom fields en recursos reales del demo.
+- Notificaciones multicanal ya tienen base operativa con preferencias, feature flags y log de entregas por canal.
+- Skeleton loaders y empty states reutilizables ya forman parte del shell y de pantallas operativas.
 - Limpieza residual completada en branding/documentacion raiz y restos visuales del shell legacy.
 - Base de archivos en core con upload, descarga directa, signed URLs e historial.
 - Base de jobs en core con dispatch, estados, logs y demo funcional.
@@ -48,8 +53,8 @@ Fecha de referencia: `2026-03-25`
 - Build frontend y tests backend pasando.
 
 ### En progreso
-- Estructura `core/modules` ya creada y el `Demo Module` ya usa bootstrap por API; el contrato de modulos ya bloquea dependencias basicas, pero todavia debe crecer para futuros modulos.
-- Tenancy base ya existe y se reforzo en notificaciones/descargas, pero falta propagarla de forma consistente a todo el dominio.
+- Estructura `core/modules` ya creada y el `Demo Module` ya usa bootstrap por API; el contrato de modulos ya expone metadata operativa mas rica, pero todavia debe crecer para futuros modulos.
+- Tenancy base ya existe y se reforzo en notificaciones/descargas/tenant structures, pero falta propagarla de forma consistente a todo el dominio.
 - El frontend ya refresca el catalogo modular completo tras toggles para no conservar estados operativos stale.
 - Los settings modulares ya son operativos, y el core ya suma settings globales/tenant/usuario; todavia faltan seeds, assets y cerrar el contrato modular completo.
 - `Demo Module` ya existe y ya contiene demos funcionales de archivos, jobs, auditoria, notificaciones y transferencias/exportaciones.
@@ -57,7 +62,7 @@ Fecha de referencia: `2026-03-25`
 
 ### Aun pendiente
 - Multi-tenant completo.
-- Capacidades avanzadas del Data Engine: relaciones, custom fields y endurecimiento de exportaciones/importaciones mas pesadas.
+- Capacidades avanzadas del Data Engine: acciones, relaciones mas profundas y custom fields universales.
 - Archivos, notificaciones, jobs avanzados, auditoria y seguridad.
 
 ## Fases
@@ -70,7 +75,7 @@ Estado: En progreso
 - [x] Persistencia del estado de modulos.
 - [x] Pantalla de administracion para habilitar o deshabilitar modulos.
 - [x] `Demo Module` inicial habilitable desde administracion.
-- [ ] Contrato formal completo de modulos: permisos, settings, webhooks, dashboards, assets, seeds.
+- [ ] Contrato formal completo de modulos: permisos, settings, webhooks, dashboards, assets, seeds y ejecucion operativa real.
 - [x] Bootstrap inicial del `Demo Module` desde metadata backend/API.
 - [ ] Contrato formal de demos por capacidad transversal.
 - [x] Bootstrap modular desde API para no duplicar metadata del `Demo Module`.
@@ -83,15 +88,15 @@ Estado: En progreso
 - Registro y reset de password ya implementados.
 - Tokens API propios ya implementados.
 - RBAC inicial ya implementado sobre administracion de modulos.
-- RBAC con multiples roles por usuario pendiente de ampliar.
+- Multi-rol, administracion operativa de usuarios e impersonacion con auditoria ya disponibles.
 - Guardas frontend y control de acceso por endpoint en progreso.
-- Impersonacion admin -> usuario con auditoria.
+- Falta ampliar permisos por endpoint/accion al resto del sistema.
 
 ## Fase 2. Tenancy y organizacion
 Estado: En progreso
 
 - Organizaciones base, membresias y organizacion activa ya implementadas.
-- Empresas, sucursales, equipos y relaciones usuario-empresa.
+- Empresas, sucursales, equipos y relaciones usuario-empresa ya disponibles como estructuras tenant-aware.
 - Tenant activo por request en todos los servicios aun pendiente de cierre total.
 - Configuracion por tenant.
 - Seed inicial coherente para ambientes locales y demo.
@@ -100,11 +105,12 @@ Estado: En progreso
 Estado: En progreso
 
 - CRUD universal y filtros.
+- Relaciones y custom fields base sobre recursos reales.
 - Export/import `CSV / Excel / PDF` base sobre el Data Engine con historial tenant-aware y modo `async`.
 - Settings globales, por tenant y por usuario con feature flags base.
 - Archivos base ya implementados; falta Spaces, versionado real y asociaciones de negocio.
 - Jobs base ya implementados; faltan workers supervisados, cron, reintentos operativos y propagacion completa de tenant/actor.
-- Notificaciones internas base ya implementadas; faltan email, WhatsApp/SMS, push y uso operativo pleno de preferencias por canal.
+- Notificaciones internas y base multicanal ya implementadas; faltan email, WhatsApp/SMS y push reales.
 - Export/import avanzado.
 - Auditoria base ya implementada; faltan logs tecnicos, correlation IDs, vistas operativas y seguridad avanzada.
 - Busqueda e indexacion.
@@ -117,7 +123,8 @@ Estado: Parcial
 - Auth real ya integrada.
 - Menu y router ya alineados con StackBase, sin demos del template original.
 - Banner global, manejo global de errores HTTP y preferencias persistidas ya operativos.
-- Faltan empty states, skeletons y feedback estandarizado mas profundo.
+- Empty states y skeletons ya implementados en pantallas reales.
+- Falta feedback estandarizado mas profundo.
 
 ## Fase 5. Demo Module funcional
 Estado: En progreso
@@ -149,8 +156,8 @@ Un nuevo sistema debe poder ensamblarse con:
 El backlog detallado vive en `docs/pendientes.md`.
 
 ## Resumen actual
-- Logrado: kernel modular, auth API, registro, reset de password, RBAC inicial, tenancy base, archivos, jobs, auditoria y notificaciones internas ya funcionan en backend y frontend con demos activables desde `Demo Module`; ademas la integridad del repositorio quedo estabilizada, la capa legacy principal fue retirada, el contrato modular ya evita estados invalidos, el aislamiento por tenant quedo cubierto con pruebas automatizadas, el `Data Engine` ya soporta export/import `CSV / Excel / PDF` con historial de corridas y modo `async`, y el core ya expone settings globales/tenant/usuario con feature flags y UX transversal base.
-- Pendiente: completar multi-tenant transversal, integraciones de storage y notificaciones multicanal, mas observabilidad y seguridad operativa, y generalizar el contrato `core + modules` para nuevos modulos.
-- Pendiente tecnico residual: seguir endureciendo el core en tenancy transversal, ampliar el CRUD generico hacia relaciones/custom fields, robustecer exportaciones/importaciones pesadas y async en operacion real, permisos operativos por modulo y catalogos universales realmente necesarios.
+- Logrado: kernel modular, auth API, registro, reset de password, RBAC inicial, multi-rol, impersonacion, tenancy base con estructuras `empresa/sucursal/equipo`, archivos, jobs, auditoria y notificaciones internas ya funcionan en backend y frontend con demos activables desde `Demo Module`; ademas la integridad del repositorio quedo estabilizada, la capa legacy principal fue retirada, el contrato modular ya evita estados invalidos y ya expone metadata operativa mas rica, el aislamiento por tenant quedo cubierto con pruebas automatizadas, el `Data Engine` ya soporta relaciones, custom fields, export/import `CSV / Excel / PDF` con historial de corridas y modo `async`, y el core ya expone settings globales/tenant/usuario con feature flags y UX transversal base.
+- Pendiente: completar multi-tenant transversal, integraciones reales de storage y notificaciones multicanal, mas observabilidad y seguridad operativa, y generalizar el contrato `core + modules` para nuevos modulos sin wiring adicional.
+- Pendiente tecnico residual: seguir endureciendo el core en tenancy transversal, convertir relaciones/custom fields del Data Engine en capacidades completamente universales, robustecer exportaciones/importaciones pesadas y async en operacion real, permisos operativos por modulo, hooks/dashboard/assets ejecutables y catalogos universales realmente necesarios.
 
-Avance global estimado del roadmap: 98% completado.
+Avance global estimado del roadmap: 99% completado.

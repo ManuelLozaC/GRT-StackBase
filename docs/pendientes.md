@@ -49,6 +49,12 @@
 - [x] Feature flags base del core sin tocar codigo.
 - [x] Banner global y manejo global de errores HTTP en el shell.
 - [x] Preferencias de usuario para tema, formato y notificaciones base.
+- [x] Multi-rol por usuario con administracion operativa desde UI/API.
+- [x] Impersonacion administrativa con auditoria y restauracion de sesion original.
+- [x] Estructuras tenant base: empresas, sucursales y equipos.
+- [x] Data Engine extendido con relaciones y custom fields sobre recursos reales.
+- [x] Base multicanal de notificaciones con log de entregas por canal.
+- [x] Skeleton loaders y empty states reutilizables en pantallas reales.
 
 ### Brechas principales
 - [ ] RBAC completo.
@@ -84,6 +90,7 @@ Estado: En progreso
 - [x] Route guard frontend para modulos deshabilitados.
 - [x] `Demo Module` inicial.
 - [ ] Contrato formal de un modulo: permisos, menus, rutas, migraciones, settings, jobs, webhooks, dashboards.
+- [x] Metadata modular extendida con `jobs`, `webhooks`, `dashboards`, `seeders` y `assets`.
 - [ ] Contrato formal de una demo por capacidad transversal.
 - [x] Carga de menus y rutas del `Demo Module` desde manifest declarativa frontend.
 - [x] Carga de menus y rutas del `Demo Module` desde metadata declarativa backend/API.
@@ -103,10 +110,11 @@ Estado: En progreso
 - [x] Recuperacion y reseteo de password.
 - [x] Token auth inicial.
 - [ ] Ampliar RBAC por endpoint y accion para mas areas del sistema.
-- [ ] Multi-rol por usuario.
-- [ ] Impersonacion con auditoria.
+- [x] Multi-rol por usuario.
+- [x] Impersonacion con auditoria.
 - [x] Guardas frontend conectadas a auth real.
 - [x] Nuevo permiso operativo `settings.manage`.
+- [x] Administracion de usuarios con sync de roles e impersonacion.
 
 ## P2. Usuarios, organizaciones y tenancy
 Estado: En progreso
@@ -116,9 +124,9 @@ Estado: En progreso
 - [x] Tenant activo por usuario autenticado.
 - [x] Cambio de tenant activo por API.
 - [x] Selector de organizacion activa en topbar.
-- [ ] Migraciones de empresas.
-- [ ] Migraciones de sucursales.
-- [ ] Migraciones de equipos.
+- [x] Migraciones de empresas.
+- [x] Migraciones de sucursales.
+- [x] Migraciones de equipos.
 - [ ] Unificar concepto organizacion / empresa segun modelo final.
 - [ ] Tenant activo por request en todos los servicios backend.
 - [x] Configuracion por tenant.
@@ -128,6 +136,7 @@ Estado: En progreso
 - [x] Cubrir con tests el aislamiento por tenant en el recurso demo del CRUD universal.
 - [x] Base fundacional de tenancy adelgazada para no mezclar catalogos de ubicacion o personas no usados por el core.
 - [x] `TenantContext` compartido para request autenticado y jobs base.
+- [x] CRUD tenant-aware para estructuras `empresa/sucursal/equipo`.
 
 ## P3. Configuracion del sistema
 Estado: En progreso
@@ -151,11 +160,12 @@ Estado: En progreso
 - [x] Busqueda global.
 - [x] Validacion backend estandar.
 - [x] Serializacion uniforme.
-- [ ] Campos personalizados.
+- [x] Campos personalizados.
 - [x] Componentes frontend reutilizables de tabla y formulario.
 - [x] Retirar el CRUD historico del template de la navegacion principal.
 - [x] Implementar el nuevo motor CRUD del core con contrato reutilizable para modulos.
-- [ ] Extender el Data Engine a relaciones, acciones y custom fields.
+- [x] Extender el Data Engine a relaciones y custom fields.
+- [ ] Extender el Data Engine a acciones avanzadas, relaciones mas profundas y custom fields realmente universales.
 
 ## P5. Gestion de archivos
 Estado: En progreso
@@ -183,11 +193,12 @@ Estado: En progreso
 - [x] Marcado masivo de lectura.
 - [x] Campanita con contador basico.
 - [x] Demo funcional de notificaciones dentro del `Demo Module`.
-- [ ] Email.
-- [ ] SMS / WhatsApp.
-- [ ] Push si aplica.
+- [ ] Email real.
+- [ ] SMS / WhatsApp real.
+- [ ] Push real si aplica.
 - [x] Preferencias por usuario.
-- [ ] Historial avanzado y reintentos por canal.
+- [x] Historial base de entregas por canal.
+- [ ] Reintentos reales por canal e integraciones externas.
 
 ## P7. UX transversal
 Estado: Parcial
@@ -195,8 +206,8 @@ Estado: Parcial
 - [x] Toast base.
 - [x] Confirmaciones base.
 - [x] Alerts y banners globales.
-- [ ] Skeleton loaders.
-- [ ] Empty states reales.
+- [x] Skeleton loaders.
+- [x] Empty states reales.
 - [x] Manejo global de errores HTTP.
 - [ ] Feedback optimista/pesimista estandarizado.
 
@@ -245,7 +256,8 @@ Estado: En progreso
 - [x] Audit trail inicial para modulos, archivos y jobs.
 - [x] Vista demo de auditoria dentro del `Demo Module`.
 - [ ] Logs de errores.
-- [ ] Auditoria de impersonacion y cambios de permisos.
+- [x] Auditoria de impersonacion.
+- [ ] Auditoria de cambios de permisos.
 - [ ] Vista administrativa completa de logs.
 - [ ] Correlation IDs y trazabilidad tecnica mas profunda.
 
@@ -344,8 +356,8 @@ Estado: Pendiente
 - [ ] Eventos clave de usuario.
 
 ## Siguiente desarrollo recomendado
-1. Scope multi-tenant consistente en modelos, jobs, archivos y auditoria.
-2. Integracion de archivos con Spaces y entidades de negocio.
-3. Completar el contrato modular con permisos operativos, seeds y assets por modulo.
-4. Extender el Data Engine con relaciones, custom fields y acciones avanzadas.
-5. Endurecer exportaciones async con workers supervisados, observabilidad y formatos/importaciones mas ricas si se justifican.
+1. Scope multi-tenant consistente en modelos, jobs, archivos, auditoria y notificaciones externas.
+2. Integracion de archivos con Spaces, versionado y entidades de negocio.
+3. Completar el contrato modular con ejecucion real de hooks, assets y dashboards por modulo.
+4. Extender el Data Engine con acciones avanzadas, relaciones dependientes y custom fields realmente universales.
+5. Endurecer exportaciones async, workers supervisados, observabilidad y reintentos operativos reales.

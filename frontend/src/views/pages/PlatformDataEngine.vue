@@ -1,4 +1,6 @@
 <script setup>
+import StateEmpty from '@/components/core/StateEmpty.vue';
+import StateSkeleton from '@/components/core/StateSkeleton.vue';
 import { moduleCatalog } from '@/core/modules/moduleCatalog';
 import api from '@/service/api';
 import { useConfirm } from 'primevue/useconfirm';
@@ -32,7 +34,8 @@ const state = reactive({
     exporting: false,
     loadingTransfers: false,
     transferRuns: [],
-    importFile: null
+    importFile: null,
+    relationOptions: {}
 });
 const importInput = ref(null);
 
@@ -41,8 +44,8 @@ const resources = computed(() => state.resources);
 const tableFields = computed(() => currentResource.value?.table_fields ?? []);
 const formFields = computed(() => currentResource.value?.form_fields ?? []);
 const filterFields = computed(() => currentResource.value?.filter_fields ?? []);
+const customFields = computed(() => currentResource.value?.custom_fields ?? []);
 const perPageOptions = computed(() => currentResource.value?.per_page_options ?? [10, 25, 50]);
-const demoModuleEnabled = computed(() => moduleCatalog.isModuleEnabled('demo-platform'));
 const hasResources = computed(() => state.resources.length > 0);
 const pageFirst = computed(() => (state.page - 1) * state.perPage);
 const resourceCapabilities = computed(
@@ -56,7 +59,11 @@ const resourceCapabilities = computed(
         }
 );
 
-function humanizeValue(field, value) {
+function humanizeValue(field, value, displayValue = null) {
+    if (field.relation?.display_key && displayValue) {
+        return displayValue;
+    }
+
     if (value === null || value === '') {
         return 'Sin dato';
     }
@@ -97,12 +104,15 @@ function resetFilters() {
 }
 
 function resetForm() {
-    state.form = Object.fromEntries(
-        formFields.value.map((field) => {
-            const fallback = field.type === 'select' ? (field.options?.[0]?.value ?? '') : '';
-            return [field.key, fallback];
-        })
-    );
+    state.form = {
+        ...Object.fromEntries(
+            formFields.value.map((field) => {
+                const fallback = field.type === 'select' ? (field.options?.[0]?.value ?? '') : '';
+                return [field.key, fallback];
+            })
+        ),
+        custom_fields: Object.fromEntries(customFields.value.map((field) => [field.key, '']))
+    };
 }
 
 async function loadResources() {
@@ -165,6 +175,31 @@ async function loadTransfers() {
     }
 }
 
+async function loadRelationOptions() {
+    const fields = formFields.value.filter((field) => field.type === 'relation' && field.relation?.resource_key);
+
+    state.relationOptions = {};
+
+    await Promise.all(
+        fields.map(async (field) => {
+            try {
+                const response = await api.get(`/v1/data/${field.relation.resource_key}`, {
+                    params: {
+                        per_page: 100
+                    }
+                });
+
+                state.relationOptions[field.key] = (response.data.datos ?? []).map((record) => ({
+                    label: record[field.relation.display_key ?? field.relation.label_field] ?? record[field.relation.label_field ?? 'nombre'],
+                    value: record.id
+                }));
+            } catch {
+                state.relationOptions[field.key] = [];
+            }
+        })
+    );
+}
+
 function prepareResourceState() {
     const resource = currentResource.value;
 
@@ -182,6 +217,7 @@ function prepareResourceState() {
     resetFilters();
     resetForm();
     state.transferRuns = [];
+    state.relationOptions = {};
 }
 
 function openCreateDialog() {
@@ -197,6 +233,11 @@ function openEditDialog(record) {
     formFields.value.forEach((field) => {
         state.form[field.key] = record[field.key] ?? '';
     });
+
+    state.form.custom_fields = {
+        ...state.form.custom_fields,
+        ...(record.custom_fields ?? {})
+    };
 
     state.dialogVisible = true;
 }
@@ -402,6 +443,10 @@ function onSort(event) {
     loadRecords();
 }
 
+function relationOptionsForField(field) {
+    return state.relationOptions[field.key] ?? [];
+}
+
 async function openModuleAdmin() {
     await moduleCatalog.loadModules(true);
     router.push('/admin/modules');
@@ -411,7 +456,7 @@ watch(
     () => state.selectedResourceKey,
     async () => {
         prepareResourceState();
-        await Promise.all([loadRecords(), loadTransfers()]);
+        await Promise.all([loadRelationOptions(), loadRecords(), loadTransfers()]);
     }
 );
 
@@ -436,17 +481,19 @@ onMounted(async () => {
             </div>
         </div>
 
-        <div v-if="!hasResources" class="rounded-3xl border border-dashed border-sky-300 bg-sky-50 p-8 text-sky-900">
-            <div class="text-xl font-semibold mb-3">No hay recursos disponibles</div>
-            <p class="mb-4">El `Data Engine` ya esta activo, pero por ahora el recurso demo vive dentro de `Demo Module`. Si el modulo esta deshabilitado, aqui no apareceran recursos.</p>
-            <div class="flex flex-wrap gap-3 items-center">
-                <Tag :severity="demoModuleEnabled ? 'success' : 'warning'" :value="demoModuleEnabled ? 'Demo Module activo' : 'Demo Module inactivo'" />
-                <Button label="Ir a administracion de modulos" icon="pi pi-cog" @click="openModuleAdmin" />
-            </div>
-        </div>
+        <StateEmpty
+            v-if="!hasResources"
+            title="No hay recursos disponibles"
+            description="El Data Engine ya esta activo, pero por ahora el recurso demo vive dentro de Demo Module. Si el modulo esta deshabilitado, aqui no apareceran recursos."
+            actionLabel="Ir a administracion de modulos"
+            icon="pi pi-database"
+            @action="openModuleAdmin"
+        />
 
         <div v-else class="space-y-6">
-            <div class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+            <StateSkeleton v-if="state.loadingResources" />
+
+            <div v-else class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
                 <div class="grid grid-cols-12 gap-4">
                     <div class="col-span-12 md:col-span-4">
                         <label class="block text-sm font-semibold text-slate-600 mb-2">Recurso</label>
@@ -498,8 +545,8 @@ onMounted(async () => {
                 >
                     <Column v-for="field in tableFields" :key="field.key" :field="field.key" :header="field.label" :sortable="field.sortable" style="min-width: 12rem">
                         <template #body="slotProps">
-                            <Tag v-if="field.type === 'select'" :severity="tagSeverity(field.key, slotProps.data[field.key])" :value="humanizeValue(field, slotProps.data[field.key])" />
-                            <span v-else>{{ humanizeValue(field, slotProps.data[field.key]) }}</span>
+                            <Tag v-if="field.type === 'select'" :severity="tagSeverity(field.key, slotProps.data[field.key])" :value="humanizeValue(field, slotProps.data[field.key], slotProps.data[field.relation?.display_key])" />
+                            <span v-else>{{ humanizeValue(field, slotProps.data[field.key], slotProps.data[field.relation?.display_key]) }}</span>
                         </template>
                     </Column>
                     <Column header="Acciones" style="width: 10rem">
@@ -511,7 +558,7 @@ onMounted(async () => {
                         </template>
                     </Column>
                     <template #empty>
-                        <div class="py-10 text-center text-slate-500">No hay registros para esta combinacion de busqueda y filtros.</div>
+                        <StateEmpty title="Sin registros" description="No hay registros para esta combinacion de busqueda y filtros." icon="pi pi-search" />
                     </template>
                 </DataTable>
             </div>
@@ -560,7 +607,7 @@ onMounted(async () => {
                         </template>
                     </Column>
                     <template #empty>
-                        <div class="py-10 text-center text-slate-500">Todavia no hay transferencias registradas para este recurso.</div>
+                        <StateEmpty title="Sin transferencias" description="Todavia no hay transferencias registradas para este recurso." icon="pi pi-download" />
                     </template>
                 </DataTable>
             </div>
@@ -571,8 +618,17 @@ onMounted(async () => {
                 <div v-for="field in formFields" :key="field.key" class="col-span-12" :class="field.type === 'textarea' ? '' : 'md:col-span-6'">
                     <label class="block text-sm font-semibold text-slate-600 mb-2">{{ field.label }}</label>
                     <Select v-if="field.type === 'select'" v-model="state.form[field.key]" :options="field.options" optionLabel="label" optionValue="value" class="w-full" />
+                    <Select v-else-if="field.type === 'relation'" v-model="state.form[field.key]" :options="relationOptionsForField(field)" optionLabel="label" optionValue="value" showClear class="w-full" />
                     <Textarea v-else-if="field.type === 'textarea'" v-model="state.form[field.key]" rows="4" class="w-full" autoResize />
                     <InputText v-else v-model="state.form[field.key]" class="w-full" :type="field.type === 'email' ? 'email' : 'text'" />
+                </div>
+                <div v-if="customFields.length" class="col-span-12 pt-2">
+                    <div class="text-sm uppercase tracking-[0.2em] text-slate-500 font-semibold mb-3">Custom Fields</div>
+                </div>
+                <div v-for="field in customFields" :key="field.key" class="col-span-12 md:col-span-6">
+                    <label class="block text-sm font-semibold text-slate-600 mb-2">{{ field.label }}</label>
+                    <Select v-if="field.type === 'select'" v-model="state.form.custom_fields[field.key]" :options="field.options" optionLabel="label" optionValue="value" showClear class="w-full" />
+                    <InputText v-else v-model="state.form.custom_fields[field.key]" class="w-full" />
                 </div>
             </div>
             <template #footer>

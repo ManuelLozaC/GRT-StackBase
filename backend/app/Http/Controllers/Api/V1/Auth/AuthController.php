@@ -146,8 +146,14 @@ class AuthController extends Controller
 
     public function me(Request $request): JsonResponse
     {
+        /** @var PersonalAccessToken|null $token */
+        $token = $request->attributes->get('current_access_token');
+
         return $this->successResponse(
-            data: $this->transformUser($this->ensureActiveOrganization($request->user())),
+            data: $this->transformUser(
+                $this->ensureActiveOrganization($request->user()),
+                $this->impersonationPayload($token),
+            ),
             message: 'Usuario autenticado',
         );
     }
@@ -194,7 +200,7 @@ class AuthController extends Controller
         );
     }
 
-    protected function transformUser(?User $user): ?array
+    protected function transformUser(?User $user, array $impersonation = []): ?array
     {
         if ($user === null) {
             return null;
@@ -216,6 +222,10 @@ class AuthController extends Controller
                 ->all(),
             'roles' => $user->getRoleNames()->values()->all(),
             'permissions' => $user->getAllPermissions()->pluck('name')->values()->all(),
+            'impersonation' => array_merge([
+                'active' => false,
+                'impersonated_by' => null,
+            ], $impersonation),
         ];
     }
 
@@ -277,5 +287,26 @@ class AuthController extends Controller
         }
 
         return $slug;
+    }
+
+    protected function impersonationPayload(?PersonalAccessToken $token): array
+    {
+        $impersonatorId = $token?->metadata['impersonated_by'] ?? null;
+
+        if (! $impersonatorId) {
+            return [
+                'active' => false,
+                'impersonated_by' => null,
+            ];
+        }
+
+        return [
+            'active' => true,
+            'impersonated_by' => [
+                'id' => $impersonatorId,
+                'name' => $token->metadata['impersonated_by_name'] ?? null,
+                'email' => $token->metadata['impersonated_by_email'] ?? null,
+            ],
+        ];
     }
 }

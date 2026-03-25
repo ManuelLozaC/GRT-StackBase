@@ -14,6 +14,7 @@ Backend API-first construido con Laravel 12.
 - Solo se mantiene activa la capa HTTP alineada a `api/v1`; el API legacy previo fue retirado.
 - Seeders iniciales de permisos alineados en un solo flujo (`RolePermissionSeeder`).
 - Metadata modular ampliada en `config/modules.php` con dependencias, permisos, settings y features.
+- Metadata modular ampliada tambien con `jobs`, `webhooks`, `dashboards`, `seeders` y `assets`.
 - Dependencias modulares basicas bloqueadas al activar/desactivar; `core-platform` queda protegido.
 - Listado de modulos disponible para cualquier usuario autenticado; el toggle sigue protegido por permiso.
 - Settings por modulo persistidos y administrables por API.
@@ -27,10 +28,14 @@ Backend API-first construido con Laravel 12.
 - Base de jobs demo con cola, modo inmediato y logs basicos.
 - Base de auditoria transversal para modulos, archivos y jobs.
 - Base de notificaciones internas con bandeja y lectura.
+- Notificaciones multicanal con log de entregas por canal, feature flags y preferencias.
 - Data Engine universal con registro declarativo de recursos y CRUD base tenant-aware.
+- Data Engine con relaciones y custom fields sobre recursos reales.
+- Estructuras tenant base (`empresas`, `sucursales`, `equipos`) gestionables desde el Data Engine.
 - Export/import CSV sobre recursos del Data Engine con historial tenant-aware de corridas.
 - Exportaciones `Excel/PDF` y exportacion async con artefactos descargables por cola.
 - Settings globales, por organizacion y por usuario con bootstrap para frontend.
+- Administracion de usuarios con multi-rol e impersonacion auditada.
 - `core-platform` y `demo-platform` declarados.
 
 ## Endpoints base actuales
@@ -42,6 +47,8 @@ Backend API-first construido con Laravel 12.
 - `GET /api/v1/auth/me`
 - `POST /api/v1/auth/logout`
 - `PATCH /api/v1/auth/active-organization`
+- `POST /api/v1/auth/impersonate/{user}`
+- `POST /api/v1/auth/impersonation/leave`
 - `GET /api/v1/settings/bootstrap`
 - `GET /api/v1/settings/me`
 - `PATCH /api/v1/settings/me`
@@ -59,6 +66,8 @@ Backend API-first construido con Laravel 12.
 - `GET /api/v1/data/{resourceKey}/{recordId}`
 - `PATCH /api/v1/data/{resourceKey}/{recordId}`
 - `DELETE /api/v1/data/{resourceKey}/{recordId}`
+- `GET /api/v1/users`
+- `PATCH /api/v1/users/{user}/roles`
 - `GET /api/v1/demo/files`
 - `POST /api/v1/demo/files`
 - `GET /api/v1/demo/files/downloads`
@@ -85,7 +94,7 @@ php artisan config:clear
 ```
 
 ## Verificacion reciente
-- `php artisan test` pasando con 42 tests.
+- `php artisan test` pasando con 45 tests.
 - Integridad de migraciones corregida para evitar duplicados y desalineacion del esquema base.
 - Arbol HTTP legacy no enroutado eliminado para reducir deriva arquitectonica.
 - Bootstrap RBAC inicial sin duplicidad de seeders.

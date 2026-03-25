@@ -56,6 +56,13 @@ return [
             'default' => false,
             'help' => 'Flag operativo para preparar el canal WhatsApp.',
         ],
+        [
+            'key' => 'feature_notifications_push',
+            'label' => 'Canal push habilitado',
+            'type' => 'toggle',
+            'default' => false,
+            'help' => 'Flag operativo para preparar el canal push.',
+        ],
     ],
     'organization' => [
         [
@@ -137,6 +144,12 @@ return [
         [
             'key' => 'notifications_whatsapp',
             'label' => 'Notificaciones por WhatsApp',
+            'type' => 'toggle',
+            'default' => false,
+        ],
+        [
+            'key' => 'notifications_push',
+            'label' => 'Notificaciones push',
             'type' => 'toggle',
             'default' => false,
         ],

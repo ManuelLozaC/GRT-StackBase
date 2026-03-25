@@ -70,10 +70,14 @@ Su objetivo es:
 - Core de jobs con dispatch, ejecucion inmediata demo y trazabilidad basica.
 - Core de auditoria con eventos transversales y consulta demo.
 - Core de notificaciones internas con bandeja, lectura y contador basico.
+- Base multicanal de notificaciones con preferencias, feature flags y log de entregas por canal.
 - Data Engine universal con CRUD base, filtros, busqueda, paginacion, ordenamiento y soft delete sobre recurso demo.
+- Data Engine con relaciones y custom fields sobre recursos reales.
 - Export/import CSV sobre el Data Engine con historial tenant-aware de corridas.
 - Exportaciones `Excel/PDF` y modo `async` sobre el Data Engine, con demo dedicada en el `Demo Module`.
 - Settings globales, por organizacion y por usuario con feature flags base y bootstrap frontend.
+- Multi-rol, administracion de usuarios e impersonacion con auditoria.
+- Estructuras tenant base (`empresas`, `sucursales`, `equipos`) listas para reutilizacion.
 - Registro de modulos.
 - Persistencia de estado de modulos.
 - Admin de modulos.
@@ -109,3 +113,4 @@ Su objetivo es:
 - Cada modulo debe poder declararse una sola vez por capa y evitar duplicacion de wiring manual.
 - El backend debe ser la fuente de verdad de metadata modular; frontend solo resuelve vistas locales.
 - La administracion no debe permitir activar modulos con dependencias rotas ni desactivar modulos protegidos del core.
+- La experiencia operativa del core debe ser visible mediante demos funcionales, auditoria y estados reutilizables de UX.

@@ -17,6 +17,7 @@ const organizations = computed(() => tenantStore.organizations.value);
 const activeOrganizationId = computed(() => tenantStore.activeOrganization.value?.id ?? '');
 const unreadNotifications = computed(() => notificationStore.unreadCount.value);
 const canManageSettings = computed(() => accessStore.hasPermission('settings.manage'));
+const impersonation = computed(() => sessionStore.state.user?.impersonation ?? { active: false, impersonated_by: null });
 
 async function logout() {
     await sessionStore.logout();
@@ -66,6 +67,21 @@ async function openPreferences() {
 async function openSystemSettings() {
     await router.push({
         name: 'system-settings'
+    });
+}
+
+async function leaveImpersonation() {
+    await sessionStore.leaveImpersonation();
+
+    toast.add({
+        severity: 'success',
+        summary: 'Impersonacion finalizada',
+        detail: 'Se restauro la sesion del usuario original.',
+        life: 3000
+    });
+
+    await router.push({
+        name: 'dashboard'
     });
 }
 
@@ -129,6 +145,13 @@ async function toggleThemePreference() {
 
             <div class="layout-topbar-menu lg:block">
                 <div class="layout-topbar-menu-content">
+                    <div v-if="impersonation.active" class="topbar-impersonation-banner">
+                        <div>
+                            <strong>Impersonando sesion</strong>
+                            <div>{{ impersonation.impersonated_by?.email || 'Admin original' }}</div>
+                        </div>
+                        <button type="button" class="topbar-impersonation-button" @click="leaveImpersonation">Salir</button>
+                    </div>
                     <label v-if="organizations.length > 0" class="topbar-organization-switcher">
                         <span>Organizacion</span>
                         <select :value="activeOrganizationId" :disabled="tenantStore.state.switchingOrganization" @change="switchOrganization">
@@ -204,5 +227,27 @@ async function toggleThemePreference() {
     align-items: center;
     justify-content: center;
     padding: 0 0.25rem;
+}
+
+.topbar-impersonation-banner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 0.85rem 1rem;
+    margin: 0.5rem 1rem;
+    border-radius: 1rem;
+    background: #fff7ed;
+    color: #9a3412;
+}
+
+.topbar-impersonation-button {
+    border: 0;
+    border-radius: 999px;
+    background: #ea580c;
+    color: white;
+    padding: 0.5rem 0.9rem;
+    cursor: pointer;
+    font-weight: 600;
 }
 </style>

@@ -58,6 +58,7 @@ class DataResourceRegistry
             'table_fields' => $resource['table_fields'],
             'form_fields' => $resource['form_fields'],
             'filter_fields' => $resource['filter_fields'],
+            'custom_fields' => $resource['custom_fields'],
         ];
     }
 
@@ -76,8 +77,17 @@ class DataResourceRegistry
                     'filterable' => false,
                     'rules' => [],
                     'options' => [],
+                    'relation' => null,
                 ], $field);
             })
+            ->values()
+            ->all();
+        $customFields = collect($resource['custom_fields'] ?? [])
+            ->map(fn (array $field): array => array_merge([
+                'type' => 'text',
+                'rules' => [],
+                'options' => [],
+            ], $field))
             ->values()
             ->all();
 
@@ -100,13 +110,16 @@ class DataResourceRegistry
                 'import' => true,
             ],
             'fields' => $normalizedFields,
+            'custom_fields' => $customFields,
         ], $resource, [
             'fields' => $normalizedFields,
+            'custom_fields' => $customFields,
             'table_fields' => collect($normalizedFields)->where('table', true)->values()->all(),
             'form_fields' => collect($normalizedFields)->where('form', true)->values()->all(),
             'filter_fields' => collect($normalizedFields)->where('filterable', true)->values()->all(),
             'searchable_fields' => collect($normalizedFields)->where('searchable', true)->pluck('key')->values()->all(),
             'sortable_fields' => collect($normalizedFields)->where('sortable', true)->pluck('key')->values()->all(),
+            'relation_fields' => collect($normalizedFields)->whereNotNull('relation')->values()->all(),
         ]);
     }
 
