@@ -15,6 +15,8 @@ const toast = useToast();
 const { toggleMenu, toggleDarkMode, isDarkTheme } = useLayout();
 const organizations = computed(() => tenantStore.organizations.value);
 const activeOrganizationId = computed(() => tenantStore.activeOrganization.value?.id ?? '');
+const workAssignments = computed(() => tenantStore.availableWorkAssignments.value);
+const activeWorkAssignmentId = computed(() => tenantStore.activeWorkAssignment.value?.id ?? '');
 const unreadNotifications = computed(() => notificationStore.unreadCount.value);
 const canManageSettings = computed(() => accessStore.hasPermission('settings.manage'));
 const impersonation = computed(() => sessionStore.state.user?.impersonation ?? { active: false, impersonated_by: null });
@@ -47,6 +49,23 @@ async function switchOrganization(event) {
         severity: 'success',
         summary: 'Organizacion actualizada',
         detail: 'El contexto activo de trabajo ya cambio.',
+        life: 2500
+    });
+}
+
+async function switchWorkAssignment(event) {
+    const selectedId = Number(event.target.value);
+
+    if (!selectedId || selectedId === activeWorkAssignmentId.value) {
+        return;
+    }
+
+    await tenantStore.switchActiveWorkAssignment(selectedId);
+
+    toast.add({
+        severity: 'success',
+        summary: 'Contexto laboral actualizado',
+        detail: 'La sucursal o funcion activa ya cambio para esta sesion.',
         life: 2500
     });
 }
@@ -163,6 +182,14 @@ async function toggleThemePreference() {
                         <select :value="activeOrganizationId" :disabled="tenantStore.state.switchingOrganization" @change="switchOrganization">
                             <option v-for="organization in organizations" :key="organization.id" :value="organization.id">
                                 {{ organization.nombre }}
+                            </option>
+                        </select>
+                    </label>
+                    <label v-if="workAssignments.length > 0" class="topbar-organization-switcher">
+                        <span>Contexto</span>
+                        <select :value="activeWorkAssignmentId" :disabled="tenantStore.state.switchingWorkAssignment" @change="switchWorkAssignment">
+                            <option v-for="assignment in workAssignments" :key="assignment.id" :value="assignment.id">
+                                {{ assignment.etiqueta_contexto }}
                             </option>
                         </select>
                     </label>

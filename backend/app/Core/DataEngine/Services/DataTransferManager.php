@@ -3,6 +3,7 @@
 namespace App\Core\DataEngine\Services;
 
 use App\Core\Audit\Services\AuditLogger;
+use App\Core\Files\Services\StorageDiskResolver;
 use App\Core\DataEngine\Models\CoreDataTransferRun;
 use App\Core\Tenancy\TenantContext;
 use App\Models\User;
@@ -20,6 +21,7 @@ class DataTransferManager
     public function __construct(
         protected TenantContext $tenantContext,
         protected AuditLogger $auditLogger,
+        protected StorageDiskResolver $storageDisks,
     ) {
     }
 
@@ -106,7 +108,7 @@ class DataTransferManager
         $records = $query->get();
         $format = $run->metadata['format'] ?? 'csv';
         $artifact = $this->buildExportArtifact($resource, $records, $fields, $format);
-        $storageDisk = 'local';
+        $storageDisk = $this->storageDisks->forDataExports();
         $storagePath = sprintf(
             'data-exports/%s/%s',
             $run->organizacion_id ?? 'global',

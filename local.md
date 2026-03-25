@@ -65,7 +65,9 @@ SESSION_PATH=/
 SESSION_DOMAIN=localhost
 
 BROADCAST_CONNECTION=log
-FILESYSTEM_DISK=spaces
+FILESYSTEM_DISK=local
+FILESYSTEM_FALLBACK_DISK=local
+DATA_EXPORTS_DISK=local
 QUEUE_CONNECTION=redis
 CACHE_STORE=redis
 
@@ -110,7 +112,9 @@ VITE_APP_NAME="${APP_NAME}"
 Notas:
 
 - `APP_KEY` se genera con Artisan
-- si todavia no usaras Spaces, puedes dejar `DO_SPACES_*` vacios
+- para local, el valor recomendado es `FILESYSTEM_DISK=local`
+- cuando ya tengas Spaces configurado, cambia `FILESYSTEM_DISK=spaces` y `DATA_EXPORTS_DISK=spaces`
+- si `FILESYSTEM_DISK=spaces` pero faltan credenciales, el stack hace fallback automatico a `local`
 
 ### Frontend
 
@@ -228,4 +232,25 @@ VITE_API_URL=http://localhost:8080/api/v1
 ```bash
 docker compose restart app web
 docker compose restart frontend
+```
+
+### Activar Spaces en local o staging
+
+Completa estas variables en `backend/.env`:
+
+```env
+FILESYSTEM_DISK=spaces
+DATA_EXPORTS_DISK=spaces
+DO_SPACES_KEY=tu_key
+DO_SPACES_SECRET=tu_secret
+DO_SPACES_REGION=nyc3
+DO_SPACES_BUCKET=tu_bucket
+DO_SPACES_ENDPOINT=https://nyc3.digitaloceanspaces.com
+DO_SPACES_URL=https://tu_bucket.nyc3.digitaloceanspaces.com
+```
+
+Luego reinicia `app`:
+
+```bash
+docker compose restart app
 ```

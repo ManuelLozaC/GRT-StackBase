@@ -4,6 +4,7 @@ namespace App\Providers;
 
 use App\Core\DataEngine\DataResourceRegistry;
 use App\Core\DataEngine\Services\DataTransferManager;
+use App\Core\Files\Services\StorageDiskResolver;
 use App\Core\Modules\ModuleSettingsManager;
 use App\Core\Settings\CoreSettingsManager;
 use Illuminate\Cache\RateLimiting\Limit;
@@ -22,6 +23,7 @@ class AppServiceProvider extends ServiceProvider
             return new DataResourceRegistry(
                 config('data_resources', []),
                 $app->make(\App\Core\Modules\ModuleRegistry::class),
+                $app->make(\App\Core\Auth\Services\ContextPermissionResolver::class),
             );
         });
 
@@ -35,6 +37,7 @@ class AppServiceProvider extends ServiceProvider
             return new DataTransferManager(
                 $app->make(\App\Core\Tenancy\TenantContext::class),
                 $app->make(\App\Core\Audit\Services\AuditLogger::class),
+                $app->make(StorageDiskResolver::class),
             );
         });
 

@@ -2,6 +2,7 @@
 
 namespace App\Core\DataEngine;
 
+use App\Core\Auth\Services\ContextPermissionResolver;
 use App\Core\Modules\ModuleRegistry;
 use App\Models\User;
 use Illuminate\Support\Collection;
@@ -11,6 +12,7 @@ class DataResourceRegistry
     public function __construct(
         protected array $resources,
         protected ModuleRegistry $modules,
+        protected ContextPermissionResolver $contextPermissions,
     ) {
     }
 
@@ -149,6 +151,6 @@ class DataResourceRegistry
             return true;
         }
 
-        return $user->can($permissionKey);
+        return $user->can($permissionKey) || $this->contextPermissions->hasPermission($user, $permissionKey);
     }
 }

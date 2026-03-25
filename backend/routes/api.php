@@ -38,6 +38,7 @@ Route::prefix('v1')->group(function (): void {
             Route::get('/me', [AuthController::class, 'me']);
             Route::post('/logout', [AuthController::class, 'logout']);
             Route::patch('/active-organization', [AuthController::class, 'switchActiveOrganization']);
+            Route::patch('/active-work-assignment', [AuthController::class, 'switchActiveWorkAssignment']);
         });
     });
 

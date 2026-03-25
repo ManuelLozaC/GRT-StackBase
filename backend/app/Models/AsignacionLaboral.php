@@ -53,6 +53,25 @@ class AsignacionLaboral extends Model
         });
     }
 
+    public function getEtiquetaContextoAttribute(): string
+    {
+        $this->loadMissing([
+            'persona:id,nombres,apellido_paterno,apellido_materno',
+            'oficina:id,nombre',
+            'cargo:id,nombre',
+        ]);
+
+        $partes = array_filter([
+            $this->persona?->nombre_completo,
+            $this->cargo?->nombre,
+            $this->oficina?->nombre,
+        ]);
+
+        return $partes === []
+            ? sprintf('Asignacion #%s', $this->getKey())
+            : implode(' | ', $partes);
+    }
+
     public function organizacion(): BelongsTo
     {
         return $this->belongsTo(Organizacion::class);

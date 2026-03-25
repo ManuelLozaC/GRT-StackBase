@@ -8,11 +8,12 @@ import api from '@/service/api';
 import { useConfirm } from 'primevue/useconfirm';
 import { useToast } from 'primevue/usetoast';
 import { computed, onMounted, reactive, ref, watch } from 'vue';
-import { useRouter } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 
 const toast = useToast();
 const confirm = useConfirm();
 const router = useRouter();
+const route = useRoute();
 
 const state = reactive({
     resources: [],
@@ -44,6 +45,11 @@ const importInput = ref(null);
 
 const currentResource = computed(() => state.resources.find((resource) => resource.key === state.selectedResourceKey) ?? null);
 const resources = computed(() => state.resources);
+const quickAccessResources = computed(() => {
+    const preferredOrder = ['organizations', 'offices', 'people', 'divisions', 'areas', 'positions', 'work-assignments'];
+
+    return preferredOrder.map((key) => state.resources.find((resource) => resource.key === key)).filter(Boolean);
+});
 const tableFields = computed(() => currentResource.value?.table_fields ?? []);
 const visibleTableFields = computed(() => tableFields.value.filter((field) => state.visibleColumnKeys.includes(field.key)));
 const formFields = computed(() => currentResource.value?.form_fields ?? []);
@@ -119,6 +125,10 @@ function humanizeValue(field, value, displayValue = null) {
         return field.options.find((option) => option.value === value)?.label ?? value;
     }
 
+    if (field.type === 'boolean') {
+        return value ? 'Si' : 'No';
+    }
+
     return value;
 }
 
@@ -154,7 +164,7 @@ function resetForm() {
     state.form = {
         ...Object.fromEntries(
             formFields.value.map((field) => {
-                const fallback = field.type === 'select' ? (field.options?.[0]?.value ?? '') : '';
+                const fallback = field.type === 'select' ? (field.options?.[0]?.value ?? '') : field.type === 'boolean' ? false : '';
                 return [field.key, fallback];
             })
         ),
@@ -169,8 +179,11 @@ async function loadResources() {
         const response = await api.get('/v1/data/resources');
         state.resources = response.data.datos ?? [];
 
+        const requestedResourceKey = typeof route.query.resource === 'string' ? route.query.resource : null;
+        const preferredResource = requestedResourceKey && state.resources.some((resource) => resource.key === requestedResourceKey) ? requestedResourceKey : null;
+
         if (!state.selectedResourceKey || !state.resources.some((resource) => resource.key === state.selectedResourceKey)) {
-            state.selectedResourceKey = state.resources[0]?.key ?? null;
+            state.selectedResourceKey = preferredResource ?? state.resources[0]?.key ?? null;
         }
     } finally {
         state.loadingResources = false;
@@ -500,6 +513,17 @@ function relationOptionsForField(field) {
     return state.relationOptions[field.key] ?? [];
 }
 
+function booleanOptionsForField() {
+    return [
+        { label: 'Si', value: true },
+        { label: 'No', value: false }
+    ];
+}
+
+function selectResource(resourceKey) {
+    state.selectedResourceKey = resourceKey;
+}
+
 async function openModuleAdmin() {
     await moduleCatalog.loadModules(true);
     router.push('/admin/modules');
@@ -508,6 +532,12 @@ async function openModuleAdmin() {
 watch(
     () => state.selectedResourceKey,
     async () => {
+        await router.replace({
+            query: {
+                ...route.query,
+                resource: state.selectedResourceKey ?? undefined
+            }
+        });
         prepareResourceState();
         syncVisibleColumnsFromPreferences();
         await Promise.all([loadRelationOptions(), loadRecords(), loadTransfers()]);
@@ -570,6 +600,21 @@ onMounted(async () => {
                     </div>
                 </div>
 
+                <div v-if="quickAccessResources.length" class="mt-5">
+                    <div class="text-sm font-semibold text-slate-600 mb-2">Accesos rapidos del dominio base</div>
+                    <div class="flex flex-wrap gap-2">
+                        <Button
+                            v-for="resource in quickAccessResources"
+                            :key="resource.key"
+                            :label="resource.name"
+                            size="small"
+                            :severity="state.selectedResourceKey === resource.key ? null : 'secondary'"
+                            :outlined="state.selectedResourceKey !== resource.key"
+                            @click="selectResource(resource.key)"
+                        />
+                    </div>
+                </div>
+
                 <div v-if="currentResource" class="mt-4 grid grid-cols-12 gap-4">
                     <div class="col-span-12 md:col-span-5">
                         <label class="block text-sm font-semibold text-slate-600 mb-2">Columnas visibles</label>
@@ -580,7 +625,15 @@ onMounted(async () => {
                 <div v-if="currentResource" class="mt-5 flex flex-wrap gap-4 items-start">
                     <div v-for="field in filterFields" :key="field.key" class="w-full md:w-56">
                         <label class="block text-sm font-semibold text-slate-600 mb-2">{{ field.label }}</label>
-                        <Select v-model="state.filters[field.key]" :options="field.options" optionLabel="label" optionValue="value" showClear class="w-full" @change="applyFilters" />
+                        <Select
+                            v-model="state.filters[field.key]"
+                            :options="field.options?.length ? field.options : field.type === 'boolean' ? booleanOptionsForField(field) : []"
+                            optionLabel="label"
+                            optionValue="value"
+                            showClear
+                            class="w-full"
+                            @change="applyFilters"
+                        />
                     </div>
                     <div class="flex-1 min-w-56 rounded-2xl bg-slate-50 border border-slate-200 px-4 py-3">
                         <div class="text-sm font-semibold text-slate-700 mb-1">{{ currentResource.name }}</div>
@@ -682,6 +735,8 @@ onMounted(async () => {
                     <label class="block text-sm font-semibold text-slate-600 mb-2">{{ field.label }}</label>
                     <Select v-if="field.type === 'select'" v-model="state.form[field.key]" :options="field.options" optionLabel="label" optionValue="value" class="w-full" />
                     <Select v-else-if="field.type === 'relation'" v-model="state.form[field.key]" :options="relationOptionsForField(field)" optionLabel="label" optionValue="value" showClear class="w-full" />
+                    <ToggleSwitch v-else-if="field.type === 'boolean'" v-model="state.form[field.key]" />
+                    <InputText v-else-if="field.type === 'date'" v-model="state.form[field.key]" class="w-full" type="date" />
                     <Textarea v-else-if="field.type === 'textarea'" v-model="state.form[field.key]" rows="4" class="w-full" autoResize />
                     <InputText v-else v-model="state.form[field.key]" class="w-full" :type="field.type === 'email' ? 'email' : 'text'" />
                 </div>

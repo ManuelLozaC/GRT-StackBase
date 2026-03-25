@@ -54,6 +54,15 @@ class Persona extends Model
         });
     }
 
+    public function getNombreCompletoAttribute(): string
+    {
+        return trim(implode(' ', array_filter([
+            $this->nombres,
+            $this->apellido_paterno,
+            $this->apellido_materno,
+        ])));
+    }
+
     public function organizacion(): BelongsTo
     {
         return $this->belongsTo(Organizacion::class);

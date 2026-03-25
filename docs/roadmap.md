@@ -46,6 +46,7 @@ Fecha de referencia: `2026-03-25`
 - pruebas de bootstrap idempotente ya agregadas al backend
 - recursos base del dominio ya existen en backend para oficinas, personas y asignaciones laborales
 - la pantalla administrativa de usuarios ya permite alta, edicion, activacion y reset de contrasena
+- el frontend ya puede gestionar los recursos base del dominio desde Data Engine con acceso rapido y soporte correcto de booleanos y fechas
 
 ## Fases vigentes
 

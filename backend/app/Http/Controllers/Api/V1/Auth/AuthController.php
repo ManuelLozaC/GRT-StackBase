@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api\V1\Auth;
 
 use App\Core\Auth\Models\PersonalAccessToken;
 use App\Core\Auth\Services\AccessTokenService;
+use App\Core\Auth\Services\ContextPermissionResolver;
 use App\Core\Http\Concerns\ApiResponse;
 use App\Core\Metrics\MetricsRecorder;
 use App\Core\Security\SecurityLogger;
@@ -13,6 +14,8 @@ use App\Http\Requests\Api\V1\Auth\LoginRequest;
 use App\Http\Requests\Api\V1\Auth\RegisterRequest;
 use App\Http\Requests\Api\V1\Auth\ResetPasswordRequest;
 use App\Http\Requests\Api\V1\Auth\SwitchActiveOrganizationRequest;
+use App\Http\Requests\Api\V1\Auth\SwitchActiveWorkAssignmentRequest;
+use App\Models\AsignacionLaboral;
 use App\Models\Organizacion;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
@@ -27,6 +30,7 @@ class AuthController extends Controller
 
     public function __construct(
         protected AccessTokenService $tokens,
+        protected ContextPermissionResolver $contextPermissions,
         protected SecurityLogger $securityLogger,
         protected MetricsRecorder $metrics,
     ) {
@@ -309,6 +313,58 @@ class AuthController extends Controller
         );
     }
 
+    public function switchActiveWorkAssignment(SwitchActiveWorkAssignmentRequest $request): JsonResponse
+    {
+        /** @var User $user */
+        $user = $request->user();
+        $assignmentId = $request->integer('asignacion_laboral_id');
+
+        $assignment = AsignacionLaboral::query()
+            ->whereKey($assignmentId)
+            ->where('user_id', $user->id)
+            ->where('organizacion_id', $user->organizacion_activa_id)
+            ->first();
+
+        if ($assignment === null) {
+            return $this->errorResponse(
+                message: 'La asignacion laboral seleccionada no pertenece al usuario dentro de la organizacion activa.',
+                status: 403,
+            );
+        }
+
+        $user->forceFill([
+            'active_work_assignment_id' => $assignment->id,
+        ])->save();
+
+        $this->securityLogger->log(
+            eventKey: 'auth.work_assignment_switched',
+            actor: $user,
+            severity: 'info',
+            summary: 'Se cambio la asignacion laboral activa.',
+            context: [
+                'asignacion_laboral_id' => $assignment->id,
+                'oficina_id' => $assignment->oficina_id,
+            ],
+            organizationId: $user->organizacion_activa_id,
+        );
+        $this->metrics->record(
+            moduleKey: 'core-platform',
+            eventKey: 'auth.work_assignment_switched',
+            eventCategory: 'tenancy',
+            actor: $user,
+            context: [
+                'asignacion_laboral_id' => $assignment->id,
+                'oficina_id' => $assignment->oficina_id,
+            ],
+            organizationId: $user->organizacion_activa_id,
+        );
+
+        return $this->successResponse(
+            data: $this->transformUser($user->fresh()),
+            message: 'Asignacion laboral activa actualizada',
+        );
+    }
+
     protected function transformUser(?User $user, array $impersonation = []): ?array
     {
         if ($user === null) {
@@ -318,7 +374,19 @@ class AuthController extends Controller
         $user->loadMissing([
             'organizacionActiva:id,nombre,slug',
             'organizaciones:id,nombre,slug',
+            'asignacionLaboralActiva.persona:id,nombres,apellido_paterno,apellido_materno',
+            'asignacionLaboralActiva.oficina:id,nombre,slug',
+            'asignacionLaboralActiva.cargo:id,nombre,slug',
+            'asignacionesLaborales.persona:id,nombres,apellido_paterno,apellido_materno',
+            'asignacionesLaborales.oficina:id,nombre,slug',
+            'asignacionesLaborales.cargo:id,nombre,slug',
         ]);
+
+        $user = $this->ensureActiveWorkAssignment($user) ?? $user;
+        $activeOrganizationId = $user->organizacion_activa_id;
+        $availableAssignments = $user->asignacionesLaborales
+            ->where('organizacion_id', $activeOrganizationId)
+            ->values();
 
         return [
             'id' => $user->id,
@@ -330,8 +398,13 @@ class AuthController extends Controller
                 ->map(fn (Organizacion $organizacion): array => $this->transformOrganization($organizacion))
                 ->values()
                 ->all(),
+            'asignacion_laboral_activa' => $this->transformWorkAssignment($user->asignacionLaboralActiva),
+            'asignaciones_laborales_disponibles' => $availableAssignments
+                ->map(fn (AsignacionLaboral $asignacion): array => $this->transformWorkAssignment($asignacion))
+                ->all(),
             'roles' => $user->getRoleNames()->values()->all(),
             'permissions' => $user->getAllPermissions()->pluck('name')->values()->all(),
+            'context_permissions' => $this->contextPermissions->permissionsFor($user),
             'impersonation' => array_merge([
                 'active' => false,
                 'impersonated_by' => null,
@@ -371,18 +444,18 @@ class AuthController extends Controller
                 ])->save();
             }
 
-            return $user->fresh();
+            return $this->ensureActiveWorkAssignment($user->fresh());
         }
 
         if ($organizacionIds->contains($user->organizacion_activa_id)) {
-            return $user;
+            return $this->ensureActiveWorkAssignment($user);
         }
 
         $user->forceFill([
             'organizacion_activa_id' => $organizacionIds->first(),
         ])->save();
 
-        return $user->fresh();
+        return $this->ensureActiveWorkAssignment($user->fresh());
     }
 
     protected function generateUniqueOrganizationSlug(string $name): string
@@ -417,6 +490,86 @@ class AuthController extends Controller
                 'name' => $token->metadata['impersonated_by_name'] ?? null,
                 'email' => $token->metadata['impersonated_by_email'] ?? null,
             ],
+        ];
+    }
+
+    protected function ensureActiveWorkAssignment(?User $user): ?User
+    {
+        if ($user === null) {
+            return null;
+        }
+
+        $user->loadMissing([
+            'asignacionLaboralActiva',
+            'asignacionesLaborales',
+        ]);
+
+        $activeOrganizationId = $user->organizacion_activa_id;
+        $availableAssignments = $user->asignacionesLaborales
+            ->where('organizacion_id', $activeOrganizationId)
+            ->sortByDesc(fn (AsignacionLaboral $asignacion): int => $asignacion->es_principal ? 1 : 0)
+            ->values();
+
+        if ($availableAssignments->isEmpty()) {
+            if ($user->active_work_assignment_id !== null) {
+                $user->forceFill([
+                    'active_work_assignment_id' => null,
+                ])->save();
+            }
+
+            return $user->fresh();
+        }
+
+        if ($availableAssignments->contains(fn (AsignacionLaboral $asignacion): bool => $asignacion->id === $user->active_work_assignment_id)) {
+            return $user;
+        }
+
+        $selectedAssignment = $availableAssignments
+            ->firstWhere('es_principal', true)
+            ?? $availableAssignments->firstWhere('estado', 'active')
+            ?? $availableAssignments->first();
+
+        $user->forceFill([
+            'active_work_assignment_id' => $selectedAssignment?->id,
+        ])->save();
+
+        return $user->fresh();
+    }
+
+    protected function transformWorkAssignment(?AsignacionLaboral $assignment): ?array
+    {
+        if ($assignment === null) {
+            return null;
+        }
+
+        $assignment->loadMissing([
+            'persona:id,nombres,apellido_paterno,apellido_materno',
+            'oficina:id,nombre,slug',
+            'cargo:id,nombre,slug',
+        ]);
+
+        return [
+            'id' => $assignment->id,
+            'organizacion_id' => $assignment->organizacion_id,
+            'oficina' => $assignment->oficina ? [
+                'id' => $assignment->oficina->id,
+                'nombre' => $assignment->oficina->nombre,
+                'slug' => $assignment->oficina->slug,
+            ] : null,
+            'cargo' => $assignment->cargo ? [
+                'id' => $assignment->cargo->id,
+                'nombre' => $assignment->cargo->nombre,
+                'slug' => $assignment->cargo->slug,
+            ] : null,
+            'persona' => $assignment->persona ? [
+                'id' => $assignment->persona->id,
+                'nombre_completo' => $assignment->persona->nombre_completo,
+            ] : null,
+            'es_principal' => (bool) $assignment->es_principal,
+            'estado' => $assignment->estado,
+            'fecha_inicio' => $assignment->fecha_inicio?->toDateString(),
+            'fecha_fin' => $assignment->fecha_fin?->toDateString(),
+            'etiqueta_contexto' => $assignment->etiqueta_contexto,
         ];
     }
 }

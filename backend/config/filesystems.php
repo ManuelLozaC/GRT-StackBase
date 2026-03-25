@@ -15,6 +15,10 @@ return [
 
     'default' => env('FILESYSTEM_DISK', 'local'),
 
+    'fallback_disk' => env('FILESYSTEM_FALLBACK_DISK', 'local'),
+
+    'data_exports_disk' => env('DATA_EXPORTS_DISK', env('FILESYSTEM_DISK', 'local')),
+
     /*
     |--------------------------------------------------------------------------
     | Filesystem Disks

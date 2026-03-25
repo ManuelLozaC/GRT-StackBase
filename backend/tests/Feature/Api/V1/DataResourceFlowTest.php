@@ -318,6 +318,14 @@ CSV);
     public function test_user_can_queue_async_export_and_download_result(): void
     {
         Storage::fake('local');
+        config([
+            'filesystems.data_exports_disk' => 'spaces',
+            'filesystems.fallback_disk' => 'local',
+            'filesystems.disks.spaces.key' => null,
+            'filesystems.disks.spaces.secret' => null,
+            'filesystems.disks.spaces.bucket' => null,
+            'filesystems.disks.spaces.endpoint' => null,
+        ]);
 
         [$user, $token] = $this->authenticateUser();
         app(ModuleRegistry::class)->setEnabled('demo-platform', true);
@@ -352,6 +360,7 @@ CSV);
         $run = $run->fresh();
 
         $this->assertSame('completed', $run->status);
+        $this->assertSame('local', $run->metadata['storage_disk'] ?? null);
         $this->assertNotNull($run->metadata['storage_path'] ?? null);
         Storage::disk('local')->assertExists($run->metadata['storage_path']);
 
@@ -465,6 +474,20 @@ CSV);
 
         $personId = $personResponse->json('datos.id');
 
+        $managerPersonId = $this->withHeader('Authorization', 'Bearer '.$token)
+            ->postJson('/api/v1/data/people', [
+                'nombres' => 'Laura',
+                'apellido_paterno' => 'Mendez',
+                'correo' => 'laura@test.dev',
+                'telefono' => '70000004',
+                'sexo' => 'femenino',
+                'ciudad' => 'Santa Cruz',
+                'pais' => 'Bolivia',
+                'activa' => true,
+            ])
+            ->assertOk()
+            ->json('datos.id');
+
         $divisionId = $this->withHeader('Authorization', 'Bearer '.$token)
             ->postJson('/api/v1/data/divisions', [
                 'nombre' => 'Comercial',
@@ -493,6 +516,29 @@ CSV);
             ->assertOk()
             ->json('datos.id');
 
+        $managerCargoId = $this->withHeader('Authorization', 'Bearer '.$token)
+            ->postJson('/api/v1/data/positions', [
+                'nombre' => 'Gerente Comercial',
+                'slug' => 'gerente-comercial',
+                'activa' => true,
+            ])
+            ->assertOk()
+            ->json('datos.id');
+
+        $managerAssignmentId = $this->withHeader('Authorization', 'Bearer '.$token)
+            ->postJson('/api/v1/data/work-assignments', [
+                'persona_id' => $managerPersonId,
+                'oficina_id' => $officeId,
+                'division_id' => $divisionId,
+                'area_id' => $areaId,
+                'cargo_id' => $managerCargoId,
+                'es_principal' => true,
+                'estado' => 'active',
+                'fecha_inicio' => '2026-03-20',
+            ])
+            ->assertOk()
+            ->json('datos.id');
+
         $assignmentResponse = $this->withHeader('Authorization', 'Bearer '.$token)
             ->postJson('/api/v1/data/work-assignments', [
                 'persona_id' => $personId,
@@ -500,6 +546,8 @@ CSV);
                 'division_id' => $divisionId,
                 'area_id' => $areaId,
                 'cargo_id' => $cargoId,
+                'jefe_asignacion_id' => $managerAssignmentId,
+                'aprobador_asignacion_id' => $managerAssignmentId,
                 'es_principal' => true,
                 'estado' => 'active',
                 'fecha_inicio' => '2026-03-25',
@@ -512,12 +560,58 @@ CSV);
             ->getJson('/api/v1/data/work-assignments/'.$assignmentId)
             ->assertOk()
             ->assertJsonPath('datos.persona_id', $personId)
-            ->assertJsonPath('datos.persona_id_label', 'Maria')
+            ->assertJsonPath('datos.persona_id_label', 'Maria Suarez')
             ->assertJsonPath('datos.oficina_id', $officeId)
             ->assertJsonPath('datos.oficina_id_label', 'Oficina Norte')
             ->assertJsonPath('datos.division_id_label', 'Comercial')
             ->assertJsonPath('datos.area_id_label', 'Ventas')
-            ->assertJsonPath('datos.cargo_id_label', 'Ejecutiva de Ventas');
+            ->assertJsonPath('datos.cargo_id_label', 'Ejecutiva de Ventas')
+            ->assertJsonPath('datos.jefe_asignacion_id_label', 'Laura Mendez | Gerente Comercial | Oficina Norte')
+            ->assertJsonPath('datos.aprobador_asignacion_id_label', 'Laura Mendez | Gerente Comercial | Oficina Norte');
+
+        $this->assertDatabaseHas('sucursales', [
+            'organizacion_id' => $user->organizacion_activa_id,
+            'slug' => 'oficina-norte',
+            'nombre' => 'Oficina Norte',
+        ]);
+    }
+
+    public function test_organization_resource_keeps_legacy_company_mirror_in_sync(): void
+    {
+        $this->seed(RolePermissionSeeder::class);
+
+        [$user, $token] = $this->authenticateUser();
+        $user->assignRole('admin');
+
+        $organizationResponse = $this->withHeader('Authorization', 'Bearer '.$token)
+            ->postJson('/api/v1/data/organizations', [
+                'nombre' => 'Organizacion Norte',
+                'slug' => 'organizacion-norte',
+                'activa' => true,
+            ])
+            ->assertOk();
+
+        $organizationId = $organizationResponse->json('datos.id');
+
+        $this->assertDatabaseHas('empresas', [
+            'organizacion_id' => $organizationId,
+            'slug' => 'organizacion-norte',
+            'nombre' => 'Organizacion Norte',
+        ]);
+
+        $this->withHeader('Authorization', 'Bearer '.$token)
+            ->patchJson('/api/v1/data/organizations/'.$organizationId, [
+                'nombre' => 'Organizacion Norte Actualizada',
+                'slug' => 'organizacion-norte',
+                'activa' => true,
+            ])
+            ->assertOk();
+
+        $this->assertDatabaseHas('empresas', [
+            'organizacion_id' => $organizationId,
+            'slug' => 'organizacion-norte',
+            'nombre' => 'Organizacion Norte Actualizada',
+        ]);
     }
 
     protected function authenticateUser(): array

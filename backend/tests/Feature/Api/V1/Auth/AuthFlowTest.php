@@ -3,6 +3,9 @@
 namespace Tests\Feature\Api\V1\Auth;
 
 use App\Core\Auth\Services\AccessTokenService;
+use App\Models\AsignacionLaboral;
+use App\Models\Cargo;
+use App\Models\Oficina;
 use App\Models\Organizacion;
 use App\Models\Persona;
 use App\Models\User;
@@ -206,6 +209,103 @@ class AuthFlowTest extends TestCase
         ]);
     }
 
+    public function test_user_can_switch_active_work_assignment_within_active_organization(): void
+    {
+        $organizacion = Organizacion::query()->create([
+            'nombre' => 'Acme Central',
+            'slug' => 'acme-central',
+        ]);
+
+        $persona = Persona::query()->create([
+            'organizacion_id' => $organizacion->id,
+            'nombres' => 'Maria',
+            'apellido_paterno' => 'Suarez',
+            'correo' => 'maria@acme.test',
+        ]);
+
+        $user = User::factory()->create([
+            'persona_id' => $persona->id,
+            'organizacion_activa_id' => $organizacion->id,
+        ]);
+        $user->organizaciones()->attach($organizacion->id);
+
+        $oficinaA = Oficina::query()->create([
+            'organizacion_id' => $organizacion->id,
+            'nombre' => 'Sucursal Centro',
+            'slug' => 'sucursal-centro',
+            'activa' => true,
+        ]);
+
+        $oficinaB = Oficina::query()->create([
+            'organizacion_id' => $organizacion->id,
+            'nombre' => 'Sucursal Norte',
+            'slug' => 'sucursal-norte',
+            'activa' => true,
+        ]);
+
+        $cargoA = Cargo::query()->create([
+            'organizacion_id' => $organizacion->id,
+            'nombre' => 'Ejecutiva de Ventas',
+            'slug' => 'ejecutiva-de-ventas',
+            'activa' => true,
+        ]);
+
+        $cargoB = Cargo::query()->create([
+            'organizacion_id' => $organizacion->id,
+            'nombre' => 'Gerente Comercial',
+            'slug' => 'gerente-comercial',
+            'activa' => true,
+        ]);
+
+        $assignmentA = AsignacionLaboral::query()->create([
+            'organizacion_id' => $organizacion->id,
+            'persona_id' => $persona->id,
+            'user_id' => $user->id,
+            'oficina_id' => $oficinaA->id,
+            'cargo_id' => $cargoA->id,
+            'es_principal' => true,
+            'estado' => 'active',
+            'fecha_inicio' => '2026-03-01',
+        ]);
+
+        $assignmentB = AsignacionLaboral::query()->create([
+            'organizacion_id' => $organizacion->id,
+            'persona_id' => $persona->id,
+            'user_id' => $user->id,
+            'oficina_id' => $oficinaB->id,
+            'cargo_id' => $cargoB->id,
+            'es_principal' => false,
+            'estado' => 'active',
+            'fecha_inicio' => '2026-03-10',
+        ]);
+
+        $user->forceFill([
+            'active_work_assignment_id' => $assignmentA->id,
+        ])->save();
+
+        $token = app(AccessTokenService::class)->createForUser($user, 'phpunit');
+
+        $this->withHeader('Authorization', 'Bearer '.$token)
+            ->getJson('/api/v1/auth/me')
+            ->assertOk()
+            ->assertJsonPath('datos.asignacion_laboral_activa.id', $assignmentA->id)
+            ->assertJsonPath('datos.asignaciones_laborales_disponibles.1.id', $assignmentB->id);
+
+        $this->withHeader('Authorization', 'Bearer '.$token)
+            ->patchJson('/api/v1/auth/active-work-assignment', [
+                'asignacion_laboral_id' => $assignmentB->id,
+            ])
+            ->assertOk()
+            ->assertJsonPath('datos.asignacion_laboral_activa.id', $assignmentB->id)
+            ->assertJsonPath('datos.asignacion_laboral_activa.oficina.nombre', 'Sucursal Norte')
+            ->assertJsonPath('datos.asignacion_laboral_activa.cargo.nombre', 'Gerente Comercial');
+
+        $this->assertDatabaseHas('users', [
+            'id' => $user->id,
+            'active_work_assignment_id' => $assignmentB->id,
+        ]);
+    }
+
     public function test_user_cannot_switch_to_an_organization_without_membership(): void
     {
         $organizacionA = Organizacion::query()->create([
@@ -290,6 +390,68 @@ class AuthFlowTest extends TestCase
             ->assertOk()
             ->assertJsonPath('datos.user.email', 'admin@stackbase.local')
             ->assertJsonPath('datos.user.impersonation.active', false);
+    }
+
+    public function test_context_permissions_can_authorize_user_management_without_global_role(): void
+    {
+        $this->seed(RolePermissionSeeder::class);
+
+        $organizacion = Organizacion::query()->create([
+            'nombre' => 'Tenant Context',
+            'slug' => 'tenant-context',
+        ]);
+
+        $persona = Persona::query()->create([
+            'organizacion_id' => $organizacion->id,
+            'nombres' => 'Lucia',
+            'apellido_paterno' => 'Rojas',
+            'correo' => 'lucia@stackbase.local',
+        ]);
+
+        $oficina = Oficina::query()->create([
+            'organizacion_id' => $organizacion->id,
+            'nombre' => 'Sucursal Centro',
+            'slug' => 'sucursal-centro',
+            'activa' => true,
+        ]);
+
+        $user = User::factory()->create([
+            'persona_id' => $persona->id,
+            'email' => 'lucia@stackbase.local',
+            'organizacion_activa_id' => $organizacion->id,
+        ]);
+        $user->organizaciones()->attach($organizacion->id);
+
+        $assignment = AsignacionLaboral::query()->create([
+            'organizacion_id' => $organizacion->id,
+            'persona_id' => $persona->id,
+            'user_id' => $user->id,
+            'oficina_id' => $oficina->id,
+            'es_principal' => true,
+            'estado' => 'active',
+            'fecha_inicio' => '2026-03-01',
+            'metadata' => [
+                'context_permissions' => [
+                    'users.manage_roles',
+                ],
+            ],
+        ]);
+
+        $user->forceFill([
+            'active_work_assignment_id' => $assignment->id,
+        ])->save();
+
+        $token = app(AccessTokenService::class)->createForUser($user, 'phpunit-context');
+
+        $this->withHeader('Authorization', 'Bearer '.$token)
+            ->getJson('/api/v1/auth/me')
+            ->assertOk()
+            ->assertJsonPath('datos.context_permissions.0', 'users.manage_roles');
+
+        $this->withHeader('Authorization', 'Bearer '.$token)
+            ->getJson('/api/v1/users')
+            ->assertOk()
+            ->assertJsonPath('mensaje', 'Usuarios listados');
     }
 
     public function test_admin_can_create_update_activate_and_reset_users(): void

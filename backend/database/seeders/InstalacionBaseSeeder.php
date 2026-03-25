@@ -149,7 +149,7 @@ class InstalacionBaseSeeder extends Seeder
 
         $usuario->organizaciones()->syncWithoutDetaching([$organizacion->id]);
 
-        AsignacionLaboral::query()->updateOrCreate(
+        $asignacion = AsignacionLaboral::query()->updateOrCreate(
             [
                 'organizacion_id' => $organizacion->id,
                 'persona_id' => $persona->id,
@@ -168,9 +168,22 @@ class InstalacionBaseSeeder extends Seeder
                 'metadata' => [
                     'rol_base' => 'superusuario',
                     'oficina_principal' => true,
+                    'context_permissions' => [
+                        'modules.manage',
+                        'settings.manage',
+                        'integrations.manage',
+                        'users.manage_roles',
+                        'users.impersonate',
+                        'tenancy.manage',
+                        'security.manage',
+                    ],
                 ],
             ],
         );
+
+        $usuario->forceFill([
+            'active_work_assignment_id' => $asignacion->id,
+        ])->save();
 
         $this->call(RolePermissionSeeder::class);
     }

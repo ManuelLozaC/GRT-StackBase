@@ -7,21 +7,24 @@ use App\Core\Files\Models\ManagedFile;
 use App\Core\Tenancy\TenantContext;
 use App\Models\User;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Response;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Str;
+use RuntimeException;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class FileManager
 {
     public function __construct(
         protected TenantContext $tenantContext,
+        protected StorageDiskResolver $storageDisks,
     ) {
     }
 
     public function storeUploadedFile(UploadedFile $uploadedFile, User $user, array $metadata = []): ManagedFile
     {
-        $disk = config('filesystems.default', 'local');
+        $disk = $this->storageDisks->forManagedFiles();
         $uuid = (string) Str::uuid();
         $extension = $uploadedFile->getClientOriginalExtension();
         $filename = $extension !== '' ? $uuid.'.'.$extension : $uuid;
@@ -81,6 +84,21 @@ class FileManager
 
     public function downloadResponse(ManagedFile $file): StreamedResponse
     {
-        return Storage::disk($file->disk)->download($file->path, $file->original_name);
+        $disk = Storage::disk($file->disk);
+        $stream = $disk->readStream($file->path);
+
+        if ($stream === false) {
+            throw new RuntimeException('No se pudo abrir el archivo solicitado para descarga.');
+        }
+
+        return Response::streamDownload(function () use ($stream): void {
+            fpassthru($stream);
+
+            if (is_resource($stream)) {
+                fclose($stream);
+            }
+        }, $file->original_name, [
+            'Content-Type' => $file->mime_type ?? 'application/octet-stream',
+        ]);
     }
 }

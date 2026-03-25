@@ -51,6 +51,30 @@ class DemoFileFlowTest extends TestCase
         $this->assertSame($user->organizacion_activa_id, $file->organizacion_id);
     }
 
+    public function test_upload_falls_back_to_local_disk_when_spaces_is_not_configured(): void
+    {
+        Storage::fake('local');
+        config([
+            'filesystems.default' => 'spaces',
+            'filesystems.fallback_disk' => 'local',
+            'filesystems.disks.spaces.key' => null,
+            'filesystems.disks.spaces.secret' => null,
+            'filesystems.disks.spaces.bucket' => null,
+            'filesystems.disks.spaces.endpoint' => null,
+        ]);
+
+        [$user] = $this->authenticateUser();
+
+        $file = app(FileManager::class)->storeUploadedFile(
+            UploadedFile::fake()->createWithContent('fallback.txt', 'fallback content'),
+            $user,
+            ['source' => 'phpunit'],
+        );
+
+        $this->assertSame('local', $file->disk);
+        Storage::disk('local')->assertExists($file->path);
+    }
+
     public function test_direct_download_is_recorded_in_history(): void
     {
         Storage::fake('local');

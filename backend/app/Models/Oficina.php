@@ -45,6 +45,59 @@ class Oficina extends Model
                 $oficina->uuid = (string) Str::uuid();
             }
         });
+
+        static::saved(function (self $oficina): void {
+            $empresa = Empresa::withoutGlobalScopes()
+                ->withTrashed()
+                ->where('organizacion_id', $oficina->organizacion_id)
+                ->orderBy('id')
+                ->first();
+
+            if ($empresa === null) {
+                return;
+            }
+
+            $sucursal = Sucursal::withoutGlobalScopes()
+                ->withTrashed()
+                ->where('organizacion_id', $oficina->organizacion_id)
+                ->where('slug', $oficina->slug)
+                ->first();
+
+            if ($sucursal === null) {
+                $sucursal = new Sucursal([
+                    'organizacion_id' => $oficina->organizacion_id,
+                    'slug' => $oficina->slug,
+                ]);
+            }
+
+            if ($sucursal->trashed()) {
+                $sucursal->restore();
+            }
+
+            $sucursal->fill([
+                'empresa_id' => $empresa->id,
+                'nombre' => $oficina->nombre,
+                'metadata' => array_merge(
+                    $oficina->metadata ?? [],
+                    [
+                        'kind' => 'office-mirror',
+                        'same_as_oficina' => true,
+                        'oficina_id' => $oficina->id,
+                    ],
+                ),
+            ]);
+            $sucursal->save();
+        });
+
+        static::deleting(function (self $oficina): void {
+            Sucursal::withoutGlobalScopes()
+                ->withTrashed()
+                ->where('organizacion_id', $oficina->organizacion_id)
+                ->where('slug', $oficina->slug)
+                ->get()
+                ->each
+                ->delete();
+        });
     }
 
     public function organizacion(): BelongsTo

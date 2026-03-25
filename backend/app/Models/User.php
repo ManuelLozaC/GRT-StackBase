@@ -26,6 +26,7 @@ class User extends Authenticatable
         'primer_acceso_pendiente',
         'expira_password_en',
         'organizacion_activa_id',
+        'active_work_assignment_id',
     ];
 
     protected $hidden = [
@@ -74,5 +75,10 @@ class User extends Authenticatable
     public function asignacionesLaborales(): HasMany
     {
         return $this->hasMany(AsignacionLaboral::class, 'user_id');
+    }
+
+    public function asignacionLaboralActiva(): BelongsTo
+    {
+        return $this->belongsTo(AsignacionLaboral::class, 'active_work_assignment_id');
     }
 }

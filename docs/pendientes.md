@@ -74,6 +74,7 @@
 - [x] Ajustes responsive en pantallas administrativas clave (`modulos`, `operations`, `security`, `API tokens`, `webhooks`).
 - [x] Bootstrap oficial inicial con `GRT SRL`, `TalentHub` y `Manuel Loza`.
 - [x] Recursos base del dominio expuestos por Data Engine: `organizations`, `offices`, `people`, `divisions`, `areas`, `positions`, `work-assignments`.
+- [x] Recursos base del dominio gestionables desde frontend a traves de Data Engine.
 
 ### Brechas principales
 - [ ] RBAC completo.
@@ -137,6 +138,9 @@ Estado: En progreso
 - [x] Nuevo permiso operativo `settings.manage`.
 - [x] Administracion de usuarios con sync de roles e impersonacion.
 - [x] Gestion operativa de usuarios con alias, persona vinculada, estado y reset de contrasena.
+- [x] Auth expone y mantiene `asignacion_laboral_activa` para preparar permisos por contexto.
+- [x] Frontend ya permite visualizar y cambiar la `asignacion_laboral_activa` desde la sesion del usuario.
+- [x] El control de permisos base ya puede resolverse desde la `asignacion_laboral_activa`, no solo desde roles globales.
 
 ## P2. Usuarios, organizaciones y tenancy
 Estado: En progreso
@@ -161,6 +165,11 @@ Estado: En progreso
 - [x] `TenantContext` compartido para request autenticado y jobs base.
 - [x] CRUD tenant-aware para estructuras `empresa/sucursal/equipo`.
 - [x] CRUD base tenant-aware para `oficinas`, `personas`, `divisiones`, `areas`, `cargos` y `asignaciones_laborales` via Data Engine.
+- [x] Sincronizacion runtime base `organizacion -> empresa` y `oficina -> sucursal` para reducir divergencia con el legado mientras se completa la convergencia final.
+- [x] Etiquetas operativas mas utiles en Data Engine para `personas` y `asignaciones_laborales`, incluyendo jefe y aprobador por contexto.
+- [x] Base de contexto laboral por usuario con `asignacion_laboral_activa` y cambio explicito dentro de la organizacion activa.
+- [x] Selector visual de contexto laboral activo en topbar y dashboard.
+- [x] RBAC contextual inicial reutiliza las mismas claves de permiso del sistema a traves de metadata por asignacion.
 
 ## P3. Configuracion del sistema
 Estado: En progreso
@@ -203,6 +212,7 @@ Estado: En progreso
 - [x] Metadatos de archivo iniciales.
 - [x] Demo funcional de archivos dentro del `Demo Module`.
 - [ ] Subida hacia Spaces.
+- [x] Fallback controlado `spaces -> local` para desarrollo cuando faltan credenciales.
 - [ ] Asociacion archivo <-> entidad de negocio.
 - [ ] Cola de descargas pesadas.
 - [ ] Versionado de archivos real.
@@ -259,6 +269,7 @@ Estado: En progreso
 - [x] Exportar a PDF.
 - [x] Exportaciones async base con cola y descarga diferida.
 - [ ] Exportaciones pesadas async con worker/observabilidad mas profunda.
+- [x] Disk de exportaciones async configurable y listo para converger a Spaces.
 - [x] Importacion masiva CSV sobre recurso del Data Engine.
 - [x] Validacion previa segun metadata del recurso.
 - [x] Logs de importacion y exportacion por corrida.
@@ -388,23 +399,23 @@ Estado: En progreso
 - [x] Eventos clave de usuario.
 
 ## Siguiente desarrollo recomendado
-1. Aplicar por completo en codigo la decision `organizacion = empresa`.
+1. Completar la convergencia final de `organizacion = empresa` en naming, runtime y migraciones legacy.
 2. Completar el dominio base de oficinas, personas y asignaciones laborales.
 3. Cerrar scope multi-tenant consistente en modelos, jobs, archivos, auditoria y notificaciones externas.
 4. Integrar archivos con Spaces, versionado y entidades de negocio.
 5. Seguir con endurecimiento operativo local -> Droplet.
 
 ## Objetivos inmediatos desde aqui en adelante
-1. Aplicar en codigo la decision `organizacion = empresa` y definir la estructura laboral final.
-2. Completar el cierre funcional de organizaciones, oficinas, personas y asignaciones laborales en frontend.
+1. Terminar la convergencia final de `organizacion = empresa` y definir la estructura laboral final.
+2. Refinar la UX especifica del dominio base y la estructura laboral donde el Data Engine generico ya no alcance.
 3. Seguir con tenancy transversal en modelos, jobs, archivos y auditoria.
 4. Integrar Spaces y endurecer la operacion local -> Droplet.
 5. Mantener visibles los objetivos de mediano plazo: pruebas frontend, CI y release 1.0.
 
 ## Indicador de avance global
 
-- Avance global estimado del proyecto: `83%`
-- Trabajo restante estimado para cerrar esta version base: `17%`
+- Avance global estimado del proyecto: `92%`
+- Trabajo restante estimado para cerrar esta version base: `8%`
 
 Lectura del porcentaje:
 

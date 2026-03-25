@@ -14,8 +14,8 @@ use App\Modules\DemoPlatform\Models\DemoContact;
 
 return [
     'organizations' => [
-        'name' => 'Organizations',
-        'description' => 'Organizaciones base del sistema. La decision vigente del dominio es organizacion igual a empresa.',
+        'name' => 'Empresas',
+        'description' => 'Empresa o tenant principal del sistema. Internamente la tabla sigue siendo organizaciones mientras termina la convergencia final del dominio.',
         'source_module' => 'core-platform',
         'permission_key' => 'tenancy.manage',
         'model' => Organizacion::class,
@@ -167,7 +167,7 @@ return [
         ],
     ],
     'offices' => [
-        'name' => 'Offices',
+        'name' => 'Oficinas',
         'description' => 'Oficinas o sucursales operativas de la organizacion activa.',
         'source_module' => 'core-platform',
         'permission_key' => 'tenancy.manage',
@@ -241,7 +241,7 @@ return [
         ],
     ],
     'people' => [
-        'name' => 'People',
+        'name' => 'Personas',
         'description' => 'Personas base del dominio de la organizacion activa.',
         'source_module' => 'core-platform',
         'permission_key' => 'tenancy.manage',
@@ -251,6 +251,7 @@ return [
             'direction' => 'asc',
         ],
         'fields' => [
+            ['key' => 'nombre_completo', 'label' => 'Nombre completo', 'type' => 'text', 'table' => true, 'form' => false, 'searchable' => false],
             ['key' => 'nombres', 'label' => 'Nombres', 'type' => 'text', 'rules' => ['required', 'string', 'max:120'], 'sortable' => true, 'searchable' => true],
             ['key' => 'apellido_paterno', 'label' => 'Apellido paterno', 'type' => 'text', 'rules' => ['nullable', 'string', 'max:120'], 'sortable' => true, 'searchable' => true],
             ['key' => 'apellido_materno', 'label' => 'Apellido materno', 'type' => 'text', 'rules' => ['nullable', 'string', 'max:120'], 'sortable' => true, 'searchable' => true],
@@ -266,7 +267,7 @@ return [
         ],
     ],
     'divisions' => [
-        'name' => 'Divisions',
+        'name' => 'Divisiones',
         'description' => 'Divisiones de la organizacion activa.',
         'source_module' => 'core-platform',
         'permission_key' => 'tenancy.manage',
@@ -314,7 +315,7 @@ return [
         ],
     ],
     'positions' => [
-        'name' => 'Positions',
+        'name' => 'Cargos',
         'description' => 'Cargos de la organizacion activa.',
         'source_module' => 'core-platform',
         'permission_key' => 'tenancy.manage',
@@ -331,7 +332,7 @@ return [
         ],
     ],
     'work-assignments' => [
-        'name' => 'Work Assignments',
+        'name' => 'Asignaciones laborales',
         'description' => 'Asignaciones laborales por oficina, con cargo y jerarquia por contexto operativo.',
         'source_module' => 'core-platform',
         'permission_key' => 'tenancy.manage',
@@ -341,6 +342,7 @@ return [
             'direction' => 'desc',
         ],
         'fields' => [
+            ['key' => 'etiqueta_contexto', 'label' => 'Contexto', 'type' => 'text', 'table' => true, 'form' => false],
             [
                 'key' => 'persona_id',
                 'label' => 'Persona',
@@ -351,7 +353,7 @@ return [
                 'relation' => [
                     'name' => 'persona',
                     'resource_key' => 'people',
-                    'label_field' => 'nombres',
+                    'label_field' => 'nombre_completo',
                     'display_key' => 'persona_id_label',
                 ],
             ],
@@ -435,7 +437,7 @@ return [
                 'relation' => [
                     'name' => 'jefeAsignacion',
                     'resource_key' => 'work-assignments',
-                    'label_field' => 'id',
+                    'label_field' => 'etiqueta_contexto',
                     'display_key' => 'jefe_asignacion_id_label',
                 ],
             ],
@@ -449,7 +451,7 @@ return [
                 'relation' => [
                     'name' => 'aprobadorAsignacion',
                     'resource_key' => 'work-assignments',
-                    'label_field' => 'id',
+                    'label_field' => 'etiqueta_contexto',
                     'display_key' => 'aprobador_asignacion_id_label',
                 ],
             ],
