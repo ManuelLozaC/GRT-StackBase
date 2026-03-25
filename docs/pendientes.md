@@ -31,6 +31,7 @@
 - [x] Guardas frontend por autenticacion.
 - [x] Proteccion por permiso sobre administracion de modulos.
 - [x] Integridad base revisada con tests backend y build frontend en verde.
+- [x] Limpieza principal de deuda legacy HTTP/UI del template original.
 
 ### Brechas principales
 - [ ] RBAC completo.
@@ -42,7 +43,7 @@
 - [ ] Notificaciones avanzadas y multicanal.
 - [ ] Auditoria y logs avanzados.
 - [ ] Demos funcionales de las capacidades genericas.
-- [ ] Normalizacion o retiro de piezas legacy fuera del core modular (`CRUD`, stores y endpoints antiguos).
+- [ ] Extraer el dominio laboral heredado a un modulo vertical dedicado o redefinir su alcance final.
 
 ## Regla transversal del proyecto
 - [x] Toda funcionalidad generica importante debe vivir en el core.
@@ -122,7 +123,8 @@ Estado: Pendiente
 - [ ] Serializacion uniforme.
 - [ ] Campos personalizados.
 - [ ] Componentes frontend reutilizables de tabla y formulario.
-- [ ] Reemplazar o converger el CRUD historico actual al nuevo contrato `core + modules`.
+- [x] Retirar el CRUD historico del template de la navegacion principal.
+- [ ] Implementar el nuevo motor CRUD del core con contrato reutilizable para modulos.
 
 ## P5. Gestion de archivos
 Estado: En progreso
@@ -221,7 +223,7 @@ Estado: Parcial
 - [x] API `v1`.
 - [x] Healthcheck.
 - [x] Endpoints de modulos.
-- [ ] Retiro o convergencia de endpoints legacy fuera de `api/v1`.
+- [x] Retiro de la capa HTTP legacy no enroutada fuera de `api/v1`.
 - [ ] Auth API para terceros.
 - [ ] Webhooks salientes.
 - [ ] Recepcion de webhooks.
@@ -282,7 +284,7 @@ Estado: Pendiente
 
 ## Siguiente desarrollo recomendado
 1. Scope multi-tenant consistente en modelos, jobs, archivos y auditoria.
-2. CRUD universal base y convergencia del panel legacy.
+2. CRUD universal base del core.
 3. Integracion de archivos con Spaces y entidades de negocio.
 4. Export/import demo funcional.
-5. RBAC ampliado y multi-rol por usuario.
+5. Extraer estructura laboral/usuarios avanzados a un modulo vertical.

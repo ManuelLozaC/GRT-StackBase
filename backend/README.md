@@ -9,6 +9,7 @@ Backend API-first construido con Laravel 12.
 - Registro y reset de password.
 - Organizaciones y organizacion activa por usuario.
 - Migraciones base unificadas y verificadas en test suite.
+- Solo se mantiene activa la capa HTTP alineada a `api/v1`; el API legacy previo fue retirado.
 - Registro de modulos.
 - Persistencia de modulos en `system_modules`.
 - Toggle de modulos por API.
@@ -53,6 +54,7 @@ php artisan config:clear
 ## Verificacion reciente
 - `php artisan test` pasando con 24 tests.
 - Integridad de migraciones corregida para evitar duplicados y desalineacion del esquema base.
+- Arbol HTTP legacy no enroutado eliminado para reducir deriva arquitectonica.
 
 ## Documentacion relacionada
 - `docs/stackbase.md`

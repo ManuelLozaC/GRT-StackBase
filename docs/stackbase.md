@@ -56,6 +56,7 @@ Su objetivo es:
 - Login, logout y `me`.
 - Registro, recuperacion y reset de password.
 - Integridad base saneada tras resolver conflictos de merge y unificar migraciones clave.
+- Limpieza principal de deuda legacy: backend HTTP fuera de `api/v1` retirado y frontend sin vistas del template en la navegacion principal.
 - Organizaciones base y cambio de organizacion activa.
 - Core de archivos con upload, descarga directa, signed URL e historial.
 - Core de jobs con dispatch, ejecucion inmediata demo y trazabilidad basica.

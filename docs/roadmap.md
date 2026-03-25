@@ -16,6 +16,7 @@ Fecha de referencia: `2026-03-25`
 - Organizaciones base, membresias y organizacion activa en sesion.
 - RBAC inicial con rol `admin` y permiso `modules.manage`.
 - Integridad base del repositorio saneada: conflictos de merge resueltos, migraciones duplicadas unificadas y suite validada.
+- Capa legacy principal retirada del backend HTTP y del frontend heredado del template.
 - Registro modular inicial con `core-platform` y `demo-platform`.
 - Persistencia de modulos en base de datos y toggle por API.
 - Pantalla de administracion de modulos en frontend.
@@ -32,7 +33,7 @@ Fecha de referencia: `2026-03-25`
 - Estructura `core/modules` ya creada, pero el contrato de modulos todavia debe crecer.
 - Tenancy base ya existe, pero falta propagarla de forma consistente a modelos, jobs, archivos y auditoria.
 - `Demo Module` ya existe y ya contiene demos funcionales de archivos, jobs, auditoria y notificaciones. Sigue pendiente export/import.
-- Todavia queda deuda legacy fuera del core modular, especialmente en CRUD/panel historico y algunos endpoints previos a `v1`.
+- Todavia queda deuda de dominio por modularizar, especialmente estructura laboral/usuarios historicos que deben migrar a un modulo vertical real.
 
 ### Aun pendiente
 - Multi-tenant completo.
@@ -89,6 +90,7 @@ Estado: Parcial
 - Layout base ya disponible.
 - Administracion de modulos ya disponible.
 - Auth real ya integrada.
+- Menu y router ya alineados con StackBase, sin demos del template original.
 - Faltan empty states, skeletons, manejo global de errores y preferencias persistidas.
 
 ## Fase 5. Demo Module funcional
@@ -121,7 +123,7 @@ Un nuevo sistema debe poder ensamblarse con:
 El backlog detallado vive en `docs/pendientes.md`.
 
 ## Resumen actual
-- Logrado: kernel modular, auth API, registro, reset de password, RBAC inicial, tenancy base, archivos, jobs, auditoria y notificaciones internas ya funcionan en backend y frontend con demos activables desde `Demo Module`; ademas la integridad del repositorio quedo estabilizada y verificada con tests/build.
-- Pendiente: completar multi-tenant transversal, CRUD universal, export/import, integraciones de storage y notificaciones multicanal, mas observabilidad y seguridad operativa, y normalizar las piezas legacy que aun no convergen del todo al core modular.
+- Logrado: kernel modular, auth API, registro, reset de password, RBAC inicial, tenancy base, archivos, jobs, auditoria y notificaciones internas ya funcionan en backend y frontend con demos activables desde `Demo Module`; ademas la integridad del repositorio quedo estabilizada, la capa legacy principal fue retirada y todo quedo verificado con tests/build.
+- Pendiente: completar multi-tenant transversal, CRUD universal, export/import, integraciones de storage y notificaciones multicanal, mas observabilidad y seguridad operativa, y extraer el dominio laboral restante a modulos verticales bien definidos.
 
-Avance global estimado del roadmap: 55% completado.
+Avance global estimado del roadmap: 60% completado.
