@@ -16,6 +16,7 @@ function reportHttpError(error) {
     state.httpError = {
         status,
         message: error?.response?.data?.mensaje ?? 'Ocurrio un error inesperado al comunicar con la API.',
+        requestId: error?.response?.data?.meta?.request_id ?? error?.response?.headers?.['x-request-id'] ?? null,
         at: new Date().toISOString()
     };
 

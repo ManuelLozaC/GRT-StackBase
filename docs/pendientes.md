@@ -55,6 +55,10 @@
 - [x] Data Engine extendido con relaciones y custom fields sobre recursos reales.
 - [x] Base multicanal de notificaciones con log de entregas por canal.
 - [x] Skeleton loaders y empty states reutilizables en pantallas reales.
+- [x] Request IDs expuestos en header y respuestas API.
+- [x] Rate limiting base para auth, escrituras de datos y descargas.
+- [x] Logs de seguridad tenant-aware con vista administrativa.
+- [x] Operations overview administrativo para jobs, transfers, notificaciones, archivos, auditoria y seguridad.
 
 ### Brechas principales
 - [ ] RBAC completo.
@@ -73,7 +77,7 @@
 - [x] Toda funcionalidad generica importante debe vivir en el core.
 - [x] Toda funcionalidad generica importante debe tener una demo dentro de `Demo Module`.
 - [x] El `Demo Module` debe poder habilitarse o deshabilitarse desde administracion.
-- [ ] Cada demo debe ser funcional, no solo visual.
+- [x] Cada demo debe ser funcional, no solo visual.
 
 ## P0. Kernel de plataforma y modulos
 Estado: En progreso
@@ -255,11 +259,13 @@ Estado: En progreso
 - [x] Actividad de usuario base.
 - [x] Audit trail inicial para modulos, archivos y jobs.
 - [x] Vista demo de auditoria dentro del `Demo Module`.
+- [x] Security logs administrativos con request ID, actor e IP.
+- [x] Vista administrativa de operations overview.
 - [ ] Logs de errores.
 - [x] Auditoria de impersonacion.
 - [ ] Auditoria de cambios de permisos.
-- [ ] Vista administrativa completa de logs.
-- [ ] Correlation IDs y trazabilidad tecnica mas profunda.
+- [ ] Vista administrativa completa de logs tecnicos y de errores.
+- [x] Correlation IDs y trazabilidad tecnica base.
 
 ## P12. API e integraciones
 Estado: Parcial
@@ -271,17 +277,17 @@ Estado: Parcial
 - [ ] Auth API para terceros.
 - [ ] Webhooks salientes.
 - [ ] Recepcion de webhooks.
-- [ ] Rate limiting.
+- [x] Rate limiting base.
 - [ ] Swagger sincronizado con endpoints reales.
 
 ## P13. Seguridad
-Estado: Pendiente
+Estado: En progreso
 
 - [ ] Sanitizacion de inputs.
 - [ ] XSS / CSRF segun canal.
-- [ ] Rate limiting por auth/API/descargas.
+- [x] Rate limiting por auth/API/descargas.
 - [ ] Encriptacion de datos sensibles.
-- [ ] Logs de seguridad.
+- [x] Logs de seguridad.
 - [ ] Politicas de contrasenas y sesiones.
 - [x] Restringir previews sensibles de recuperacion de password a entornos de desarrollo/prueba.
 
@@ -340,16 +346,17 @@ Estado: Parcial
 - [ ] Offline basico solo donde aporte valor.
 
 ## P19. Manejo de errores
-Estado: Pendiente
+Estado: En progreso
 
 - [ ] Catalogo de errores controlados backend.
 - [ ] Mensajes amigables frontend.
-- [ ] Correlation IDs.
+- [x] Correlation IDs.
 - [ ] Fallbacks de UX.
 
 ## P20. Metricas internas
-Estado: Pendiente
+Estado: En progreso
 
+- [x] Resumen operativo base por tenant.
 - [ ] Uso del sistema por tenant.
 - [ ] Uso por modulo.
 - [ ] Performance y tiempos de respuesta.

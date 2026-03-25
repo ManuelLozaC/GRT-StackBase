@@ -36,6 +36,8 @@ Backend API-first construido con Laravel 12.
 - Exportaciones `Excel/PDF` y exportacion async con artefactos descargables por cola.
 - Settings globales, por organizacion y por usuario con bootstrap para frontend.
 - Administracion de usuarios con multi-rol e impersonacion auditada.
+- Request IDs en header/respuesta API, rate limiting base y security logs tenant-aware.
+- Operations overview administrativo para jobs, transfers, notificaciones, archivos, auditoria y seguridad.
 - `core-platform` y `demo-platform` declarados.
 
 ## Endpoints base actuales
@@ -68,6 +70,8 @@ Backend API-first construido con Laravel 12.
 - `DELETE /api/v1/data/{resourceKey}/{recordId}`
 - `GET /api/v1/users`
 - `PATCH /api/v1/users/{user}/roles`
+- `GET /api/v1/operations/overview`
+- `GET /api/v1/security/logs`
 - `GET /api/v1/demo/files`
 - `POST /api/v1/demo/files`
 - `GET /api/v1/demo/files/downloads`
@@ -94,7 +98,7 @@ php artisan config:clear
 ```
 
 ## Verificacion reciente
-- `php artisan test` pasando con 45 tests.
+- `php artisan test` pasando con 50 tests.
 - Integridad de migraciones corregida para evitar duplicados y desalineacion del esquema base.
 - Arbol HTTP legacy no enroutado eliminado para reducir deriva arquitectonica.
 - Bootstrap RBAC inicial sin duplicidad de seeders.

@@ -35,6 +35,14 @@ export const coreRoutes = [
                 component: () => import('@/views/pages/MyPreferences.vue')
             },
             {
+                path: '/admin/operations',
+                name: 'operations-overview',
+                meta: {
+                    permissionKey: 'security.manage'
+                },
+                component: () => import('@/views/pages/OperationsOverview.vue')
+            },
+            {
                 path: '/admin/modules',
                 name: 'system-modules',
                 meta: {
@@ -57,6 +65,14 @@ export const coreRoutes = [
                     permissionKey: 'users.manage_roles'
                 },
                 component: () => import('@/views/pages/UserAdministration.vue')
+            },
+            {
+                path: '/admin/security',
+                name: 'security-logs',
+                meta: {
+                    permissionKey: 'security.manage'
+                },
+                component: () => import('@/views/pages/SecurityLogs.vue')
             }
         ]
     },

@@ -6,6 +6,9 @@ use App\Core\DataEngine\DataResourceRegistry;
 use App\Core\DataEngine\Services\DataTransferManager;
 use App\Core\Modules\ModuleSettingsManager;
 use App\Core\Settings\CoreSettingsManager;
+use Illuminate\Cache\RateLimiting\Limit;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -47,6 +50,26 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        //
+        RateLimiter::for('auth-api', function (Request $request): array {
+            return [
+                Limit::perMinute(10)->by($request->ip() ?: 'auth-api'),
+            ];
+        });
+
+        RateLimiter::for('downloads', function (Request $request): array {
+            $key = $request->user()?->id ?: ($request->ip() ?: 'downloads');
+
+            return [
+                Limit::perMinute(30)->by('downloads:'.$key),
+            ];
+        });
+
+        RateLimiter::for('data-writes', function (Request $request): array {
+            $key = $request->user()?->id ?: ($request->ip() ?: 'data-writes');
+
+            return [
+                Limit::perMinute(60)->by('data-writes:'.$key),
+            ];
+        });
     }
 }

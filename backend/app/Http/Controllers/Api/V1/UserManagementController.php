@@ -6,6 +6,7 @@ use App\Core\Audit\Services\AuditLogger;
 use App\Core\Auth\Models\PersonalAccessToken;
 use App\Core\Auth\Services\AccessTokenService;
 use App\Core\Http\Concerns\ApiResponse;
+use App\Core\Security\SecurityLogger;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\V1\UpdateUserRolesRequest;
 use App\Models\Organizacion;
@@ -21,6 +22,7 @@ class UserManagementController extends Controller
     public function __construct(
         protected AccessTokenService $tokens,
         protected AuditLogger $auditLogger,
+        protected SecurityLogger $securityLogger,
     ) {
     }
 
@@ -58,6 +60,17 @@ class UserManagementController extends Controller
             summary: 'Se actualizaron los roles de un usuario.',
             sourceModule: 'core-platform',
             context: [
+                'roles' => $user->getRoleNames()->values()->all(),
+            ],
+        );
+
+        $this->securityLogger->log(
+            eventKey: 'security.roles_updated',
+            actor: $request->user(),
+            severity: 'warning',
+            summary: 'Se actualizaron roles de un usuario.',
+            context: [
+                'target_user_id' => $user->id,
                 'roles' => $user->getRoleNames()->values()->all(),
             ],
         );
@@ -114,6 +127,18 @@ class UserManagementController extends Controller
             summary: 'Se inicio una impersonacion.',
             sourceModule: 'core-platform',
             context: [
+                'target_email' => $targetUser->email,
+            ],
+            organizationId: $actor->organizacion_activa_id,
+        );
+
+        $this->securityLogger->log(
+            eventKey: 'security.impersonation_started',
+            actor: $actor,
+            severity: 'warning',
+            summary: 'Se inicio una impersonacion.',
+            context: [
+                'target_user_id' => $targetUser->id,
                 'target_email' => $targetUser->email,
             ],
             organizationId: $actor->organizacion_activa_id,
@@ -179,6 +204,18 @@ class UserManagementController extends Controller
             summary: 'Se cerro una impersonacion.',
             sourceModule: 'core-platform',
             context: [
+                'target_email' => $currentUser->email,
+            ],
+            organizationId: $impersonator->organizacion_activa_id,
+        );
+
+        $this->securityLogger->log(
+            eventKey: 'security.impersonation_finished',
+            actor: $impersonator,
+            severity: 'warning',
+            summary: 'Se cerro una impersonacion.',
+            context: [
+                'target_user_id' => $currentUser->id,
                 'target_email' => $currentUser->email,
             ],
             organizationId: $impersonator->organizacion_activa_id,

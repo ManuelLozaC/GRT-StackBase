@@ -17,6 +17,7 @@
                         <li>Data Engine universal con CRUD demo reutilizable por metadata, relaciones, custom fields y transferencias `CSV / Excel / PDF` auditables</li>
                         <li>Settings globales, por organizacion y por usuario con feature flags base</li>
                         <li>Servicios de archivos, jobs, auditoria y notificaciones internas/multicanal base</li>
+                        <li>Request IDs, rate limiting base y vistas operativas de seguridad/operations para soporte</li>
                         <li>Respuesta estandar en `api/v1`</li>
                     </ul>
                 </div>
@@ -34,6 +35,7 @@
                         <li>Recurso demo activo para validar CRUD universal, export/import, relaciones, custom fields y corridas async</li>
                         <li>La demo de notificaciones ya expone canales, entregas y estados operativos</li>
                         <li>Shell con banner global y feedback HTTP transversal</li>
+                        <li>El shell ya incluye `Security Logs` y `Operations Overview` para visibilidad del tenant activo</li>
                     </ul>
                 </div>
             </div>

@@ -17,6 +17,7 @@ return [
                 'users.manage_roles',
                 'users.impersonate',
                 'tenancy.manage',
+                'security.manage',
             ],
             'settings' => [
                 [

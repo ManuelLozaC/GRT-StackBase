@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api\V1\Auth;
 use App\Core\Auth\Models\PersonalAccessToken;
 use App\Core\Auth\Services\AccessTokenService;
 use App\Core\Http\Concerns\ApiResponse;
+use App\Core\Security\SecurityLogger;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\V1\Auth\ForgotPasswordRequest;
 use App\Http\Requests\Api\V1\Auth\LoginRequest;
@@ -25,6 +26,7 @@ class AuthController extends Controller
 
     public function __construct(
         protected AccessTokenService $tokens,
+        protected SecurityLogger $securityLogger,
     ) {
     }
 
@@ -38,6 +40,16 @@ class AuthController extends Controller
             ->first();
 
         if ($user === null || ! Hash::check($password, $user->password)) {
+            $this->securityLogger->log(
+                eventKey: 'auth.login_failed',
+                severity: 'warning',
+                summary: 'Intento de login fallido.',
+                context: [
+                    'email' => $email,
+                ],
+                organizationId: $user?->organizacion_activa_id,
+            );
+
             return $this->errorResponse(
                 message: 'Credenciales invalidas',
                 status: 422,
@@ -48,6 +60,13 @@ class AuthController extends Controller
             user: $user,
             name: $request->string('device_name')->toString() ?: 'frontend',
             ttlMinutes: 60 * 8,
+        );
+
+        $this->securityLogger->log(
+            eventKey: 'auth.login_succeeded',
+            actor: $user,
+            severity: 'info',
+            summary: 'Sesion iniciada correctamente.',
         );
 
         return $this->successResponse(
@@ -88,6 +107,14 @@ class AuthController extends Controller
             ttlMinutes: 60 * 8,
         );
 
+        $this->securityLogger->log(
+            eventKey: 'auth.registered',
+            actor: $user,
+            severity: 'info',
+            summary: 'Se registro un nuevo usuario.',
+            organizationId: $organizacion->id,
+        );
+
         return $this->successResponse(
             data: [
                 'token' => $token,
@@ -109,6 +136,17 @@ class AuthController extends Controller
         if ($user !== null && app()->environment(['local', 'testing'])) {
             $meta['debug_reset_token_preview'] = Password::broker()->createToken($user);
         }
+
+        $this->securityLogger->log(
+            eventKey: 'auth.password_recovery_requested',
+            actor: $user,
+            severity: 'info',
+            summary: 'Se solicito recuperacion de password.',
+            context: [
+                'email' => $request->string('email')->toString(),
+            ],
+            organizationId: $user?->organizacion_activa_id,
+        );
 
         return $this->successResponse(
             data: null,
@@ -132,11 +170,30 @@ class AuthController extends Controller
         );
 
         if ($status !== Password::PASSWORD_RESET) {
+            $this->securityLogger->log(
+                eventKey: 'auth.password_reset_failed',
+                severity: 'warning',
+                summary: 'Fallo un intento de reset de password.',
+                context: [
+                    'email' => $request->string('email')->toString(),
+                ],
+            );
+
             return $this->errorResponse(
                 message: 'No se pudo restablecer la contrasena con ese token',
                 status: 422,
             );
         }
+
+        $resetUser = User::query()->where('email', $request->string('email')->toString())->first();
+
+        $this->securityLogger->log(
+            eventKey: 'auth.password_reset_succeeded',
+            actor: $resetUser,
+            severity: 'info',
+            summary: 'Se restablecio una contrasena.',
+            organizationId: $resetUser?->organizacion_activa_id,
+        );
 
         return $this->successResponse(
             data: null,
@@ -163,6 +220,13 @@ class AuthController extends Controller
         /** @var PersonalAccessToken|null $token */
         $token = $request->attributes->get('current_access_token');
         $this->tokens->revokeCurrent($token);
+
+        $this->securityLogger->log(
+            eventKey: 'auth.logout',
+            actor: $request->user(),
+            severity: 'info',
+            summary: 'Sesion cerrada.',
+        );
 
         return $this->successResponse(
             data: null,
@@ -193,6 +257,17 @@ class AuthController extends Controller
 
         $user->unsetRelation('organizacionActiva');
         $user->unsetRelation('organizaciones');
+
+        $this->securityLogger->log(
+            eventKey: 'auth.organization_switched',
+            actor: $user,
+            severity: 'info',
+            summary: 'Se cambio la organizacion activa.',
+            context: [
+                'organizacion_id' => $organizacionId,
+            ],
+            organizationId: $organizacionId,
+        );
 
         return $this->successResponse(
             data: $this->transformUser($user->fresh()),

@@ -28,6 +28,7 @@ Frontend construido con Vue 3, Vite y PrimeVue.
 - La administracion de modulos ya permite editar settings persistidos por modulo.
 - Ya existe panel de `System Settings`, preferencias del usuario, banner global y manejo global de errores HTTP.
 - Ya existe administracion de usuarios con multi-rol e impersonacion.
+- Ya existen `Security Logs` y `Operations Overview` para soporte operativo del tenant activo.
 - El shell ya usa skeleton loaders y empty states reutilizables en pantallas reales.
 
 ## Pantallas relevantes hoy
@@ -44,6 +45,8 @@ Frontend construido con Vue 3, Vite y PrimeVue.
 - `/demo/transfers`
 - `/admin/settings`
 - `/admin/users`
+- `/admin/operations`
+- `/admin/security`
 - `/account/preferences`
 
 ## Comandos utiles
@@ -58,7 +61,7 @@ npm audit --audit-level=moderate
 ## Nota
 La administracion de modulos ya esta conectada a autenticacion real y al permiso `modules.manage`. Para ver jobs y exportaciones async procesarse realmente en local, el backend necesita un worker activo con `php artisan queue:work --queue=data-exports,demo`.
 
-El siguiente paso visible en frontend es profundizar el `Data Engine` en acciones avanzadas/masivas, cerrar feedback optimista/pesimista y seguir bajando integraciones reales de canales externos.
+El siguiente paso visible en frontend es profundizar el `Data Engine` en acciones avanzadas/masivas, cerrar feedback optimista/pesimista y seguir bajando integraciones reales de canales externos y observabilidad mas profunda.
 
 Validacion reciente:
 - `npm run lint` en verde.

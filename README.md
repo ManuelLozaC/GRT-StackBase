@@ -26,6 +26,7 @@ Resolver una sola vez las capacidades transversales del producto y reutilizarlas
 - Settings globales, por organizacion y por usuario ya operativos desde UI/API.
 - Multi-rol, administracion de usuarios e impersonacion con auditoria.
 - Estructuras tenant base (`empresas`, `sucursales`, `equipos`) y base multicanal de notificaciones.
+- Request IDs, rate limiting base, security logs y operations overview administrativo.
 
 ## Documentacion principal
 

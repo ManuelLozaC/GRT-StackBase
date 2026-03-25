@@ -33,6 +33,12 @@ export const coreMenu = [
         label: 'Administration',
         items: [
             {
+                label: 'Operations',
+                icon: 'pi pi-fw pi-chart-line',
+                to: '/admin/operations',
+                permissionKey: 'security.manage'
+            },
+            {
                 label: 'Modules',
                 icon: 'pi pi-fw pi-cog',
                 to: '/admin/modules',
@@ -49,6 +55,12 @@ export const coreMenu = [
                 icon: 'pi pi-fw pi-users',
                 to: '/admin/users',
                 permissionKey: 'users.manage_roles'
+            },
+            {
+                label: 'Security Logs',
+                icon: 'pi pi-fw pi-shield',
+                to: '/admin/security',
+                permissionKey: 'security.manage'
             }
         ]
     }

@@ -16,7 +16,7 @@ trait ApiResponse
             'estado' => 'ok',
             'datos' => $data,
             'mensaje' => $message,
-            'meta' => $meta,
+            'meta' => $this->metaWithRequestContext($meta),
             'errores' => [],
         ], $status);
     }
@@ -31,8 +31,19 @@ trait ApiResponse
             'estado' => 'error',
             'datos' => null,
             'mensaje' => $message,
-            'meta' => $meta,
+            'meta' => $this->metaWithRequestContext($meta),
             'errores' => $errors,
         ], $status);
+    }
+
+    protected function metaWithRequestContext(array $meta = []): array
+    {
+        $requestId = request()?->attributes->get('request_id');
+
+        if ($requestId !== null) {
+            $meta['request_id'] = $requestId;
+        }
+
+        return $meta;
     }
 }
