@@ -20,6 +20,7 @@ class OperationalSecurityTest extends TestCase
 
         $response->assertOk()
             ->assertHeader('X-Request-Id', 'req-test-123')
+            ->assertHeader('X-Response-Time-ms')
             ->assertJsonPath('meta.request_id', 'req-test-123');
     }
 

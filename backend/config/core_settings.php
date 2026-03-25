@@ -179,6 +179,13 @@ return [
             'default' => false,
         ],
         [
+            'key' => 'data_engine_preferences',
+            'label' => 'Preferencias del Data Engine',
+            'type' => 'json',
+            'default' => [],
+            'hidden' => true,
+        ],
+        [
             'key' => 'notifications_internal',
             'label' => 'Notificaciones internas',
             'type' => 'toggle',

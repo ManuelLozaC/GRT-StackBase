@@ -48,6 +48,8 @@ Fecha de referencia: `2026-03-25`
 - Security logs tenant-aware y operations overview administrativo ya estan disponibles.
 - Error logs tecnicos no controlados y metricas internas base ya estan disponibles.
 - Locale, moneda, zona horaria y tema persistido ya se aplican desde settings del core.
+- API tokens personales, sanitizacion base de input, politicas de password y preferencias persistidas de Data Engine ya estan operativos.
+- Performance/response times API ya quedan trazados dentro de metricas internas.
 - Limpieza residual completada en branding/documentacion raiz y restos visuales del shell legacy.
 - Base de archivos en core con upload, descarga directa, signed URLs e historial.
 - Base de jobs en core con dispatch, estados, logs y demo funcional.
@@ -120,6 +122,7 @@ Estado: En progreso
 - Auditoria base ya implementada; request IDs, security logs y overview operativo ya existen, pero faltan logs tecnicos y endurecimiento adicional.
 - Error handling tecnico base ya existe con `error logs`, `error_code` y respuesta controlada para excepciones no manejadas.
 - Metricas internas base por tenant/modulo/categoria ya existen; falta profundizar performance y tiempos de respuesta.
+- API access para terceros ya tiene base con tokens personales; faltan webhooks y contratos de integracion mas profundos.
 - Busqueda e indexacion.
 
 ## Fase 4. Shell de experiencia
@@ -133,6 +136,7 @@ Estado: Parcial
 - Empty states y skeletons ya implementados en pantallas reales.
 - Operations overview y security logs administrativos ya forman parte del shell.
 - Error logs, usage metrics y formato locale-aware tambien ya forman parte del shell.
+- API Tokens y preferencias persistidas del Data Engine tambien ya forman parte del shell.
 - Falta feedback estandarizado mas profundo.
 
 ## Fase 5. Demo Module funcional
@@ -165,8 +169,8 @@ Un nuevo sistema debe poder ensamblarse con:
 El backlog detallado vive en `docs/pendientes.md`.
 
 ## Resumen actual
-- Logrado: kernel modular, auth API, registro, reset de password, RBAC inicial, multi-rol, impersonacion, tenancy base con estructuras `empresa/sucursal/equipo`, archivos, jobs, auditoria y notificaciones internas ya funcionan en backend y frontend con demos activables desde `Demo Module`; ademas la integridad del repositorio quedo estabilizada, la capa legacy principal fue retirada, el contrato modular ya evita estados invalidos y ya expone metadata operativa mas rica, el aislamiento por tenant quedo cubierto con pruebas automatizadas, el `Data Engine` ya soporta relaciones, custom fields, export/import `CSV / Excel / PDF` con historial de corridas y modo `async`, el core ya expone settings globales/tenant/usuario con feature flags y UX transversal base, la capa operativa ya incluye request IDs, rate limiting, security logs y operations overview administrativo, y ahora tambien suma `error logs`, `usage metrics` y aplicacion real de locale/moneda/zona horaria/tema desde settings.
-- Pendiente: completar multi-tenant transversal, integraciones reales de storage y notificaciones multicanal, mas observabilidad profunda y seguridad operativa, performance/response times y generalizar el contrato `core + modules` para nuevos modulos sin wiring adicional.
+- Logrado: kernel modular, auth API, registro, reset de password, RBAC inicial, multi-rol, impersonacion, tenancy base con estructuras `empresa/sucursal/equipo`, archivos, jobs, auditoria y notificaciones internas ya funcionan en backend y frontend con demos activables desde `Demo Module`; ademas la integridad del repositorio quedo estabilizada, la capa legacy principal fue retirada, el contrato modular ya evita estados invalidos y ya expone metadata operativa mas rica, el aislamiento por tenant quedo cubierto con pruebas automatizadas, el `Data Engine` ya soporta relaciones, custom fields, export/import `CSV / Excel / PDF` con historial de corridas y modo `async`, el core ya expone settings globales/tenant/usuario con feature flags y UX transversal base, la capa operativa ya incluye request IDs, rate limiting, security logs, operations overview, `error logs`, `usage metrics`, locale/moneda/zona horaria/tema desde settings, tokens API personales para terceros, sanitizacion base de input y preferencias persistidas de vistas/columnas en Data Engine.
+- Pendiente: completar multi-tenant transversal, integraciones reales de storage y notificaciones multicanal, webhooks/sync de API mas profunda y generalizar el contrato `core + modules` para nuevos modulos sin wiring adicional.
 - Pendiente tecnico residual: seguir endureciendo el core en tenancy transversal, convertir relaciones/custom fields del Data Engine en capacidades completamente universales, robustecer exportaciones/importaciones pesadas y async en operacion real, permisos operativos por modulo, hooks/dashboard/assets ejecutables y catalogos universales realmente necesarios.
 
 Avance global estimado del roadmap: 99% completado.

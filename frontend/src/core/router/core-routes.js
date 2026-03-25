@@ -35,6 +35,11 @@ export const coreRoutes = [
                 component: () => import('@/views/pages/MyPreferences.vue')
             },
             {
+                path: '/account/api-tokens',
+                name: 'api-tokens',
+                component: () => import('@/views/pages/ApiTokens.vue')
+            },
+            {
                 path: '/admin/operations',
                 name: 'operations-overview',
                 meta: {

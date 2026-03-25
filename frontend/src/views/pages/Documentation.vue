@@ -19,6 +19,7 @@
                         <li>Servicios de archivos, jobs, auditoria y notificaciones internas/multicanal base</li>
                         <li>Request IDs, rate limiting base y vistas operativas de seguridad/operations para soporte</li>
                         <li>Error logs, metricas internas y formato locale-aware ya forman parte del core operativo</li>
+                        <li>API tokens, sanitizacion base y performance metrics ya existen como base de integracion y operacion</li>
                         <li>Respuesta estandar en `api/v1`</li>
                     </ul>
                 </div>
@@ -38,6 +39,7 @@
                         <li>Shell con banner global y feedback HTTP transversal</li>
                         <li>El shell ya incluye `Security Logs` y `Operations Overview` para visibilidad del tenant activo</li>
                         <li>La shell administrativa ya suma `Error Logs` y `Usage Metrics` sin depender de wiring legacy</li>
+                        <li>El Data Engine ya permite persistir columnas visibles por usuario y la cuenta ya gestiona `API Tokens`</li>
                     </ul>
                 </div>
             </div>

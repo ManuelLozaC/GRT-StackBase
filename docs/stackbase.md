@@ -74,6 +74,7 @@ Su objetivo es:
 - Request IDs propagados en header/respuesta API y rate limiting base por tipo de endpoint.
 - Security logs tenant-aware y operations overview administrativo para troubleshooting del core.
 - Error logs tecnicos y metricas internas base por tenant/modulo/categoria.
+- API tokens personales, sanitizacion base y preferencias persistidas de Data Engine.
 - Data Engine universal con CRUD base, filtros, busqueda, paginacion, ordenamiento y soft delete sobre recurso demo.
 - Data Engine con relaciones y custom fields sobre recursos reales.
 - Export/import CSV sobre el Data Engine con historial tenant-aware de corridas.
@@ -119,3 +120,4 @@ Su objetivo es:
 - La experiencia operativa del core debe ser visible mediante demos funcionales, auditoria y estados reutilizables de UX.
 - El runtime debe exponer trazabilidad minima por request y vistas operativas para soporte del tenant activo.
 - Locale, tema y preferencias de presentacion deben poder resolverse desde settings persistidos sin tocar codigo.
+- El acceso API para integraciones debe poder salir del core sin depender de sesiones interactivas del frontend.

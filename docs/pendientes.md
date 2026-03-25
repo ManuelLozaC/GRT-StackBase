@@ -62,6 +62,10 @@
 - [x] Error logs tecnicos tenant-aware para excepciones no controladas.
 - [x] Metricas internas base por tenant, modulo y categoria.
 - [x] Aplicacion real de locale, moneda y zona horaria desde settings.
+- [x] Tokens API personales para integraciones de terceros.
+- [x] Sanitizacion base de inputs API y politicas de password mas estrictas.
+- [x] Preferencias persistidas de vistas/columnas para Data Engine.
+- [x] Metricas base de performance y tiempo de respuesta API.
 
 ### Brechas principales
 - [ ] RBAC completo.
@@ -277,7 +281,7 @@ Estado: Parcial
 - [x] Healthcheck.
 - [x] Endpoints de modulos.
 - [x] Retiro de la capa HTTP legacy no enroutada fuera de `api/v1`.
-- [ ] Auth API para terceros.
+- [x] Auth API para terceros.
 - [ ] Webhooks salientes.
 - [ ] Recepcion de webhooks.
 - [x] Rate limiting base.
@@ -286,12 +290,12 @@ Estado: Parcial
 ## P13. Seguridad
 Estado: En progreso
 
-- [ ] Sanitizacion de inputs.
+- [x] Sanitizacion de inputs.
 - [ ] XSS / CSRF segun canal.
 - [x] Rate limiting por auth/API/descargas.
 - [ ] Encriptacion de datos sensibles.
 - [x] Logs de seguridad.
-- [ ] Politicas de contrasenas y sesiones.
+- [x] Politicas de contrasenas y sesiones.
 - [x] Restringir previews sensibles de recuperacion de password a entornos de desarrollo/prueba.
 
 ## P14. Internacionalizacion
@@ -300,7 +304,7 @@ Estado: En progreso
 - [x] Formatos globales de fecha.
 - [x] Formatos de moneda.
 - [x] Zona horaria por tenant y usuario.
-- [ ] Base para traducciones si se decide multi-idioma.
+- [ ] Base para traducciones si se decide multi-idioma. // no realizar hasta nuevo aviso
 
 ## P15. Personalizacion UI
 Estado: Parcial
@@ -309,8 +313,8 @@ Estado: Parcial
 - [x] Menus dinamicos segun permisos reales en administracion de modulos.
 - [ ] Extender menus dinamicos segun permisos al resto del sistema.
 - [x] Tema dark/light persistido.
-- [ ] Preferencias de vistas.
-- [ ] Columnas dinamicas.
+- [x] Preferencias de vistas.
+- [x] Columnas dinamicas.
 
 ## P16. Reorganizacion del core modular
 Estado: En progreso
@@ -352,7 +356,7 @@ Estado: Parcial
 Estado: En progreso
 
 - [x] Catalogo de errores controlados backend.
-- [ ] Mensajes amigables frontend.
+- [x] Mensajes amigables frontend.
 - [x] Correlation IDs.
 - [ ] Fallbacks de UX.
 
@@ -362,12 +366,12 @@ Estado: En progreso
 - [x] Resumen operativo base por tenant.
 - [x] Uso del sistema por tenant.
 - [x] Uso por modulo.
-- [ ] Performance y tiempos de respuesta.
+- [x] Performance y tiempos de respuesta.
 - [x] Eventos clave de usuario.
 
 ## Siguiente desarrollo recomendado
 1. Scope multi-tenant consistente en modelos, jobs, archivos, auditoria y notificaciones externas.
 2. Integracion de archivos con Spaces, versionado y entidades de negocio.
-3. Completar el contrato modular con ejecucion real de hooks, assets y dashboards por modulo.
-4. Extender el Data Engine con acciones avanzadas, relaciones dependientes y custom fields realmente universales.
-5. Endurecer exportaciones async, workers supervisados, observabilidad y reintentos operativos reales.
+3. Completar integraciones reales de API: webhooks, recepcion y Swagger sincronizado.
+4. Completar el contrato modular con ejecucion real de hooks, assets y dashboards por modulo.
+5. Extender el Data Engine con acciones avanzadas, relaciones dependientes y custom fields realmente universales.

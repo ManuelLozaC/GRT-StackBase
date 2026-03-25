@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\V1\Auth\AuthController;
+use App\Http\Controllers\Api\V1\ApiTokenController;
 use App\Http\Controllers\Api\V1\DataResourceController;
 use App\Http\Controllers\Api\V1\Demo\DemoAuditController;
 use App\Http\Controllers\Api\V1\Demo\DemoFileController;
@@ -56,6 +57,9 @@ Route::prefix('v1')->group(function (): void {
         Route::get('/settings/bootstrap', [SettingController::class, 'bootstrap']);
         Route::get('/settings/me', [SettingController::class, 'me']);
         Route::patch('/settings/me', [SettingController::class, 'updateMe']);
+        Route::get('/auth/api-tokens', [ApiTokenController::class, 'index']);
+        Route::post('/auth/api-tokens', [ApiTokenController::class, 'store'])->middleware('throttle:data-writes');
+        Route::delete('/auth/api-tokens/{tokenId}', [ApiTokenController::class, 'destroy']);
 
         Route::prefix('demo')->group(function (): void {
             Route::get('/audit', [DemoAuditController::class, 'index']);

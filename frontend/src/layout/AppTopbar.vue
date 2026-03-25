@@ -64,6 +64,12 @@ async function openPreferences() {
     });
 }
 
+async function openApiTokens() {
+    await router.push({
+        name: 'api-tokens'
+    });
+}
+
 async function openSystemSettings() {
     await router.push({
         name: 'system-settings'
@@ -167,6 +173,10 @@ async function toggleThemePreference() {
                     <button type="button" class="layout-topbar-action" @click="openPreferences">
                         <i class="pi pi-sliders-h"></i>
                         <span>Preferencias</span>
+                    </button>
+                    <button type="button" class="layout-topbar-action" @click="openApiTokens">
+                        <i class="pi pi-key"></i>
+                        <span>API Tokens</span>
                     </button>
                     <button v-if="canManageSettings" type="button" class="layout-topbar-action" @click="openSystemSettings">
                         <i class="pi pi-cog"></i>

@@ -70,8 +70,8 @@ class AuthFlowTest extends TestCase
         $response = $this->postJson('/api/v1/auth/register', [
             'name' => 'Nuevo Admin',
             'email' => 'nuevo@stackbase.local',
-            'password' => 'password123',
-            'password_confirmation' => 'password123',
+            'password' => 'Password123',
+            'password_confirmation' => 'Password123',
             'organization_name' => 'Nuevo Tenant Demo',
             'device_name' => 'phpunit-register',
         ]);
@@ -261,5 +261,43 @@ class AuthFlowTest extends TestCase
             ->assertOk()
             ->assertJsonPath('datos.user.email', 'admin@stackbase.local')
             ->assertJsonPath('datos.user.impersonation.active', false);
+    }
+
+    public function test_user_can_create_list_and_revoke_api_tokens(): void
+    {
+        $organizacion = Organizacion::query()->create([
+            'nombre' => 'API Access',
+            'slug' => 'api-access',
+        ]);
+
+        $user = User::factory()->create([
+            'organizacion_activa_id' => $organizacion->id,
+        ]);
+        $user->organizaciones()->attach($organizacion->id);
+
+        $token = app(AccessTokenService::class)->createForUser($user, 'phpunit');
+
+        $createResponse = $this->withHeader('Authorization', 'Bearer '.$token)
+            ->postJson('/api/v1/auth/api-tokens', [
+                'name' => 'Integracion Test',
+                'expires_in_days' => 7,
+            ])
+            ->assertOk()
+            ->assertJsonPath('datos.token.name', 'Integracion Test');
+
+        $createdTokenId = $createResponse->json('datos.token.id');
+
+        $this->withHeader('Authorization', 'Bearer '.$token)
+            ->getJson('/api/v1/auth/api-tokens')
+            ->assertOk()
+            ->assertJsonFragment([
+                'name' => 'Integracion Test',
+                'type' => 'api-client',
+            ]);
+
+        $this->withHeader('Authorization', 'Bearer '.$token)
+            ->deleteJson('/api/v1/auth/api-tokens/'.$createdTokenId)
+            ->assertOk()
+            ->assertJsonPath('mensaje', 'Token API revocado');
     }
 }

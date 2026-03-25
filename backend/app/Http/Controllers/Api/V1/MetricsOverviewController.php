@@ -37,6 +37,30 @@ class MetricsOverviewController extends Controller
             ->limit(20)
             ->get();
 
+        $httpEvents = CoreMetricEvent::query()
+            ->where('event_category', 'http')
+            ->where('occurred_at', '>=', $windowStart)
+            ->get();
+
+        $durations = $httpEvents
+            ->pluck('context')
+            ->map(fn (mixed $context): int => (int) ($context['duration_ms'] ?? 0))
+            ->filter(fn (int $duration): bool => $duration > 0)
+            ->values();
+
+        $averageResponseTime = $durations->isEmpty()
+            ? 0
+            : (int) round($durations->avg());
+
+        $slowRequests = $httpEvents
+            ->filter(fn (CoreMetricEvent $event): bool => (int) ($event->context['duration_ms'] ?? 0) >= 800)
+            ->sortByDesc('occurred_at')
+            ->values();
+
+        $recentSlowRequests = $slowRequests
+            ->take(10)
+            ->values();
+
         return $this->successResponse(
             data: [
                 'summary' => [
@@ -45,6 +69,8 @@ class MetricsOverviewController extends Controller
                         ->count(),
                     'active_modules_last_24h' => $byModule->count(),
                     'active_categories_last_24h' => $byCategory->count(),
+                    'average_response_time_ms' => $averageResponseTime,
+                    'slow_requests_last_24h' => $slowRequests->count(),
                 ],
                 'by_module' => $byModule->map(fn ($row): array => [
                     'module_key' => $row->module_key,
@@ -67,6 +93,15 @@ class MetricsOverviewController extends Controller
                         'name' => $event->actor->name,
                         'email' => $event->actor->email,
                     ] : null,
+                ])->all(),
+                'recent_slow_requests' => $recentSlowRequests->map(fn (CoreMetricEvent $event): array => [
+                    'id' => $event->id,
+                    'module_key' => $event->module_key,
+                    'path' => $event->context['path'] ?? null,
+                    'method' => $event->context['method'] ?? null,
+                    'status' => $event->context['status'] ?? null,
+                    'duration_ms' => $event->context['duration_ms'] ?? null,
+                    'occurred_at' => $event->occurred_at?->toIso8601String(),
                 ])->all(),
             ],
             message: 'Metricas operativas generadas',

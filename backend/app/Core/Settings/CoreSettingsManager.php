@@ -134,12 +134,15 @@ class CoreSettingsManager
             'default' => null,
             'help' => null,
             'options' => [],
+            'hidden' => false,
         ], $setting);
 
         $rules = ['nullable'];
 
         if ($normalized['type'] === 'toggle') {
             $rules[] = 'boolean';
+        } elseif ($normalized['type'] === 'json') {
+            $rules[] = 'array';
         } else {
             $rules[] = 'string';
         }

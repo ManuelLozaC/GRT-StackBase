@@ -26,6 +26,11 @@ export const coreMenu = [
                 label: 'My Preferences',
                 icon: 'pi pi-fw pi-sliders-h',
                 to: '/account/preferences'
+            },
+            {
+                label: 'API Tokens',
+                icon: 'pi pi-fw pi-key',
+                to: '/account/api-tokens'
             }
         ]
     },

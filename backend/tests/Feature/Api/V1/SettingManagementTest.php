@@ -68,6 +68,11 @@ class SettingManagementTest extends TestCase
                 'theme' => 'dark',
                 'notifications_internal' => false,
                 'dense_tables' => true,
+                'data_engine_preferences' => [
+                    'demo-contacts' => [
+                        'visible_columns' => ['nombre', 'email'],
+                    ],
+                ],
             ])
             ->assertOk()
             ->assertJsonFragment([
@@ -85,6 +90,14 @@ class SettingManagementTest extends TestCase
             ->assertJsonFragment([
                 'key' => 'dense_tables',
                 'value' => true,
+            ])
+            ->assertJsonFragment([
+                'key' => 'data_engine_preferences',
+                'value' => [
+                    'demo-contacts' => [
+                        'visible_columns' => ['nombre', 'email'],
+                    ],
+                ],
             ]);
 
         $this->withHeader('Authorization', 'Bearer '.$token)

@@ -11,7 +11,7 @@ const state = reactive({
     form: {}
 });
 
-const userSettings = computed(() => settingsStore.userSettings.value);
+const userSettings = computed(() => settingsStore.userSettings.value.filter((setting) => !setting.hidden));
 
 function syncForm() {
     state.form = Object.fromEntries(userSettings.value.map((setting) => [setting.key, setting.value]));

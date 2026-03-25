@@ -10,7 +10,8 @@ const state = reactive({
     summary: null,
     byModule: [],
     byCategory: [],
-    recentEvents: []
+    recentEvents: [],
+    recentSlowRequests: []
 });
 
 const hasRecentEvents = computed(() => state.recentEvents.length > 0);
@@ -24,6 +25,7 @@ async function loadMetrics() {
         state.byModule = response.data.datos?.by_module ?? [];
         state.byCategory = response.data.datos?.by_category ?? [];
         state.recentEvents = response.data.datos?.recent_events ?? [];
+        state.recentSlowRequests = response.data.datos?.recent_slow_requests ?? [];
     } finally {
         state.loading = false;
     }
@@ -43,7 +45,7 @@ onMounted(loadMetrics);
         <StateSkeleton v-if="state.loading" />
 
         <template v-else>
-            <div class="grid gap-4 md:grid-cols-3">
+            <div class="grid gap-4 md:grid-cols-3 xl:grid-cols-5">
                 <div class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
                     <div class="text-xs uppercase tracking-[0.25em] text-slate-500">Eventos 24h</div>
                     <div class="mt-4 text-4xl font-semibold text-slate-900">{{ state.summary?.events_last_24h ?? 0 }}</div>
@@ -55,6 +57,14 @@ onMounted(loadMetrics);
                 <div class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
                     <div class="text-xs uppercase tracking-[0.25em] text-slate-500">Categorias activas</div>
                     <div class="mt-4 text-4xl font-semibold text-slate-900">{{ state.summary?.active_categories_last_24h ?? 0 }}</div>
+                </div>
+                <div class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+                    <div class="text-xs uppercase tracking-[0.25em] text-slate-500">Tiempo medio API</div>
+                    <div class="mt-4 text-4xl font-semibold text-slate-900">{{ state.summary?.average_response_time_ms ?? 0 }}ms</div>
+                </div>
+                <div class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+                    <div class="text-xs uppercase tracking-[0.25em] text-slate-500">Requests lentos</div>
+                    <div class="mt-4 text-4xl font-semibold text-slate-900">{{ state.summary?.slow_requests_last_24h ?? 0 }}</div>
                 </div>
             </div>
 
@@ -98,6 +108,21 @@ onMounted(loadMetrics);
                             <span v-else class="text-color-secondary">Sistema</span>
                         </template>
                     </Column>
+                </DataTable>
+            </div>
+
+            <div class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+                <h2 class="text-xl font-semibold text-slate-900 mb-4">Requests lentos recientes</h2>
+                <StateEmpty v-if="!state.recentSlowRequests.length" title="Sin requests lentos" description="No se detectaron requests lentos en la ventana operativa actual." icon="pi pi-stopwatch" />
+                <DataTable v-else :value="state.recentSlowRequests" dataKey="id">
+                    <Column field="occurred_at" header="Fecha" style="min-width: 12rem">
+                        <template #body="slotProps">{{ formatDateTime(slotProps.data.occurred_at) }}</template>
+                    </Column>
+                    <Column field="module_key" header="Modulo" style="min-width: 10rem" />
+                    <Column field="method" header="Metodo" style="min-width: 8rem" />
+                    <Column field="path" header="Path" style="min-width: 18rem" />
+                    <Column field="status" header="Estado" style="min-width: 8rem" />
+                    <Column field="duration_ms" header="Duracion" style="min-width: 8rem" />
                 </DataTable>
             </div>
         </template>

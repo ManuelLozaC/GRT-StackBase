@@ -1,6 +1,7 @@
 <script setup>
 import StateEmpty from '@/components/core/StateEmpty.vue';
 import StateSkeleton from '@/components/core/StateSkeleton.vue';
+import { settingsStore } from '@/core/settings/settingsStore';
 import { formatDateTime } from '@/core/settings/formatters';
 import { moduleCatalog } from '@/core/modules/moduleCatalog';
 import api from '@/service/api';
@@ -36,13 +37,15 @@ const state = reactive({
     loadingTransfers: false,
     transferRuns: [],
     importFile: null,
-    relationOptions: {}
+    relationOptions: {},
+    visibleColumnKeys: []
 });
 const importInput = ref(null);
 
 const currentResource = computed(() => state.resources.find((resource) => resource.key === state.selectedResourceKey) ?? null);
 const resources = computed(() => state.resources);
 const tableFields = computed(() => currentResource.value?.table_fields ?? []);
+const visibleTableFields = computed(() => tableFields.value.filter((field) => state.visibleColumnKeys.includes(field.key)));
 const formFields = computed(() => currentResource.value?.form_fields ?? []);
 const filterFields = computed(() => currentResource.value?.filter_fields ?? []);
 const customFields = computed(() => currentResource.value?.custom_fields ?? []);
@@ -59,6 +62,49 @@ const resourceCapabilities = computed(
             import: true
         }
 );
+const tableSize = computed(() => (settingsStore.getSettingValue('user', 'dense_tables', false) ? 'small' : null));
+
+function currentDataEnginePreferences() {
+    return settingsStore.getSettingValue('user', 'data_engine_preferences', {}) ?? {};
+}
+
+function defaultVisibleColumnsForCurrentResource() {
+    return tableFields.value.map((field) => field.key);
+}
+
+function syncVisibleColumnsFromPreferences() {
+    const resourceKey = state.selectedResourceKey;
+    const preferences = currentDataEnginePreferences();
+    const preferred = Array.isArray(preferences?.[resourceKey]?.visible_columns) ? preferences[resourceKey].visible_columns : [];
+    const validKeys = tableFields.value.map((field) => field.key);
+    const selected = preferred.filter((key) => validKeys.includes(key));
+
+    state.visibleColumnKeys = selected.length ? selected : validKeys;
+}
+
+async function saveViewPreferences() {
+    const resourceKey = state.selectedResourceKey;
+
+    if (!resourceKey) {
+        return;
+    }
+
+    const preferences = {
+        ...currentDataEnginePreferences(),
+        [resourceKey]: {
+            ...(currentDataEnginePreferences()?.[resourceKey] ?? {}),
+            visible_columns: state.visibleColumnKeys
+        }
+    };
+
+    try {
+        await settingsStore.updateUser({
+            data_engine_preferences: preferences
+        });
+    } catch {
+        // Si la persistencia falla, mantenemos la preferencia local actual en memoria.
+    }
+}
 
 function humanizeValue(field, value, displayValue = null) {
     if (field.relation?.display_key && displayValue) {
@@ -219,6 +265,7 @@ function prepareResourceState() {
     resetForm();
     state.transferRuns = [];
     state.relationOptions = {};
+    state.visibleColumnKeys = [];
 }
 
 function openCreateDialog() {
@@ -432,6 +479,11 @@ function clearSearch() {
     loadRecords();
 }
 
+async function onVisibleColumnsChange(value) {
+    state.visibleColumnKeys = value.length ? value : defaultVisibleColumnsForCurrentResource();
+    await saveViewPreferences();
+}
+
 function onPageChange(event) {
     state.page = Math.floor(event.first / event.rows) + 1;
     state.perPage = event.rows;
@@ -457,11 +509,13 @@ watch(
     () => state.selectedResourceKey,
     async () => {
         prepareResourceState();
+        syncVisibleColumnsFromPreferences();
         await Promise.all([loadRelationOptions(), loadRecords(), loadTransfers()]);
     }
 );
 
 onMounted(async () => {
+    await settingsStore.initialize();
     await moduleCatalog.loadModules();
     await loadResources();
 });
@@ -516,6 +570,13 @@ onMounted(async () => {
                     </div>
                 </div>
 
+                <div v-if="currentResource" class="mt-4 grid grid-cols-12 gap-4">
+                    <div class="col-span-12 md:col-span-5">
+                        <label class="block text-sm font-semibold text-slate-600 mb-2">Columnas visibles</label>
+                        <MultiSelect :modelValue="state.visibleColumnKeys" :options="tableFields" optionLabel="label" optionValue="key" display="chip" class="w-full" placeholder="Selecciona columnas" @update:modelValue="onVisibleColumnsChange" />
+                    </div>
+                </div>
+
                 <div v-if="currentResource" class="mt-5 flex flex-wrap gap-4 items-start">
                     <div v-for="field in filterFields" :key="field.key" class="w-full md:w-56">
                         <label class="block text-sm font-semibold text-slate-600 mb-2">{{ field.label }}</label>
@@ -532,6 +593,7 @@ onMounted(async () => {
                 <DataTable
                     :value="state.records"
                     dataKey="id"
+                    :size="tableSize"
                     lazy
                     paginator
                     :rows="state.perPage"
@@ -544,7 +606,7 @@ onMounted(async () => {
                     @page="onPageChange"
                     @sort="onSort"
                 >
-                    <Column v-for="field in tableFields" :key="field.key" :field="field.key" :header="field.label" :sortable="field.sortable" style="min-width: 12rem">
+                    <Column v-for="field in visibleTableFields" :key="field.key" :field="field.key" :header="field.label" :sortable="field.sortable" style="min-width: 12rem">
                         <template #body="slotProps">
                             <Tag v-if="field.type === 'select'" :severity="tagSeverity(field.key, slotProps.data[field.key])" :value="humanizeValue(field, slotProps.data[field.key], slotProps.data[field.relation?.display_key])" />
                             <span v-else>{{ humanizeValue(field, slotProps.data[field.key], slotProps.data[field.relation?.display_key]) }}</span>
