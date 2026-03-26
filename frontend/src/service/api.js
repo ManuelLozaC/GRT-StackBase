@@ -3,8 +3,24 @@ import { uiFeedbackStore } from '@/core/ui/uiFeedbackStore';
 
 let accessToken = null;
 
+function normalizeApiBaseUrl(rawBaseUrl) {
+    const fallbackBaseUrl = 'http://localhost:8080/api';
+
+    if (!rawBaseUrl || typeof rawBaseUrl !== 'string') {
+        return fallbackBaseUrl;
+    }
+
+    const trimmedBaseUrl = rawBaseUrl.trim().replace(/\/+$/, '');
+
+    if (trimmedBaseUrl.endsWith('/api/v1')) {
+        return trimmedBaseUrl.slice(0, -3);
+    }
+
+    return trimmedBaseUrl;
+}
+
 const api = axios.create({
-    baseURL: import.meta.env.VITE_API_URL || 'http://localhost:8080/api/v1',
+    baseURL: normalizeApiBaseUrl(import.meta.env.VITE_API_URL),
     headers: {
         'Content-Type': 'application/json',
         Accept: 'application/json'

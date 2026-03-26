@@ -2,9 +2,9 @@
 
 namespace App\Core\Modules;
 
-use App\Core\Modules\Models\SystemModule;
 use DomainException;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use Throwable;
 
@@ -27,9 +27,9 @@ class ModuleRegistry
 
         $this->syncDefaults();
 
-        $persisted = SystemModule::query()
+        $persisted = $this->modulesTableQuery()
             ->get()
-            ->map(fn (SystemModule $module): array => $module->toRegistryArray())
+            ->map(fn (object $module): array => $this->mapPersistedModule($module))
             ->keyBy('key');
 
         $catalog = $defaults
@@ -83,19 +83,28 @@ class ModuleRegistry
             ]);
         }
 
-        $record = SystemModule::query()->firstOrNew([
-            'key' => $key,
-        ]);
-
-        $record->fill([
+        $payload = [
             'name' => $module['name'] ?? $key,
             'description' => $module['description'] ?? null,
             'version' => $module['version'] ?? null,
             'provider' => $module['provider'] ?? null,
             'is_enabled' => $enabled,
             'is_demo' => (bool) ($module['is_demo'] ?? false),
-        ]);
-        $record->save();
+        ];
+
+        $existing = $this->modulesTableQuery()
+            ->where('key', $key)
+            ->first();
+
+        if ($existing) {
+            $this->modulesTableQuery()
+                ->where('key', $key)
+                ->update($payload);
+        } else {
+            $this->modulesTableQuery()->insert(array_merge([
+                'key' => $key,
+            ], $payload, $this->timestampsPayload()));
+        }
 
         return $this->all()
             ->firstWhere('key', $key);
@@ -104,24 +113,61 @@ class ModuleRegistry
     protected function syncDefaults(): void
     {
         foreach ($this->modules as $key => $module) {
-            $record = SystemModule::query()->firstOrNew([
-                'key' => $key,
-            ]);
-
-            $record->fill([
+            $payload = [
                 'name' => $module['name'] ?? $key,
                 'description' => $module['description'] ?? null,
                 'version' => $module['version'] ?? null,
                 'provider' => $module['provider'] ?? null,
                 'is_demo' => (bool) ($module['is_demo'] ?? false),
-            ]);
+            ];
 
-            if (! $record->exists) {
-                $record->is_enabled = (bool) ($module['enabled'] ?? false);
+            $existing = $this->modulesTableQuery()
+                ->where('key', $key)
+                ->first();
+
+            if ($existing) {
+                $this->modulesTableQuery()
+                    ->where('key', $key)
+                    ->update(array_merge($payload, [
+                        'updated_at' => now(),
+                    ]));
+
+                continue;
             }
 
-            $record->save();
+            $this->modulesTableQuery()->insert(array_merge([
+                'key' => $key,
+                'is_enabled' => (bool) ($module['enabled'] ?? false),
+            ], $payload, $this->timestampsPayload()));
         }
+    }
+
+    protected function modulesTableQuery()
+    {
+        return DB::table('system_modules');
+    }
+
+    protected function mapPersistedModule(object $module): array
+    {
+        return [
+            'key' => $module->key,
+            'name' => $module->name,
+            'description' => $module->description,
+            'version' => $module->version,
+            'provider' => $module->provider,
+            'enabled' => (bool) $module->is_enabled,
+            'is_demo' => (bool) $module->is_demo,
+        ];
+    }
+
+    protected function timestampsPayload(): array
+    {
+        $timestamp = now();
+
+        return [
+            'created_at' => $timestamp,
+            'updated_at' => $timestamp,
+        ];
     }
 
     protected function normalizeModule(string $key, array $module): array
