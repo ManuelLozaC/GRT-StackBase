@@ -6,7 +6,7 @@ import { tenantStore } from '@/core/auth/tenantStore';
 import { notificationStore } from '@/core/notifications/notificationStore';
 import { useLayout } from '@/layout/composables/layout';
 import { useToast } from 'primevue/usetoast';
-import { computed } from 'vue';
+import { computed, ref } from 'vue';
 import { useRouter } from 'vue-router';
 import AppConfigurator from './AppConfigurator.vue';
 
@@ -20,6 +20,7 @@ const activeWorkAssignmentId = computed(() => tenantStore.activeWorkAssignment.v
 const unreadNotifications = computed(() => notificationStore.unreadCount.value);
 const canManageSettings = computed(() => accessStore.hasPermission('settings.manage'));
 const impersonation = computed(() => sessionStore.state.user?.impersonation ?? { active: false, impersonated_by: null });
+const actionMenuOpen = ref(false);
 
 async function logout() {
     await sessionStore.logout();
@@ -78,24 +79,28 @@ async function openNotifications() {
 }
 
 async function openPreferences() {
+    actionMenuOpen.value = false;
     await router.push({
         name: 'my-preferences'
     });
 }
 
 async function openApiTokens() {
+    actionMenuOpen.value = false;
     await router.push({
         name: 'api-tokens'
     });
 }
 
 async function openSystemSettings() {
+    actionMenuOpen.value = false;
     await router.push({
         name: 'system-settings'
     });
 }
 
 async function leaveImpersonation() {
+    actionMenuOpen.value = false;
     await sessionStore.leaveImpersonation();
 
     toast.add({
@@ -126,6 +131,10 @@ async function toggleThemePreference() {
     } catch {
         // El toggle visual ya se aplico; si la persistencia falla no bloqueamos la UX local.
     }
+}
+
+function toggleActionMenu() {
+    actionMenuOpen.value = !actionMenuOpen.value;
 }
 </script>
 
@@ -193,26 +202,30 @@ async function toggleThemePreference() {
                             </option>
                         </select>
                     </label>
-                    <button type="button" class="layout-topbar-action">
-                        <i class="pi pi-user"></i>
-                        <span>{{ sessionStore.state.user?.name || 'Profile' }}</span>
-                    </button>
-                    <button type="button" class="layout-topbar-action" @click="openPreferences">
-                        <i class="pi pi-sliders-h"></i>
-                        <span>Preferencias</span>
-                    </button>
-                    <button type="button" class="layout-topbar-action" @click="openApiTokens">
-                        <i class="pi pi-key"></i>
-                        <span>API Tokens</span>
-                    </button>
-                    <button v-if="canManageSettings" type="button" class="layout-topbar-action" @click="openSystemSettings">
-                        <i class="pi pi-cog"></i>
-                        <span>System Settings</span>
-                    </button>
-                    <button type="button" class="layout-topbar-action">
-                        <i class="pi pi-envelope"></i>
-                        <span>{{ sessionStore.state.user?.email || 'No email' }}</span>
-                    </button>
+                    <div class="topbar-user-summary">
+                        <div class="topbar-user-name">{{ sessionStore.state.user?.name || 'Usuario' }}</div>
+                        <div class="topbar-user-email">{{ sessionStore.state.user?.email || 'Sin correo' }}</div>
+                    </div>
+                    <div class="topbar-quick-actions">
+                        <button type="button" class="layout-topbar-action" @click="openPreferences">
+                            <i class="pi pi-sliders-h"></i>
+                            <span>Preferencias</span>
+                        </button>
+                        <button type="button" class="layout-topbar-action" @click="toggleActionMenu">
+                            <i class="pi pi-briefcase"></i>
+                            <span>Cuenta</span>
+                        </button>
+                    </div>
+                    <div v-if="actionMenuOpen" class="topbar-action-panel">
+                        <button type="button" class="topbar-action-panel-item" @click="openApiTokens">
+                            <i class="pi pi-key"></i>
+                            <span>API Tokens</span>
+                        </button>
+                        <button v-if="canManageSettings" type="button" class="topbar-action-panel-item" @click="openSystemSettings">
+                            <i class="pi pi-cog"></i>
+                            <span>System Settings</span>
+                        </button>
+                    </div>
                     <button type="button" class="layout-topbar-action" @click="logout">
                         <i class="pi pi-sign-out"></i>
                         <span>Logout</span>
@@ -286,5 +299,48 @@ async function toggleThemePreference() {
     padding: 0.5rem 0.9rem;
     cursor: pointer;
     font-weight: 600;
+}
+
+.topbar-user-summary {
+    display: flex;
+    flex-direction: column;
+    gap: 0.1rem;
+    padding: 0.6rem 1rem 0.35rem;
+    color: var(--text-color);
+}
+
+.topbar-user-name {
+    font-weight: 600;
+}
+
+.topbar-user-email {
+    font-size: 0.85rem;
+    opacity: 0.72;
+}
+
+.topbar-quick-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 0 0.75rem 0.35rem;
+}
+
+.topbar-action-panel {
+    display: grid;
+    gap: 0.35rem;
+    padding: 0 0.9rem 0.9rem;
+}
+
+.topbar-action-panel-item {
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+    width: 100%;
+    border: 1px solid var(--surface-border);
+    border-radius: 0.8rem;
+    background: var(--surface-card);
+    color: var(--text-color);
+    padding: 0.75rem 0.9rem;
+    cursor: pointer;
 }
 </style>

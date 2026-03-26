@@ -2,20 +2,27 @@
 import { sessionStore } from '@/core/auth/sessionStore';
 import FloatingConfigurator from '@/components/FloatingConfigurator.vue';
 import { useToast } from 'primevue/usetoast';
-import { ref } from 'vue';
+import { computed, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
 const router = useRouter();
 const route = useRoute();
 const toast = useToast();
 
-const email = ref('admin@stackbase.local');
-const password = ref('password');
+const email = ref('mloza@grt.com.bo');
+const password = ref('admin1984!');
 const checked = ref(true);
 const loading = ref(false);
+const errorMessage = ref('');
+const submitLabel = computed(() => (loading.value ? 'Ingresando...' : 'Ingresar'));
 
 async function submitLogin() {
+    if (loading.value) {
+        return;
+    }
+
     loading.value = true;
+    errorMessage.value = '';
 
     try {
         await sessionStore.login({
@@ -33,10 +40,12 @@ async function submitLogin() {
 
         await router.push(route.query.redirect || '/');
     } catch (error) {
+        errorMessage.value = error?.response?.data?.mensaje ?? 'Verifica tus credenciales e intentalo nuevamente.';
+
         toast.add({
             severity: 'error',
             summary: 'No se pudo iniciar sesion',
-            detail: error?.response?.data?.mensaje ?? 'Verifica tus credenciales.',
+            detail: errorMessage.value,
             life: 4000
         });
     } finally {
@@ -65,30 +74,32 @@ async function submitLogin() {
                     </div>
 
                     <div class="mb-6 p-4 rounded-lg border border-primary-200 bg-primary-50 text-sm text-primary-900">
-                        Usuario demo: <b>admin@stackbase.local</b><br />
-                        Password demo: <b>password</b>
+                        Usuario inicial: <b>mloza@grt.com.bo</b> o <b>mloza</b><br />
+                        Password inicial: <b>admin1984!</b>
                     </div>
 
                     <form class="flex flex-col gap-4" @submit.prevent="submitLogin">
                         <div>
-                            <label for="email1" class="block text-surface-900 dark:text-surface-0 text-xl font-medium mb-2">Email</label>
-                            <InputText id="email1" v-model="email" type="email" placeholder="Email address" class="w-full" />
+                            <label for="email1" class="block text-surface-900 dark:text-surface-0 text-xl font-medium mb-2">Correo o alias</label>
+                            <InputText id="email1" v-model="email" type="text" placeholder="mloza@grt.com.bo o mloza" class="w-full" :disabled="loading" />
                         </div>
 
                         <div>
-                            <label for="password1" class="block text-surface-900 dark:text-surface-0 font-medium text-xl mb-2">Password</label>
-                            <Password id="password1" v-model="password" placeholder="Password" :toggleMask="true" fluid :feedback="false"></Password>
+                            <label for="password1" class="block text-surface-900 dark:text-surface-0 font-medium text-xl mb-2">Contrasena</label>
+                            <Password id="password1" v-model="password" placeholder="Contrasena" :toggleMask="true" fluid :feedback="false" :disabled="loading"></Password>
                         </div>
 
                         <div class="flex items-center justify-between mt-2 mb-2 gap-8">
                             <div class="flex items-center">
-                                <Checkbox id="rememberme1" v-model="checked" binary class="mr-2"></Checkbox>
-                                <label for="rememberme1">Remember me</label>
+                                <Checkbox id="rememberme1" v-model="checked" binary class="mr-2" :disabled="loading"></Checkbox>
+                                <label for="rememberme1">Recordar sesion</label>
                             </div>
-                            <router-link to="/auth/forgot-password" class="font-medium no-underline ml-2 text-right text-primary">Forgot password?</router-link>
+                            <router-link to="/auth/forgot-password" class="font-medium no-underline ml-2 text-right text-primary">Olvide mi contrasena</router-link>
                         </div>
 
-                        <Button type="submit" label="Sign In" class="w-full" :loading="loading"></Button>
+                        <Message v-if="errorMessage" severity="error" :closable="false">{{ errorMessage }}</Message>
+
+                        <Button type="submit" :label="submitLabel" class="w-full" :loading="loading" :disabled="loading"></Button>
                     </form>
 
                     <div class="mt-6 text-center text-sm text-color-secondary">

@@ -13,6 +13,7 @@ const confirm = useConfirm();
 const state = reactive({
     loading: false,
     saving: false,
+    revokingId: null,
     items: [],
     form: {
         name: '',
@@ -35,6 +36,10 @@ async function loadTokens() {
 }
 
 async function createToken() {
+    if (state.saving) {
+        return;
+    }
+
     state.saving = true;
 
     try {
@@ -71,14 +76,20 @@ function revokeToken(token) {
         acceptLabel: 'Revocar',
         rejectLabel: 'Cancelar',
         accept: async () => {
-            await api.delete(`/v1/auth/api-tokens/${token.id}`);
-            await loadTokens();
-            toast.add({
-                severity: 'success',
-                summary: 'Token revocado',
-                detail: 'El acceso API ya fue revocado.',
-                life: 3000
-            });
+            state.revokingId = token.id;
+
+            try {
+                await api.delete(`/v1/auth/api-tokens/${token.id}`);
+                await loadTokens();
+                toast.add({
+                    severity: 'success',
+                    summary: 'Token revocado',
+                    detail: 'El acceso API ya fue revocado.',
+                    life: 3000
+                });
+            } finally {
+                state.revokingId = null;
+            }
         }
     });
 }
@@ -98,16 +109,18 @@ onMounted(loadTokens);
             <div class="grid gap-4 md:grid-cols-[2fr_1fr_auto]">
                 <div>
                     <label class="block text-sm font-semibold text-slate-600 mb-2">Nombre del token</label>
-                    <InputText v-model="state.form.name" class="w-full" placeholder="Ej. Integracion BI o Script local" />
+                    <InputText v-model="state.form.name" class="w-full" placeholder="Ej. Integracion BI o Script local" :disabled="state.saving" />
                 </div>
                 <div>
                     <label class="block text-sm font-semibold text-slate-600 mb-2">Expira en dias</label>
-                    <InputNumber v-model="state.form.expires_in_days" class="w-full" :useGrouping="false" />
+                    <InputNumber v-model="state.form.expires_in_days" class="w-full" :useGrouping="false" :disabled="state.saving" />
                 </div>
                 <div class="flex items-end">
-                    <Button label="Crear token" icon="pi pi-key" :loading="state.saving" @click="createToken" />
+                    <Button label="Crear token" icon="pi pi-key" :loading="state.saving" :disabled="state.saving" @click="createToken" />
                 </div>
             </div>
+
+            <div v-if="state.saving" class="mt-4 text-sm text-slate-500">Generando token y actualizando el listado...</div>
 
             <div v-if="state.plainTextToken" class="mt-5 rounded-2xl border border-emerald-200 bg-emerald-50 p-4">
                 <div class="text-sm font-semibold text-emerald-800 mb-2">Token generado</div>
@@ -135,7 +148,7 @@ onMounted(loadTokens);
                     </Column>
                     <Column header="Acciones" style="min-width: 8rem">
                         <template #body="slotProps">
-                            <Button label="Revocar" icon="pi pi-times" text severity="danger" @click="revokeToken(slotProps.data)" />
+                            <Button label="Revocar" icon="pi pi-times" text severity="danger" :loading="state.revokingId === slotProps.data.id" :disabled="state.revokingId !== null" @click="revokeToken(slotProps.data)" />
                         </template>
                     </Column>
                 </DataTable>

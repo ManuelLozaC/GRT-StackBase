@@ -18,6 +18,7 @@ use App\Http\Requests\Api\V1\Auth\SwitchActiveWorkAssignmentRequest;
 use App\Models\AsignacionLaboral;
 use App\Models\Organizacion;
 use App\Models\User;
+use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -64,6 +65,34 @@ class AuthController extends Controller
                 status: 422,
             );
         }
+
+        $user->load([
+            'organizacionActiva:id,nombre,slug',
+            'organizaciones:id,nombre,slug',
+            'asignacionLaboralActiva.persona:id,nombres,apellido_paterno,apellido_materno',
+            'asignacionLaboralActiva.oficina:id,nombre,slug',
+            'asignacionLaboralActiva.cargo:id,nombre,slug',
+            'asignacionesLaborales' => function ($query): void {
+                $query->select([
+                    'id',
+                    'organizacion_id',
+                    'persona_id',
+                    'oficina_id',
+                    'cargo_id',
+                    'user_id',
+                    'es_principal',
+                    'estado',
+                    'fecha_inicio',
+                    'fecha_fin',
+                    'metadata',
+                ])
+                    ->with([
+                        'persona:id,nombres,apellido_paterno,apellido_materno',
+                        'oficina:id,nombre,slug',
+                        'cargo:id,nombre,slug',
+                    ]);
+            },
+        ]);
 
         $token = $this->tokens->createForUser(
             user: $user,
@@ -371,17 +400,6 @@ class AuthController extends Controller
             return null;
         }
 
-        $user->loadMissing([
-            'organizacionActiva:id,nombre,slug',
-            'organizaciones:id,nombre,slug',
-            'asignacionLaboralActiva.persona:id,nombres,apellido_paterno,apellido_materno',
-            'asignacionLaboralActiva.oficina:id,nombre,slug',
-            'asignacionLaboralActiva.cargo:id,nombre,slug',
-            'asignacionesLaborales.persona:id,nombres,apellido_paterno,apellido_materno',
-            'asignacionesLaborales.oficina:id,nombre,slug',
-            'asignacionesLaborales.cargo:id,nombre,slug',
-        ]);
-
         $user = $this->ensureActiveWorkAssignment($user) ?? $user;
         $activeOrganizationId = $user->organizacion_activa_id;
         $availableAssignments = $user->asignacionesLaborales
@@ -547,12 +565,6 @@ class AuthController extends Controller
             return null;
         }
 
-        $assignment->loadMissing([
-            'persona:id,nombres,apellido_paterno,apellido_materno',
-            'oficina:id,nombre,slug',
-            'cargo:id,nombre,slug',
-        ]);
-
         return [
             'id' => $assignment->id,
             'organizacion_id' => $assignment->organizacion_id,
@@ -574,7 +586,20 @@ class AuthController extends Controller
             'estado' => $assignment->estado,
             'fecha_inicio' => $assignment->fecha_inicio?->toDateString(),
             'fecha_fin' => $assignment->fecha_fin?->toDateString(),
-            'etiqueta_contexto' => $assignment->etiqueta_contexto,
+            'etiqueta_contexto' => $this->resolveWorkAssignmentLabel($assignment),
         ];
+    }
+
+    protected function resolveWorkAssignmentLabel(AsignacionLaboral $assignment): string
+    {
+        $parts = array_filter([
+            $assignment->persona?->nombre_completo,
+            $assignment->cargo?->nombre,
+            $assignment->oficina?->nombre,
+        ]);
+
+        return $parts === []
+            ? sprintf('Asignacion #%s', $assignment->getKey())
+            : implode(' | ', $parts);
     }
 }
