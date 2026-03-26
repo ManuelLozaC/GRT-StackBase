@@ -92,6 +92,15 @@ return [
                 ],
             ],
             'features' => [
+                'demo.ui-showcase',
+                'demo.ui-feedback',
+                'demo.ui-forms',
+                'demo.ui-data-display',
+                'demo.ui-async-patterns',
+                'demo.ui-layouts',
+                'demo.ui-typography-content',
+                'demo.ui-advanced-inputs',
+                'demo.ui-screen-recipes',
                 'demo.notifications',
                 'demo.files',
                 'demo.jobs',
@@ -130,6 +139,96 @@ return [
                         'menu' => [
                             'label' => 'Platform Demo',
                             'icon' => 'pi pi-fw pi-play-circle',
+                        ],
+                    ],
+                    [
+                        'path' => '/demo/ui-showcase',
+                        'name' => 'demo-ui-showcase',
+                        'view' => 'demo.ui-showcase',
+                        'meta' => [],
+                        'menu' => [
+                            'label' => 'UI Showcase',
+                            'icon' => 'pi pi-fw pi-palette',
+                        ],
+                    ],
+                    [
+                        'path' => '/demo/ui-feedback',
+                        'name' => 'demo-ui-feedback',
+                        'view' => 'demo.ui-feedback',
+                        'meta' => [],
+                        'menu' => [
+                            'label' => 'UI Feedback',
+                            'icon' => 'pi pi-fw pi-megaphone',
+                        ],
+                    ],
+                    [
+                        'path' => '/demo/ui-forms',
+                        'name' => 'demo-ui-forms',
+                        'view' => 'demo.ui-forms',
+                        'meta' => [],
+                        'menu' => [
+                            'label' => 'UI Forms',
+                            'icon' => 'pi pi-fw pi-file-edit',
+                        ],
+                    ],
+                    [
+                        'path' => '/demo/ui-data-display',
+                        'name' => 'demo-ui-data-display',
+                        'view' => 'demo.ui-data-display',
+                        'meta' => [],
+                        'menu' => [
+                            'label' => 'UI Data Display',
+                            'icon' => 'pi pi-fw pi-table',
+                        ],
+                    ],
+                    [
+                        'path' => '/demo/ui-async-patterns',
+                        'name' => 'demo-ui-async-patterns',
+                        'view' => 'demo.ui-async-patterns',
+                        'meta' => [],
+                        'menu' => [
+                            'label' => 'UI Async Patterns',
+                            'icon' => 'pi pi-fw pi-sync',
+                        ],
+                    ],
+                    [
+                        'path' => '/demo/ui-layouts',
+                        'name' => 'demo-ui-layouts',
+                        'view' => 'demo.ui-layouts',
+                        'meta' => [],
+                        'menu' => [
+                            'label' => 'UI Layouts',
+                            'icon' => 'pi pi-fw pi-th-large',
+                        ],
+                    ],
+                    [
+                        'path' => '/demo/ui-typography-content',
+                        'name' => 'demo-ui-typography-content',
+                        'view' => 'demo.ui-typography-content',
+                        'meta' => [],
+                        'menu' => [
+                            'label' => 'UI Typography',
+                            'icon' => 'pi pi-fw pi-align-left',
+                        ],
+                    ],
+                    [
+                        'path' => '/demo/ui-advanced-inputs',
+                        'name' => 'demo-ui-advanced-inputs',
+                        'view' => 'demo.ui-advanced-inputs',
+                        'meta' => [],
+                        'menu' => [
+                            'label' => 'UI Advanced Inputs',
+                            'icon' => 'pi pi-fw pi-sliders-h',
+                        ],
+                    ],
+                    [
+                        'path' => '/demo/ui-screen-recipes',
+                        'name' => 'demo-ui-screen-recipes',
+                        'view' => 'demo.ui-screen-recipes',
+                        'meta' => [],
+                        'menu' => [
+                            'label' => 'UI Screen Recipes',
+                            'icon' => 'pi pi-fw pi-clone',
                         ],
                     ],
                     [

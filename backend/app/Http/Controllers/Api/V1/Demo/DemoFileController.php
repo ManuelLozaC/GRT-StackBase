@@ -58,6 +58,11 @@ class DemoFileController extends Controller
                 'source' => 'demo-platform',
                 'notes' => $request->string('notes')->toString() ?: null,
             ],
+            attachment: [
+                'resource_key' => $request->string('attached_resource_key')->toString() ?: null,
+                'record_id' => $request->integer('attached_record_id') ?: null,
+                'record_label' => $request->string('attached_record_label')->toString() ?: null,
+            ],
         );
 
         $this->auditLogger->record(
@@ -243,6 +248,11 @@ class DemoFileController extends Controller
             'security_token' => $file->security_token,
             'uploaded_at' => $file->created_at?->toIso8601String(),
             'uploaded_by' => $file->uploader?->name,
+            'attachment' => [
+                'resource_key' => $file->attached_resource_key,
+                'record_id' => $file->attached_record_id,
+                'record_label' => $file->attached_record_label,
+            ],
         ];
     }
 

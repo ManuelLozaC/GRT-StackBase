@@ -30,6 +30,8 @@ Resolver una sola vez las capacidades transversales del producto y reutilizarlas
 - observabilidad base: request IDs, security logs, error logs y metrics
 - webhooks salientes y entrantes, API tokens y OpenAPI JSON
 - bootstrap oficial inicial con `GRT SRL`, `TalentHub` y `Manuel Loza`
+- pipeline CI operativo con backend `PHP 8.3 + MySQL + Redis` y frontend `Node 20`
+- `Demo Module` expandido como biblioteca viva de ejemplos tecnicos, UI y recipes de pantalla
 
 ## Fuente de verdad documental
 
@@ -39,6 +41,9 @@ Resolver una sola vez las capacidades transversales del producto y reutilizarlas
 - arquitectura base: [docs/stackbase.md](./docs/stackbase.md)
 - dominio vigente: [docs/modelo_dominio.md](./docs/modelo_dominio.md)
 - contrato modular: [docs/contrato_modulos.md](./docs/contrato_modulos.md)
+- demo module: [docs/demo_module.md](./docs/demo_module.md)
+- pipeline CI: [docs/ci.md](./docs/ci.md)
+- despliegue Droplet: [docs/deploy_droplet.md](./docs/deploy_droplet.md)
 - decisiones cerradas: [preguntas.md](./preguntas.md)
 
 ## Verificacion rapida
@@ -54,8 +59,8 @@ npm run build
 
 ## Siguiente foco
 
-- orden documental y fuente unica de verdad
-- cierre del modelo organizacional y laboral
-- convergencia total de `organizacion = empresa`
-- tenancy transversal completa
-- storage real con Spaces
+- refinamiento continuo del `Demo Module` como biblioteca viva del stack
+- pruebas frontend mas profundas sobre stores, guards y pantallas criticas
+- endurecimiento transversal de tenancy, observabilidad y seguridad operativa
+- automatizacion progresiva de despliegue, backups y operacion sobre Droplets
+- evolucion del core y de los modulos sin inflar la base fundacional

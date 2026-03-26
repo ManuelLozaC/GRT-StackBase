@@ -1,6 +1,60 @@
 <script setup>
 const demoCapabilities = [
     {
+        title: 'UI Showcase y patrones de interfaz',
+        status: 'Funcional',
+        description: 'Incluye ejemplos reutilizables de toasts, modals, banners, tipografia, forms, inputs, datepickers, tablas y estados visuales.',
+        to: '/demo/ui-showcase'
+    },
+    {
+        title: 'UI Feedback',
+        status: 'Funcional',
+        description: 'Ejemplos enfocados en toasts, confirmaciones, modals, drawers, loaders, banners y empty states.',
+        to: '/demo/ui-feedback'
+    },
+    {
+        title: 'UI Forms e inputs',
+        status: 'Funcional',
+        description: 'Incluye formularios de referencia con validacion, inputs, password, radios, checkboxes, toggles y file input.',
+        to: '/demo/ui-forms'
+    },
+    {
+        title: 'UI Data Display',
+        status: 'Funcional',
+        description: 'Muestra cards resumen, tablas con filtro, tags de estado, listados compactos y acciones visibles.',
+        to: '/demo/ui-data-display'
+    },
+    {
+        title: 'UI Async Patterns',
+        status: 'Funcional',
+        description: 'Incluye submit con loading, retry visible, polling y progreso para procesos largos o integraciones.',
+        to: '/demo/ui-async-patterns'
+    },
+    {
+        title: 'UI Layouts',
+        status: 'Funcional',
+        description: 'Muestra composiciones de pantalla con breadcrumb, header, tabs visuales, aside y bloques reutilizables.',
+        to: '/demo/ui-layouts'
+    },
+    {
+        title: 'UI Typography y contenido',
+        status: 'Funcional',
+        description: 'Define jerarquias de titulos, parrafos, notas editoriales, listas y bloques de ayuda para pantallas administrativas.',
+        to: '/demo/ui-typography-content'
+    },
+    {
+        title: 'UI Advanced Inputs',
+        status: 'Funcional',
+        description: 'Agrupa inputs menos triviales como SelectButton, rangos de fecha, password con feedback y combinaciones mas ricas.',
+        to: '/demo/ui-advanced-inputs'
+    },
+    {
+        title: 'UI Screen Recipes',
+        status: 'Funcional',
+        description: 'Muestra recetas de pantalla completas para listados, detalle con aside y formularios largos.',
+        to: '/demo/ui-screen-recipes'
+    },
+    {
         title: 'Gestion de archivos y descargas',
         status: 'Funcional',
         description: 'Subida, descarga directa, signed URLs e historial por usuario dentro del tenant activo.',

@@ -52,7 +52,7 @@ class SettingController extends Controller
 
         return $this->successResponse(
             data: $this->settings->forScope('organization', $user->organizacion_activa_id),
-            message: 'Settings de organizacion listados',
+            message: 'Settings de empresa listados',
         );
     }
 
@@ -63,7 +63,7 @@ class SettingController extends Controller
 
         return $this->successResponse(
             data: $this->settings->update('organization', $request->all(), $user->organizacion_activa_id),
-            message: 'Settings de organizacion actualizados',
+            message: 'Settings de empresa actualizados',
         );
     }
 

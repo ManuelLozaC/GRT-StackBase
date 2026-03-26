@@ -26,6 +26,7 @@ class CoreSettingsManager
         return [
             'global' => $global,
             'organization' => $organization,
+            'company' => $organization,
             'user' => $preferences,
             'feature_flags' => $this->featureFlags($global),
         ];

@@ -1,191 +1,137 @@
 # Revision del estado actual
 
-> Diagnostico ejecutivo del proyecto al 2026-03-25, despues de la limpieza documental principal.
+> Diagnostico ejecutivo del proyecto al 2026-03-26, despues del cierre de la version base.
 
 ## Resumen ejecutivo
 
-El proyecto ya tiene una base funcional importante y una direccion tecnica clara:
+El proyecto ya puede considerarse una version base cerrada para iniciar nuevos sistemas sobre `Core Platform + Modules`.
 
-- backend Laravel 12 con API `v1`
+La base actual ya cumple con lo principal que se definio durante el proyecto:
+
+- backend Laravel 12 API-first
 - frontend Vue 3 modular
+- arquitectura local con Docker alineada a Droplets
+- storage real en DigitalOcean Spaces
+- bootstrap oficial inicial
 - tenancy base
-- RBAC inicial
+- RBAC base y permisos contextuales iniciales
 - Data Engine reutilizable
-- settings por ambito
-- webhooks, logs, metricas y observabilidad base
-- stack local dockerizado
+- CI operativa
 
-La conclusion principal es esta:
+## Validacion de integridad contra requerimientos
 
-El proyecto ya puede considerarse una plataforma avanzada en construccion, pero todavia no puede considerarse un stack base cerrado ni listo para multiplicar productos sin friccion.
+### Requerimientos cumplidos
 
-## Lo que ya quedo ordenado
+- `Docker local + Droplets`:
+  la arquitectura ya fue alineada con `app`, `web`, `worker`, `scheduler`, `db`, `redis` y `search`.
+- `Laravel 12`:
+  vigente y reflejado en codigo y documentacion.
+- `PHP 8.3 como objetivo`:
+  vigente en runtime Docker y CI.
+- `organizacion = empresa`:
+  decision ya documentada y mayormente aterrizada en runtime visible.
+- `tenant aislado por cliente`:
+  vigente como decision de arquitectura.
+- `login + gestion de usuarios frontend/backend`:
+  implementados.
+- `bootstrap inicial real`:
+  implementado con `GRT SRL`, `TalentHub` y `Manuel Loza`.
+- `storage en Spaces`:
+  implementado y validado con escritura, lectura y borrado reales.
+- `CI`:
+  operativa en GitHub Actions.
 
-- README, dominio, roadmap y backlog ya apuntan a la misma narrativa
-- `pending.md` raiz ya no compite con el backlog operativo
-- `preguntas.md` ya fue convertido en registro de decisiones cerradas
-- `local.md` ya refleja la situacion real actual del runtime
-- la decision `organizacion = empresa` ya quedo documentada
+### Requerimientos que quedan como evolucion, no como bloqueo de cierre base
 
-## Fortalezas reales del estado actual
+- ampliar pruebas frontend
+- endurecer tenancy transversal en cada superficie restante
+- profundizar versionado y procesos async pesados de archivos
+- observabilidad, backups y despliegue automatizado
+
+## Fortalezas reales
 
 ### Backend
 
-- API versionada en [`backend/routes/api.php`](/D:/Desarrollo/GRT-StackBase/backend/routes/api.php)
-- auth real con login, register, reset, `me`, cambio de organizacion e impersonacion
-- metadata modular y administracion de modulos
-- Data Engine con CRUD, import/export y transfer runs
-- recursos base del dominio ya gestionables desde Data Engine
-- settings globales, por organizacion y por usuario
-- observabilidad base: logs de seguridad, logs de error, metricas y operations overview
-- webhooks salientes y entrantes con trazabilidad
+- API versionada y amplia
+- auth real con alias, impersonacion y tokens
+- Data Engine con import/export y transfers
+- settings por ambito
+- webhooks, audit, logs, metrics y operaciones
+- base de archivos y jobs reusable
 
 ### Frontend
 
-- router modular con guards en [`frontend/src/router/index.js`](/D:/Desarrollo/GRT-StackBase/frontend/src/router/index.js)
-- stores separados por responsabilidad
 - shell administrativo real
-- consumo de metadata modular desde API
-- administracion de modulos, settings, seguridad, operaciones y usuarios
+- guards y stores separados
+- modulo demo activo como sandbox tecnico y biblioteca visual/didactica
+- administracion real de modulos, usuarios, settings y operaciones
 
-### Calidad actual
+### Operacion
 
-- existe suite backend no trivial en [`backend/tests`](/D:/Desarrollo/GRT-StackBase/backend/tests)
-- hay `lint` y `build` para frontend
-- el repo muestra una arquitectura mas consistente que la de un template apenas adaptado
+- Docker Compose ya modela `worker` y `scheduler`
+- CI valida backend y frontend
+- Spaces ya esta integrado
 
-## Hallazgos prioritarios vigentes
+## Debilidades vigentes
 
-### P0. El bootstrap oficial ya existe, pero todavia es una base inicial y no el dominio completo
-La semilla oficial ya crea `GRT SRL`, `TalentHub` y `Manuel Loza`. El pendiente ahora ya no es "tener bootstrap", sino expandir ese bootstrap hacia el dominio completo de personas, oficinas y estructura laboral.
+### P1. Demo Module ya es una fortaleza, y ahora entra en una etapa de curaduria fina
 
-Evidencia:
+Hoy `demo-platform` ya cubre una porcion importante de lo esperado:
 
-- [`backend/database/seeders/InstalacionBaseSeeder.php:15`](/D:/Desarrollo/GRT-StackBase/backend/database/seeders/InstalacionBaseSeeder.php:15)
-- [`backend/database/seeders/InstalacionBaseSeeder.php:25`](/D:/Desarrollo/GRT-StackBase/backend/database/seeders/InstalacionBaseSeeder.php:25)
+- notificaciones
+- archivos
+- jobs
+- auditoria
+- transfers
+- showcase UI
+- feedback
+- forms
+- data display
+- async patterns
+- layouts
+- typography/content
+- advanced inputs
+- screen recipes
 
-Impacto:
+El siguiente nivel ya no es "tener demos", sino:
 
-- onboarding y QA ya parten de datos base reales
-- el siguiente nivel pendiente es enriquecer ese arranque con el resto del dominio base
+- conectar mas ejemplos con datos reales del core cuando aporte valor
+- seguir puliendo microcopy, criterio de uso y notas de implementacion
+- mantener coherencia visual y pedagogica a medida que el modulo siga creciendo
 
-### P0. El modelo tenant y el modelo organizacional ya tienen decisiones clave cerradas, pero aun no estan aplicados extremo a extremo
+### P1. La convergencia total `organizacion = empresa` ya no bloquea, pero todavia conviene seguir limpiando residuales tecnicos
 
-La decision documental `organizacion = empresa` ya quedo cerrada, y el runtime ya sumo recursos base reales para oficinas, personas y asignaciones laborales. Aun asi, todavia falta converger por completo hacia ese modelo y endurecerlo en todo el sistema.
+La decision ya esta clara y mayormente aplicada, pero conviene seguir reduciendo naming legacy residual en capas internas.
 
-Lo que aun debe aterrizarse:
+### P1. El frontend necesita una red de pruebas propia mas fuerte
 
-- oficinas
-- areas
-- divisiones
-- cargos
-- jefaturas
-- asignaciones laborales
-- permisos por contexto operativo
-
-Evidencia:
-
-- [`docs/modelo_dominio.md`](/D:/Desarrollo/GRT-StackBase/docs/modelo_dominio.md)
-- [`docs/pendientes.md`](/D:/Desarrollo/GRT-StackBase/docs/pendientes.md)
-- [`backend/app/Traits/MultiTenantable.php:10`](/D:/Desarrollo/GRT-StackBase/backend/app/Traits/MultiTenantable.php:10)
-
-Impacto:
-
-- riesgo alto de retrabajo si se crean CRUDs antes de cerrar el modelo operativo
-- la base sigue fuerte tecnicamente, pero aun no completamente lista como foundation empresarial
-
-### P1. Multi-tenancy base existe, pero aun no se puede considerar transversalmente cerrada
-
-`MultiTenantable` ya aporta valor, pero todavia no es garantia completa de aislamiento en todo el dominio que se quiere construir.
-
-Evidencia:
-
-- [`backend/app/Traits/MultiTenantable.php:10`](/D:/Desarrollo/GRT-StackBase/backend/app/Traits/MultiTenantable.php:10)
-- [`docs/pendientes.md:148`](/D:/Desarrollo/GRT-StackBase/docs/pendientes.md:148)
-- [`docs/pendientes.md:150`](/D:/Desarrollo/GRT-StackBase/docs/pendientes.md:150)
-
-Impacto:
-
-- los nuevos modulos podrian nacer con aislamiento inconsistente
-- jobs, exports, logs y futuros CRUDs aun necesitan cierre formal
-
-### P1. La infraestructura local funciona, pero todavia esta mas orientada a desarrollo que a paridad operativa
-
-El `docker-compose` actual levanta el entorno, pero aun le faltan piezas de stack base maduro:
-
-- healthchecks
-- worker dedicado
-- estrategia de logs
-- mejor separacion entre runtime dev y runtime mas cercano a produccion
-
-Evidencia:
-
-- [`docker-compose.yml:1`](/D:/Desarrollo/GRT-StackBase/docker-compose.yml:1)
-- [`docker-compose.yml:79`](/D:/Desarrollo/GRT-StackBase/docker-compose.yml:79)
-- [`docker/nginx/default.conf:1`](/D:/Desarrollo/GRT-StackBase/docker/nginx/default.conf:1)
-
-Impacto:
-
-- local funciona
-- pero todavia no modela del todo la operacion que se quiere para Droplets
-
-### P1. Queda limpieza residual de encoding y prolijidad
-
-La mayor parte de la documentacion visible ya fue normalizada, pero todavia quedan restos menores de encoding y archivos historicos que conviene depurar.
-
-Evidencia:
-
-- [`docker-compose.yml:48`](/D:/Desarrollo/GRT-StackBase/docker-compose.yml:48)
-
-Impacto:
-
-- no bloquea el desarrollo
-- pero sigue restando prolijidad al stack base
-
-### P2. El frontend no tiene pruebas propias
-
-Hay buena cobertura backend, pero no hay pruebas de primer nivel para guards, stores, auth o pantallas administrativas del frontend.
-
-Evidencia:
-
-- [`backend/tests`](/D:/Desarrollo/GRT-StackBase/backend/tests)
-- `frontend/src` no contiene archivos de prueba propios al momento de esta revision
-
-Impacto:
-
-- alto riesgo de regresiones en shell, permisos y bootstrap modular
-- demasiada dependencia en prueba manual
+La base ya esta usable, pero la siguiente inversion de calidad debe ir a stores, guards y pantallas administrativas criticas.
 
 ## Consistencia general
 
-### Consistente
+### Clara y consistente
 
-- direccion tecnica general
-- arquitectura modular core + modules
-- API-first
-- enfoque tenant-aware
-- documentacion principal de vision, backlog y dominio
+- vision del stack
+- arquitectura core + modules
+- fuente de verdad documental
+- estrategia local -> Droplet
+- decision de dominio organizacional
+- uso de Spaces
+- `Demo Module` como biblioteca viva y didactica
 
-### Parcialmente consistente
+### A vigilar en siguientes iteraciones
 
-- bootstrap local
-- convergencia final del dominio organizacional
-- tenancy transversal
-- gestion de usuarios como producto base final
-
-### Inconsistente
-
-- semilla inicial vs decisiones cerradas del negocio
-- algunas piezas del runtime vs modelo de dominio ya decidido
-- restos menores de encoding en archivos de configuracion
+- refinamiento continuo del Demo Module como biblioteca unificada
+- observabilidad mas profunda
+- automatizacion de despliegues
 
 ## Conclusion
 
-La plataforma va por buen camino. El principal riesgo hoy ya no es el desorden documental; ese bloque quedo bastante mejor resuelto. El principal riesgo ahora es de cierre funcional:
+La version base ya esta cerrada y usable. Desde aqui el proyecto entra en una etapa nueva:
 
-1. dominio organizacional y laboral definitivo
-2. tenancy transversal
-3. paridad local -> Droplet
-4. pruebas y release
+- endurecimiento
+- onboarding de nuevos proyectos
+- expansion del `Demo Module` como biblioteca viva
+- evolucion operativa del stack
 
-El plan de trabajo para resolver eso vive en [`docs/plan_trabajo_finalizacion.md`](/D:/Desarrollo/GRT-StackBase/docs/plan_trabajo_finalizacion.md).
+El backlog vivo permanece en [`docs/pendientes.md`](/D:/Desarrollo/GRT-StackBase/docs/pendientes.md).

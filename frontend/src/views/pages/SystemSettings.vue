@@ -52,9 +52,9 @@ async function saveOrganization() {
     try {
         await settingsStore.updateOrganization(state.organizationForm);
         syncForms();
-        toast.add({ severity: 'success', summary: 'Settings de organizacion', detail: 'Se actualizaron correctamente.', life: 3000 });
+        toast.add({ severity: 'success', summary: 'Settings de empresa', detail: 'Se actualizaron correctamente.', life: 3000 });
     } catch (error) {
-        toast.add({ severity: 'error', summary: 'No se pudo guardar', detail: error?.response?.data?.mensaje ?? 'Revisa los settings de organizacion.', life: 4000 });
+        toast.add({ severity: 'error', summary: 'No se pudo guardar', detail: error?.response?.data?.mensaje ?? 'Revisa los settings de empresa.', life: 4000 });
     } finally {
         state.savingOrganization = false;
     }
@@ -68,7 +68,7 @@ onMounted(loadSettings);
         <div class="rounded-3xl border border-slate-200 bg-white p-8 shadow-sm">
             <div class="text-sm uppercase tracking-[0.3em] text-sky-600 font-semibold mb-3">Administration</div>
             <h1 class="text-3xl font-semibold text-slate-900 mb-3">System Settings</h1>
-            <p class="text-slate-600 max-w-3xl">Este panel centraliza configuracion global, feature flags operativas y configuracion por organizacion para que el core no dependa de cambios manuales en codigo.</p>
+            <p class="text-slate-600 max-w-3xl">Este panel centraliza configuracion global, feature flags operativas y configuracion por empresa para que el core no dependa de cambios manuales en codigo.</p>
         </div>
 
         <div class="grid grid-cols-12 gap-6">
@@ -93,7 +93,7 @@ onMounted(loadSettings);
             <div class="col-span-12 xl:col-span-6">
                 <div class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm h-full">
                     <div class="flex items-center justify-between mb-4">
-                        <h2 class="text-xl font-semibold text-slate-900">Organizacion activa</h2>
+                        <h2 class="text-xl font-semibold text-slate-900">Empresa activa</h2>
                         <Button label="Guardar" icon="pi pi-save" :loading="state.savingOrganization" @click="saveOrganization" />
                     </div>
                     <div class="space-y-4">

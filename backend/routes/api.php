@@ -120,7 +120,9 @@ Route::prefix('v1')->group(function (): void {
             Route::get('/settings/global', [SettingController::class, 'global']);
             Route::patch('/settings/global', [SettingController::class, 'updateGlobal']);
             Route::get('/settings/organization', [SettingController::class, 'organization']);
+            Route::get('/settings/company', [SettingController::class, 'organization']);
             Route::patch('/settings/organization', [SettingController::class, 'updateOrganization']);
+            Route::patch('/settings/company', [SettingController::class, 'updateOrganization']);
         });
     });
 

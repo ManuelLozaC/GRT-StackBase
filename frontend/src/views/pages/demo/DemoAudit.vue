@@ -1,4 +1,6 @@
 <script setup>
+import DemoPageHero from '@/components/demo/DemoPageHero.vue';
+import DemoPatternGuide from '@/components/demo/DemoPatternGuide.vue';
 import api from '@/service/api';
 import { computed, onMounted, reactive, ref } from 'vue';
 
@@ -53,21 +55,16 @@ onMounted(loadLogs);
 <template>
     <div class="grid grid-cols-12 gap-4">
         <div class="col-span-12">
-            <div class="card flex flex-col gap-3">
-                <Tag severity="warning" value="Demo Module / Audit" class="w-fit" />
-                <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3">
-                    <div>
-                        <h2 class="m-0">Demo funcional de auditoria</h2>
-                        <p class="m-0 text-color-secondary">Muestra actividad transversal del core: modulos, archivos y jobs con actor, fecha, entidad y contexto.</p>
-                    </div>
+            <DemoPageHero badge="Demo Module / Audit" title="Demo funcional de auditoria" description="Muestra actividad transversal del core: modulos, archivos y jobs con actor, fecha, entidad y contexto.">
+                <template #aside>
                     <div class="demo-audit-summary">
                         <div>
                             <strong>{{ filteredLogs.length }}</strong>
                             <span>eventos visibles</span>
                         </div>
                     </div>
-                </div>
-            </div>
+                </template>
+            </DemoPageHero>
         </div>
 
         <div class="col-span-12">
@@ -108,6 +105,20 @@ onMounted(loadLogs);
                     </article>
                 </div>
             </div>
+        </div>
+
+        <div class="col-span-12">
+            <DemoPatternGuide
+                title="Guia para auditoria y trazabilidad"
+                :when-to-use="['cuando una accion de negocio o sistema necesita historial verificable', 'cuando el equipo necesita correlacionar actor, entidad y contexto', 'cuando se quiere inspeccionar que paso sin depender de logs tecnicos']"
+                :avoid-when="[
+                    'cuando se registran eventos irrelevantes que solo generan ruido',
+                    'cuando el contexto no agrega informacion util para soporte o negocio',
+                    'cuando la auditoria reemplaza permisos o validaciones en vez de complementarlos'
+                ]"
+                :wiring="['registrar evento, resumen, actor, entidad, modulo y contexto', 'permitir filtro por actor, entidad o evento para investigar rapido', 'mantener el contexto serializado de forma legible']"
+                :notes="['esta demo se alimenta del audit trail real del core', 'la auditoria debe ayudar a entender decisiones, no solo a acumular registros']"
+            />
         </div>
     </div>
 </template>

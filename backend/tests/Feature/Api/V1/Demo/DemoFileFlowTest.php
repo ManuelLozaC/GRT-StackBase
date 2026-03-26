@@ -28,6 +28,9 @@ class DemoFileFlowTest extends TestCase
             ->post('/api/v1/demo/files', [
                 'file' => UploadedFile::fake()->create('demo-manual.pdf', 120, 'application/pdf'),
                 'notes' => 'Archivo demo de prueba',
+                'attached_resource_key' => 'people',
+                'attached_record_id' => 15,
+                'attached_record_label' => 'Maria Suarez',
             ], [
                 'Accept' => 'application/json',
             ]);
@@ -35,7 +38,10 @@ class DemoFileFlowTest extends TestCase
         $uploadResponse
             ->assertOk()
             ->assertJsonPath('datos.original_name', 'demo-manual.pdf')
-            ->assertJsonPath('datos.version', 1);
+            ->assertJsonPath('datos.version', 1)
+            ->assertJsonPath('datos.attachment.resource_key', 'people')
+            ->assertJsonPath('datos.attachment.record_id', 15)
+            ->assertJsonPath('datos.attachment.record_label', 'Maria Suarez');
 
         $this->withHeader('Authorization', 'Bearer '.$token)
             ->getJson('/api/v1/demo/files')
@@ -49,6 +55,9 @@ class DemoFileFlowTest extends TestCase
 
         Storage::disk('local')->assertExists($file->path);
         $this->assertSame($user->organizacion_activa_id, $file->organizacion_id);
+        $this->assertSame('people', $file->attached_resource_key);
+        $this->assertSame(15, $file->attached_record_id);
+        $this->assertSame('Maria Suarez', $file->attached_record_label);
     }
 
     public function test_upload_falls_back_to_local_disk_when_spaces_is_not_configured(): void

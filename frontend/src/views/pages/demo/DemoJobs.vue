@@ -1,4 +1,5 @@
 <script setup>
+import DemoPatternGuide from '@/components/demo/DemoPatternGuide.vue';
 import api from '@/service/api';
 import { onMounted, reactive } from 'vue';
 import { useToast } from 'primevue/usetoast';
@@ -186,6 +187,16 @@ onMounted(loadJobs);
                     </article>
                 </div>
             </div>
+        </div>
+
+        <div class="col-span-12">
+            <DemoPatternGuide
+                title="Guia para jobs y background processing"
+                :when-to-use="['cuando una accion necesita salir del request principal', 'cuando conviene ofrecer modo queued y modo immediate para pruebas', 'cuando el equipo necesita ver payload, resultado e intentos del job']"
+                :avoid-when="['cuando el trabajo es trivial y solo agrega complejidad moverlo a cola', 'cuando no existe una forma clara de observar estado o errores', 'cuando el usuario necesita respuesta inmediata y el flujo no tolera asincronia']"
+                :wiring="['registrar payload solicitado, resultado y error dentro del run', 'exponer worker hints o feedback de operacion local cuando aplique', 'mantener historial visible por tenant y actor']"
+                :notes="['esta demo usa el core real de jobs del stack', 'si el flujo crece, combinarlo con async patterns para una UX mas rica']"
+            />
         </div>
     </div>
 </template>

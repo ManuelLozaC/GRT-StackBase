@@ -8,7 +8,7 @@ StackBase no debe crecer como un sistema unico con features mezcladas. Debe reso
 
 ## Estado actual
 
-Fecha de referencia: `2026-03-25`
+Fecha de referencia: `2026-03-26`
 
 ### Ya implementado
 
@@ -27,17 +27,18 @@ Fecha de referencia: `2026-03-25`
 
 ### En progreso
 
-- tenancy transversal en todo el dominio
-- endurecimiento del contrato modular
-- cierre del dominio base reutilizable
-- integracion real con Spaces
+- endurecimiento transversal del core ya cerrado
+- refinamiento del contrato modular
+- evolucion del `Demo Module` como biblioteca viva
+- calidad automatizada y operacion continua sobre Droplets
 
-### Pendiente clave
+### Siguiente evolucion clave
 
-- aplicar en codigo la decision `organizacion = empresa`
-- cerrar modelo de oficinas, personas y asignaciones laborales
-- agregar pruebas frontend y pipeline de calidad
-- documentar despliegue real en Droplets
+- seguir refinando `Demo Module` como biblioteca viva, didactica y consistente del stack
+- agregar pruebas frontend mas profundas
+- endurecer tenancy, auditoria y seguridad en las superficies restantes
+- automatizar observabilidad, backups y despliegue continuo sobre la topologia de Droplet
+- evolucionar el core sin reabrir deuda estructural de la version base
 
 ### Reciente
 
@@ -47,6 +48,11 @@ Fecha de referencia: `2026-03-25`
 - recursos base del dominio ya existen en backend para oficinas, personas y asignaciones laborales
 - la pantalla administrativa de usuarios ya permite alta, edicion, activacion y reset de contrasena
 - el frontend ya puede gestionar los recursos base del dominio desde Data Engine con acceso rapido y soporte correcto de booleanos y fechas
+- pipeline CI operativo ya valida backend Laravel y frontend en GitHub Actions
+- DigitalOcean Spaces ya esta integrado y validado con escritura, lectura y borrado reales
+- Docker Compose ya incluye `worker`, `scheduler` y healthchecks base alineados con Droplet
+- `demo-platform` ya evoluciono a showcase tecnico + UI con recipes y guia didactica en varias demos
+- el `Demo Module` ya tiene una capa didactica y una presentacion visual mas consistente en demos UI y tecnicas clave
 
 ## Fases vigentes
 
@@ -82,8 +88,15 @@ Fecha de referencia: `2026-03-25`
 ### Fase 5. Operacion y release
 
 - paridad local -> Droplet
-- Spaces, workers, healthchecks
-- pruebas, CI y release inicial del stack
+- workers, healthchecks y endurecimiento operativo
+- pruebas, endurecimiento operativo y release inicial del stack
+
+### Fase 6. Evolucion guiada
+
+- convertir el `Demo Module` en referencia de implementacion para nuevos proyectos
+- ampliar pruebas frontend y checks de release
+- automatizar despliegue, backups y observabilidad
+- seguir endureciendo tenancy y seguridad sin romper la simplicidad del core
 
 ## Criterio de exito
 

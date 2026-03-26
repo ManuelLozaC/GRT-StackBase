@@ -63,6 +63,7 @@ La metadata que llega por API declara:
 - `ModuleRegistry` normaliza metadata modular y bloquea dependencias invalidas
 - los `settings` ya son operativos
 - los `webhooks` ya tienen base operativa para salidas y recepcion declarativa
+- `demo-platform` ya funciona como sandbox tecnico del core, aunque todavia no cubre el catalogo completo de ejemplos UI esperados para un template base
 
 ## Deuda restante del contrato
 
@@ -70,6 +71,40 @@ La metadata que llega por API declara:
 - soportar permisos por modulo de forma operativa, no solo descriptiva
 - convertir `seeders`, `assets` y `dashboards` en runtime realmente ejecutable por modulo
 - reducir aun mas el registro local frontend a solo vistas realmente necesarias
+- formalizar el contrato del `Demo Module` para que incluya:
+  - demos tecnicas del core
+  - demos UI de componentes y patrones
+  - ejemplos de wiring recomendados para formularios, validaciones y feedback al usuario
+
+## Regla especial para Demo Module
+
+`demo-platform` debe mostrar ejemplos funcionales de como implementar, reutilizar y combinar capacidades del stack.
+
+Como minimo debe incluir ejemplos de:
+
+- toasts
+- confirmaciones
+- modals y drawers
+- alerts y banners
+- tipografia y parrafos
+- formularios completos
+- inputs de texto
+- textareas
+- selects
+- multiselects
+- checkboxes
+- radios
+- toggles
+- datepickers
+- input number
+- tablas
+- filtros
+- paginacion
+- estados vacios
+- skeleton loaders
+- validaciones cliente/servidor
+- carga de archivos
+- acciones async con feedback
 
 ## Regla documental
 

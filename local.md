@@ -112,8 +112,8 @@ VITE_APP_NAME="${APP_NAME}"
 Notas:
 
 - `APP_KEY` se genera con Artisan
-- para local, el valor recomendado es `FILESYSTEM_DISK=local`
-- cuando ya tengas Spaces configurado, cambia `FILESYSTEM_DISK=spaces` y `DATA_EXPORTS_DISK=spaces`
+- para local simple, el valor recomendado sigue siendo `FILESYSTEM_DISK=local`
+- si quieres trabajar con el bucket real, usa `FILESYSTEM_DISK=spaces` y `DATA_EXPORTS_DISK=spaces`
 - si `FILESYSTEM_DISK=spaces` pero faltan credenciales, el stack hace fallback automatico a `local`
 
 ### Frontend
@@ -133,6 +133,17 @@ Desde la raiz del proyecto:
 ```bash
 docker compose up -d --build
 ```
+
+Servicios incluidos en esta version base:
+
+- `app`
+- `worker`
+- `scheduler`
+- `web`
+- `db`
+- `redis`
+- `search`
+- `frontend`
 
 ## 4. Inicializar backend
 
@@ -234,6 +245,12 @@ docker compose restart app web
 docker compose restart frontend
 ```
 
+Para reiniciar procesos de backend en segundo plano:
+
+```bash
+docker compose restart worker scheduler
+```
+
 ### Activar Spaces en local o staging
 
 Completa estas variables en `backend/.env`:
@@ -243,10 +260,10 @@ FILESYSTEM_DISK=spaces
 DATA_EXPORTS_DISK=spaces
 DO_SPACES_KEY=tu_key
 DO_SPACES_SECRET=tu_secret
-DO_SPACES_REGION=nyc3
-DO_SPACES_BUCKET=tu_bucket
-DO_SPACES_ENDPOINT=https://nyc3.digitaloceanspaces.com
-DO_SPACES_URL=https://tu_bucket.nyc3.digitaloceanspaces.com
+DO_SPACES_REGION=sfo3
+DO_SPACES_BUCKET=grtbucket
+DO_SPACES_ENDPOINT=https://sfo3.digitaloceanspaces.com
+DO_SPACES_URL=https://grtbucket.sfo3.digitaloceanspaces.com
 ```
 
 Luego reinicia `app`:
@@ -254,3 +271,14 @@ Luego reinicia `app`:
 ```bash
 docker compose restart app
 ```
+
+Validacion recomendada:
+
+```bash
+docker compose exec app php artisan config:clear
+```
+
+Estado actual:
+
+- el proyecto ya fue validado con escritura, lectura y borrado real sobre DigitalOcean Spaces
+- el stack local ya incluye `worker` y `scheduler`, alineado con la topologia objetivo de Droplet

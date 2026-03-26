@@ -13,7 +13,7 @@ class SettingManagementTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_admin_can_read_and_update_global_and_organization_settings(): void
+    public function test_admin_can_read_and_update_global_and_company_settings(): void
     {
         [$user, $token] = $this->authenticateAdmin();
 
@@ -38,11 +38,12 @@ class SettingManagementTest extends TestCase
             ]);
 
         $this->withHeader('Authorization', 'Bearer '.$token)
-            ->patchJson('/api/v1/settings/organization', [
+            ->patchJson('/api/v1/settings/company', [
                 'locale' => 'en-US',
                 'currency_code' => 'USD',
             ])
             ->assertOk()
+            ->assertJsonPath('mensaje', 'Settings de empresa actualizados')
             ->assertJsonFragment([
                 'key' => 'locale',
                 'value' => 'en-US',
@@ -56,7 +57,8 @@ class SettingManagementTest extends TestCase
             ->getJson('/api/v1/settings/bootstrap')
             ->assertOk()
             ->assertJsonPath('datos.feature_flags.feature_global_error_toasts', false)
-            ->assertJsonPath('datos.global.0.key', 'support_email');
+            ->assertJsonPath('datos.global.0.key', 'support_email')
+            ->assertJsonPath('datos.company.0.key', 'locale');
     }
 
     public function test_regular_user_can_manage_only_own_preferences(): void

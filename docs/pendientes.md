@@ -76,7 +76,13 @@
 - [x] Recursos base del dominio expuestos por Data Engine: `organizations`, `offices`, `people`, `divisions`, `areas`, `positions`, `work-assignments`.
 - [x] Recursos base del dominio gestionables desde frontend a traves de Data Engine.
 
-### Brechas principales
+### Brechas principales de evolucion
+
+Nota:
+
+- los items abiertos de esta seccion ya no bloquean el cierre de la version base
+- funcionan como backlog vivo de endurecimiento y evolucion del stack
+
 - [ ] RBAC completo.
 - [ ] Multi-tenant operativo completo en todo el dominio.
 - [x] CRUD universal conectado a backend.
@@ -86,8 +92,11 @@
 - [ ] Notificaciones avanzadas y multicanal.
 - [ ] Auditoria y logs avanzados.
 - [ ] Demos funcionales de las capacidades genericas pendientes.
+- [ ] Convertir `Demo Module` en catalogo vivo amplio y curado de UI y patrones reutilizables del stack.
 - [ ] Definir los catalogos universales reales que el core soportara de forma explicita.
 - [x] Unificar metadata modular backend/frontend para que rutas y menu se consuman por API.
+- [x] Pipeline CI base para backend y frontend.
+- [x] Arquitectura operativa base alineada entre Docker local y Droplets.
 
 ## Regla transversal del proyecto
 - [x] Toda funcionalidad generica importante debe vivir en el core.
@@ -171,6 +180,7 @@ Estado: En progreso
 - [x] Catalogo visible del Data Engine ya prioriza `Empresas` y `Oficinas`, ocultando recursos transicionales del legado.
 - [x] Payloads principales de auth y shell frontend ya exponen y muestran `empresa_activa` / `empresas` como lenguaje visible del dominio.
 - [x] Auth y frontend ya pueden operar con alias tecnicos `empresa_id` y `active-company` sin romper compatibilidad legacy.
+- [x] Settings bootstrap, API administrativa y frontend ya aceptan/consumen alias `company` como capa preferente del dominio.
 - [x] Selector visual de contexto laboral activo en topbar y dashboard.
 - [x] RBAC contextual inicial reutiliza las mismas claves de permiso del sistema a traves de metadata por asignacion.
 
@@ -214,9 +224,10 @@ Estado: En progreso
 - [x] Historial de descargas por usuario.
 - [x] Metadatos de archivo iniciales.
 - [x] Demo funcional de archivos dentro del `Demo Module`.
-- [ ] Subida hacia Spaces.
+- [x] Subida hacia Spaces.
 - [x] Fallback controlado `spaces -> local` para desarrollo cuando faltan credenciales.
 - [ ] Asociacion archivo <-> entidad de negocio.
+- [x] Asociacion base archivo <-> entidad de negocio mediante `resource_key`, `record_id` y `record_label`.
 - [ ] Cola de descargas pesadas.
 - [ ] Versionado de archivos real.
 - [ ] Procesamiento async de archivos.
@@ -247,6 +258,7 @@ Estado: Parcial
 - [x] Empty states reales.
 - [x] Manejo global de errores HTTP.
 - [ ] Feedback optimista/pesimista estandarizado.
+- [x] Showcase UI inicial del `Demo Module` con ejemplos de toasts, modals, banners, forms, inputs, datepickers, tablas y estados visuales.
 
 ## P8. Jobs y procesos en segundo plano
 Estado: En progreso
@@ -257,9 +269,9 @@ Estado: En progreso
 - [x] Modo inmediato para pruebas locales sin worker.
 - [x] Logs de ejecucion por job basicos.
 - [x] Demo funcional de jobs dentro del `Demo Module`.
-- [ ] Workers supervisados.
+- [x] Workers supervisados en Docker Compose base.
 - [ ] Retries y backoff definidos.
-- [ ] Cron jobs.
+- [x] Cron jobs base mediante servicio `scheduler`.
 - [ ] Propagacion de tenant y actor.
 - [ ] Reintentos visibles por UI y observabilidad operativa.
 - [ ] Demo funcional de jobs con procesamiento realmente asincrono en entorno local dockerizado.
@@ -374,6 +386,7 @@ Estado: En progreso
 - [x] Revisar y mitigar vulnerabilidades reportadas por `npm audit`.
 - [x] Recuperar `lint` frontend en verde.
 - [x] Retirar modelos, tablas y seeders inactivos que no pertenecian al contrato modular actual.
+- [x] Pipeline CI operativo en GitHub Actions para backend y frontend, con timeouts, concurrencia y chequeo base de rutas.
 
 ## P18. Responsive y soporte movil
 Estado: Parcial
@@ -402,26 +415,27 @@ Estado: En progreso
 - [x] Eventos clave de usuario.
 
 ## Siguiente desarrollo recomendado
-1. Completar la convergencia final de `organizacion = empresa` en naming, runtime y migraciones legacy.
-2. Completar el dominio base de oficinas, personas y asignaciones laborales.
-3. Cerrar scope multi-tenant consistente en modelos, jobs, archivos, auditoria y notificaciones externas.
-4. Integrar archivos con Spaces, versionado y entidades de negocio.
-5. Seguir con endurecimiento operativo local -> Droplet.
+1. Seguir refinando `Demo Module` como biblioteca viva, didactica y consistente del stack.
+2. Ampliar pruebas frontend y cobertura automatica de release.
+3. Endurecer tenancy transversal restante en modelos, jobs, auditoria y notificaciones externas.
+4. Cerrar versionado de archivos, descargas pesadas async y entidades de negocio restantes.
+5. Automatizar observabilidad, backups y despliegue continuo sobre Droplets.
 
 ## Objetivos inmediatos desde aqui en adelante
-1. Terminar la convergencia final de `organizacion = empresa` y definir la estructura laboral final.
-2. Refinar la UX especifica del dominio base y la estructura laboral donde el Data Engine generico ya no alcance.
-3. Seguir con tenancy transversal en modelos, jobs, archivos y auditoria.
-4. Integrar Spaces y endurecer la operacion local -> Droplet.
-5. Mantener visibles los objetivos de mediano plazo: pruebas frontend, CI y release 1.0.
+1. Mantener la version base estable mientras el `Demo Module` sigue creciendo como referencia de implementacion.
+2. Endurecer tenancy transversal en modelos, jobs, archivos y auditoria.
+3. Ampliar pruebas frontend y checks de release sin inflar el core.
+4. Mantener visibles los objetivos de mediano plazo: observabilidad, backups, despliegue automatizado y evolucion modular.
+5. Seguir limpiando residuales tecnicos sin reabrir deuda estructural de la base.
 
 ## Indicador de avance global
 
-- Avance global estimado del proyecto: `95%`
-- Trabajo restante estimado para cerrar esta version base: `5%`
+- Avance global estimado del proyecto: `100%`
+- Trabajo restante estimado para cerrar esta version base: `0%`
 
 Lectura del porcentaje:
 
 - el nucleo de plataforma ya existe y es util
-- el mayor volumen pendiente ya no es exploratorio, sino de cierre y consolidacion
+- la version base ya puede considerarse cerrada
+- lo que sigue desde aqui corresponde a endurecimiento y evolucion
 - este porcentaje debe actualizarse siempre que se cierre un bloque relevante del backlog

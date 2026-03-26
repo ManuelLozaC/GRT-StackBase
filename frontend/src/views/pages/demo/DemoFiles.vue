@@ -1,4 +1,5 @@
 <script setup>
+import DemoPatternGuide from '@/components/demo/DemoPatternGuide.vue';
 import api from '@/service/api';
 import { onMounted, reactive, ref } from 'vue';
 import { useToast } from 'primevue/usetoast';
@@ -16,6 +17,9 @@ const state = reactive({
 
 const selectedFile = ref(null);
 const notes = ref('');
+const attachedResourceKey = ref('people');
+const attachedRecordId = ref('');
+const attachedRecordLabel = ref('');
 const temporaryLinks = ref({});
 
 async function loadData() {
@@ -53,6 +57,9 @@ async function uploadFile() {
         const formData = new FormData();
         formData.append('file', selectedFile.value);
         formData.append('notes', notes.value);
+        formData.append('attached_resource_key', attachedResourceKey.value);
+        formData.append('attached_record_id', attachedRecordId.value);
+        formData.append('attached_record_label', attachedRecordLabel.value);
 
         await api.post('/v1/demo/files', formData, {
             headers: {
@@ -62,6 +69,10 @@ async function uploadFile() {
 
         selectedFile.value = null;
         notes.value = '';
+        attachedResourceKey.value = 'people';
+        attachedRecordId.value = '';
+        attachedRecordLabel.value = '';
+
         const input = document.getElementById('demo-file-input');
 
         if (input) {
@@ -165,10 +176,10 @@ onMounted(loadData);
         <div class="col-span-12">
             <div class="card flex flex-col gap-3">
                 <Tag severity="warning" value="Demo Module / Files" class="w-fit" />
-                <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3">
+                <div class="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
                     <div>
                         <h2 class="m-0">Demo funcional de archivos</h2>
-                        <p class="m-0 text-color-secondary">Esta demo valida carga, almacenamiento, descarga directa, signed URLs e historial por usuario dentro del tenant activo.</p>
+                        <p class="m-0 text-color-secondary">Esta demo valida carga, almacenamiento, descarga directa, signed URLs, historial y asociacion base a entidades de negocio dentro del tenant activo.</p>
                     </div>
                     <div class="demo-summary">
                         <div>
@@ -192,8 +203,10 @@ onMounted(loadData);
                 </div>
 
                 <input id="demo-file-input" type="file" @change="onSelectFile" />
-
                 <textarea v-model="notes" rows="4" class="demo-textarea" placeholder="Notas opcionales para esta carga demo"></textarea>
+                <input v-model="attachedResourceKey" type="text" class="demo-link-input" placeholder="Recurso asociado, por ejemplo: people" />
+                <input v-model="attachedRecordId" type="number" min="1" class="demo-link-input" placeholder="ID del registro asociado" />
+                <input v-model="attachedRecordLabel" type="text" class="demo-link-input" placeholder="Etiqueta opcional del registro asociado" />
 
                 <button class="demo-primary-button" :disabled="state.uploading" @click="uploadFile">
                     {{ state.uploading ? 'Subiendo...' : 'Subir archivo demo' }}
@@ -203,17 +216,17 @@ onMounted(loadData);
 
         <div class="col-span-12 xl:col-span-8">
             <div class="card">
-                <div class="flex items-center justify-between mb-4">
+                <div class="mb-4 flex items-center justify-between">
                     <div>
                         <h3 class="m-0">Archivos disponibles</h3>
-                        <p class="m-0 text-sm text-color-secondary">Listado del tenant activo con token de version para trazabilidad.</p>
+                        <p class="m-0 text-sm text-color-secondary">Listado del tenant activo con version, metadatos y asociacion opcional a un recurso real.</p>
                     </div>
                     <button class="demo-secondary-button" :disabled="state.loading" @click="loadData">
                         {{ state.loading ? 'Actualizando...' : 'Actualizar' }}
                     </button>
                 </div>
 
-                <div v-if="state.files.length === 0" class="demo-empty-state">Todavia no hay archivos en esta organizacion. Sube uno para probar el flujo completo.</div>
+                <div v-if="state.files.length === 0" class="demo-empty-state">Todavia no hay archivos en esta empresa. Sube uno para probar el flujo completo.</div>
 
                 <div v-else class="demo-file-list">
                     <article v-for="file in state.files" :key="file.uuid" class="demo-file-card">
@@ -221,12 +234,13 @@ onMounted(loadData);
                             <div class="flex items-start justify-between gap-3">
                                 <div>
                                     <div class="font-semibold">{{ file.original_name }}</div>
-                                    <div class="text-sm text-color-secondary">{{ formatBytes(file.size_bytes) }} · {{ file.mime_type || 'tipo no detectado' }}</div>
+                                    <div class="text-sm text-color-secondary">{{ formatBytes(file.size_bytes) }} | {{ file.mime_type || 'tipo no detectado' }}</div>
                                 </div>
                                 <Tag severity="contrast" :value="`v${file.version}`" />
                             </div>
 
-                            <div class="text-sm text-color-secondary">Subido por {{ file.uploaded_by || 'sistema' }} · {{ formatDate(file.uploaded_at) }}</div>
+                            <div class="text-sm text-color-secondary">Subido por {{ file.uploaded_by || 'sistema' }} | {{ formatDate(file.uploaded_at) }}</div>
+                            <div v-if="file.attachment?.resource_key" class="text-sm text-color-secondary">Asociado a {{ file.attachment.record_label || `#${file.attachment.record_id}` }} en {{ file.attachment.resource_key }}</div>
 
                             <div class="demo-token-row">
                                 <span>Token de rastreo</span>
@@ -254,21 +268,29 @@ onMounted(loadData);
         </div>
 
         <div class="col-span-12">
+            <DemoPatternGuide
+                title="Guia para files y adjuntos"
+                :when-to-use="['cuando necesitas subir archivos asociados a una entidad real del sistema', 'cuando el usuario debe descargar directo o compartir un link temporal', 'cuando quieres dejar trazabilidad de descargas y versiones']"
+                :avoid-when="['cuando el archivo no necesita historial ni asociacion a negocio', 'cuando un link temporal se usa como reemplazo de permisos de acceso', 'cuando se suben archivos sin contexto de tenant o actor']"
+                :wiring="['guardar metadata y asociacion de negocio junto con el archivo', 'usar descarga directa para uso inmediato y signed URL para comparticion controlada', 'refrescar historial despues de cada accion importante']"
+                :notes="['esta demo ya usa el core real y el storage configurado', 'si el caso crece, combinar con async patterns para procesos pesados']"
+            />
+        </div>
+
+        <div class="col-span-12">
             <div class="card">
                 <div class="mb-4">
                     <h3 class="m-0">Historial de descargas</h3>
-                    <p class="m-0 text-sm text-color-secondary">Registro del usuario actual dentro de la organizacion activa. Sirve como base para la futura seccion `Downloads`.</p>
+                    <p class="m-0 text-sm text-color-secondary">Registro del usuario actual dentro de la empresa activa. Sirve como base para una futura seccion de descargas.</p>
                 </div>
 
-                <div v-if="state.downloads.length === 0" class="demo-empty-state">Aun no hay descargas registradas en esta sesion y organizacion.</div>
+                <div v-if="state.downloads.length === 0" class="demo-empty-state">Aun no hay descargas registradas en esta sesion y empresa.</div>
 
                 <div v-else class="demo-download-list">
                     <article v-for="download in state.downloads" :key="download.id" class="demo-download-card">
                         <div class="font-semibold">{{ download.file.original_name }}</div>
-                        <div class="text-sm text-color-secondary">{{ download.channel }} · {{ download.status }} · {{ formatDate(download.downloaded_at) }}</div>
-                        <div class="text-sm text-color-secondary">
-                            {{ formatBytes(download.file.size_bytes) }}
-                        </div>
+                        <div class="text-sm text-color-secondary">{{ download.channel }} | {{ download.status }} | {{ formatDate(download.downloaded_at) }}</div>
+                        <div class="text-sm text-color-secondary">{{ formatBytes(download.file.size_bytes) }}</div>
                     </article>
                 </div>
             </div>
@@ -284,14 +306,14 @@ onMounted(loadData);
 
 .demo-summary > div {
     display: flex;
+    min-width: 6rem;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    min-width: 6rem;
-    padding: 0.9rem 1rem;
     border: 1px solid var(--surface-border);
     border-radius: 1rem;
     background: linear-gradient(135deg, var(--surface-card), var(--surface-ground));
+    padding: 0.9rem 1rem;
 }
 
 .demo-summary strong {
@@ -313,18 +335,18 @@ input[type='file'] {
 .demo-link-input {
     border: 1px solid var(--surface-border);
     border-radius: 0.85rem;
-    padding: 0.85rem 1rem;
     background: var(--surface-card);
     color: var(--text-color);
+    padding: 0.85rem 1rem;
 }
 
 .demo-primary-button,
 .demo-secondary-button {
     border: 0;
     border-radius: 999px;
-    padding: 0.75rem 1rem;
-    font-weight: 600;
     cursor: pointer;
+    font-weight: 600;
+    padding: 0.75rem 1rem;
 }
 
 .demo-primary-button {
@@ -339,16 +361,16 @@ input[type='file'] {
 
 .demo-primary-button:disabled,
 .demo-secondary-button:disabled {
-    opacity: 0.6;
     cursor: not-allowed;
+    opacity: 0.6;
 }
 
 .demo-empty-state {
     border: 1px dashed var(--surface-border);
     border-radius: 1rem;
-    padding: 1rem;
-    color: var(--text-color-secondary);
     background: var(--surface-ground);
+    color: var(--text-color-secondary);
+    padding: 1rem;
 }
 
 .demo-file-list,
@@ -361,37 +383,37 @@ input[type='file'] {
 .demo-download-card {
     border: 1px solid var(--surface-border);
     border-radius: 1rem;
-    padding: 1rem;
     background: var(--surface-card);
+    padding: 1rem;
 }
 
 .demo-token-row {
     display: flex;
+    flex-wrap: wrap;
     align-items: center;
     gap: 0.75rem;
-    flex-wrap: wrap;
     font-size: 0.875rem;
 }
 
 .demo-token-row code {
-    padding: 0.25rem 0.5rem;
     border-radius: 0.5rem;
     background: var(--surface-ground);
+    padding: 0.25rem 0.5rem;
 }
 
 .demo-actions {
     display: flex;
-    gap: 0.75rem;
     flex-wrap: wrap;
+    gap: 0.75rem;
 }
 
 .demo-link-box {
     display: flex;
     flex-direction: column;
     gap: 0.5rem;
-    padding: 0.9rem;
     border-radius: 0.85rem;
     background: var(--surface-ground);
+    padding: 0.9rem;
 }
 
 @media (max-width: 768px) {

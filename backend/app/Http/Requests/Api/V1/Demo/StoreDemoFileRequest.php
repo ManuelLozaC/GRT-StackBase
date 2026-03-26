@@ -16,6 +16,9 @@ class StoreDemoFileRequest extends FormRequest
         return [
             'file' => ['required', 'file', 'max:20480'],
             'notes' => ['nullable', 'string', 'max:500'],
+            'attached_resource_key' => ['nullable', 'string', 'max:120'],
+            'attached_record_id' => ['nullable', 'integer', 'min:1'],
+            'attached_record_label' => ['nullable', 'string', 'max:180'],
         ];
     }
 }

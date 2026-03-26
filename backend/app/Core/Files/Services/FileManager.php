@@ -22,7 +22,7 @@ class FileManager
     ) {
     }
 
-    public function storeUploadedFile(UploadedFile $uploadedFile, User $user, array $metadata = []): ManagedFile
+    public function storeUploadedFile(UploadedFile $uploadedFile, User $user, array $metadata = [], array $attachment = []): ManagedFile
     {
         $disk = $this->storageDisks->forManagedFiles();
         $uuid = (string) Str::uuid();
@@ -47,6 +47,9 @@ class FileManager
             'mime_type' => $uploadedFile->getClientMimeType(),
             'size_bytes' => $uploadedFile->getSize(),
             'visibility' => 'private',
+            'attached_resource_key' => $attachment['resource_key'] ?? null,
+            'attached_record_id' => $attachment['record_id'] ?? null,
+            'attached_record_label' => $attachment['record_label'] ?? null,
             'version' => 1,
             'security_token' => Str::upper(Str::random(12)),
             'metadata' => $metadata,

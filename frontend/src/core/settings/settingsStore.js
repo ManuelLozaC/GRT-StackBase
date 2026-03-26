@@ -34,7 +34,7 @@ async function initialize(force = false) {
     try {
         const response = await api.get('/v1/settings/bootstrap');
         state.global = response.data.datos?.global ?? [];
-        state.organization = response.data.datos?.organization ?? [];
+        state.organization = response.data.datos?.company ?? response.data.datos?.organization ?? [];
         state.user = response.data.datos?.user ?? [];
         state.featureFlags = response.data.datos?.feature_flags ?? {};
         state.initialized = true;
@@ -61,7 +61,7 @@ async function updateOrganization(payload) {
     state.saving = true;
 
     try {
-        const response = await api.patch('/v1/settings/organization', payload);
+        const response = await api.patch('/v1/settings/company', payload);
         state.organization = response.data.datos ?? [];
 
         return state.organization;

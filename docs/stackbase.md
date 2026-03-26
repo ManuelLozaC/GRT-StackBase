@@ -49,6 +49,12 @@ Su objetivo es:
 - servir para QA tecnico
 - ayudar al onboarding
 - poder activarse o desactivarse desde administracion
+- actuar como catalogo vivo de ejemplos de UI y patrones de implementacion del stack
+
+Debe cubrir dos frentes:
+
+- demos tecnicas del core: archivos, jobs, auditoria, notificaciones, transfers, settings, seguridad
+- demos de experiencia/UI: toasts, modals, formularios, inputs, datepickers, tablas, estados vacios, validaciones, banners, confirmaciones y patrones de layout
 
 ## Stack tecnologico actual
 
@@ -88,6 +94,7 @@ Su objetivo es:
 - el core no contiene logica de negocio especifica
 - los modulos consumen servicios del core
 - las funcionalidades genericas importantes deben tener demo
+- el `Demo Module` debe comportarse como un mini styleguide operativo del producto
 - la documentacion debe reflejar el estado real del codigo
 - el backend debe ser la fuente de verdad de metadata modular
 - la documentacion del repo debe tener una sola fuente de verdad para backlog, diagnostico y plan de cierre

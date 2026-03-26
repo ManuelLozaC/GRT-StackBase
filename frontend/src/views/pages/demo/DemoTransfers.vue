@@ -1,4 +1,5 @@
 <script setup>
+import DemoPatternGuide from '@/components/demo/DemoPatternGuide.vue';
 import api from '@/service/api';
 import { useToast } from 'primevue/usetoast';
 import { computed, onMounted, reactive } from 'vue';
@@ -286,5 +287,13 @@ onMounted(loadTransfers);
                 </template>
             </DataTable>
         </div>
+
+        <DemoPatternGuide
+            title="Guia para transfers, import y export"
+            :when-to-use="['cuando un recurso necesita exportaciones repetibles y auditables', 'cuando la importacion debe validarse segun metadata real del recurso', 'cuando conviene ofrecer modo sync y async para distintos tamaños de trabajo']"
+            :avoid-when="['cuando el volumen es minimo y no justifica historial ni corridas', 'cuando una importacion no tiene reglas claras de validacion o columnas esperadas', 'cuando el modo async se expone sin worker ni observabilidad minima']"
+            :wiring="['usar transfer runs como fuente de verdad del historial operativo', 'ofrecer descarga directa para sync y artefacto diferido para async', 'describir con claridad encabezados y reglas esperadas antes de importar']"
+            :notes="['esta demo ya conversa con el Data Engine real del core', 'si la exportacion pesa mucho, conectarla tambien con async patterns y jobs']"
+        />
     </div>
 </template>

@@ -1,4 +1,6 @@
 <script setup>
+import DemoPageHero from '@/components/demo/DemoPageHero.vue';
+import DemoPatternGuide from '@/components/demo/DemoPatternGuide.vue';
 import StateEmpty from '@/components/core/StateEmpty.vue';
 import StateSkeleton from '@/components/core/StateSkeleton.vue';
 import { notificationStore } from '@/core/notifications/notificationStore';
@@ -16,23 +18,12 @@ const form = reactive({
     action_url: '/demo/notifications',
     channels: ['internal']
 });
+
 const channelOptions = computed(() => [
-    {
-        label: 'Internal',
-        value: 'internal'
-    },
-    {
-        label: `Email ${settingsStore.featureFlags.value.feature_notifications_email ? '' : '(flag off)'}`,
-        value: 'email'
-    },
-    {
-        label: `WhatsApp ${settingsStore.featureFlags.value.feature_notifications_whatsapp ? '' : '(flag off)'}`,
-        value: 'whatsapp'
-    },
-    {
-        label: `Push ${settingsStore.featureFlags.value.feature_notifications_push ? '' : '(flag off)'}`,
-        value: 'push'
-    }
+    { label: 'Internal', value: 'internal' },
+    { label: `Email ${settingsStore.featureFlags.value.feature_notifications_email ? '' : '(flag off)'}`, value: 'email' },
+    { label: `WhatsApp ${settingsStore.featureFlags.value.feature_notifications_whatsapp ? '' : '(flag off)'}`, value: 'whatsapp' },
+    { label: `Push ${settingsStore.featureFlags.value.feature_notifications_push ? '' : '(flag off)'}`, value: 'push' }
 ]);
 
 async function createNotification() {
@@ -108,13 +99,8 @@ function resolveDeliverySeverity(status) {
 <template>
     <div class="grid grid-cols-12 gap-4">
         <div class="col-span-12">
-            <div class="card flex flex-col gap-3">
-                <Tag severity="warning" value="Demo Module / Notifications" class="w-fit" />
-                <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3">
-                    <div>
-                        <h2 class="m-0">Demo funcional de notificaciones</h2>
-                        <p class="m-0 text-color-secondary">Valida notificaciones internas, bandeja del usuario, marcado de lectura y contador de no leidas.</p>
-                    </div>
+            <DemoPageHero badge="Demo Module / Notifications" title="Demo funcional de notificaciones" description="Valida notificaciones internas, bandeja del usuario, marcado de lectura y contador de no leidas.">
+                <template #aside>
                     <div class="demo-notification-summary">
                         <div>
                             <strong>{{ notificationStore.state.items.length }}</strong>
@@ -125,8 +111,8 @@ function resolveDeliverySeverity(status) {
                             <span>sin leer</span>
                         </div>
                     </div>
-                </div>
-            </div>
+                </template>
+            </DemoPageHero>
         </div>
 
         <div class="col-span-12 xl:col-span-4">
@@ -184,9 +170,7 @@ function resolveDeliverySeverity(status) {
                         <div class="flex items-start justify-between gap-3">
                             <div>
                                 <div class="font-semibold">{{ notification.title }}</div>
-                                <div class="text-sm text-color-secondary">
-                                    {{ formatDate(notification.created_at) }}
-                                </div>
+                                <div class="text-sm text-color-secondary">{{ formatDate(notification.created_at) }}</div>
                             </div>
                             <Tag :severity="resolveSeverity(notification.level)" :value="notification.level" />
                         </div>
@@ -198,18 +182,30 @@ function resolveDeliverySeverity(status) {
                         </div>
 
                         <div class="demo-card-footer">
-                            <span class="text-sm text-color-secondary">
-                                {{ notification.read_at ? `Leida ${formatDate(notification.read_at)}` : 'Pendiente de lectura' }}
-                            </span>
+                            <span class="text-sm text-color-secondary">{{ notification.read_at ? `Leida ${formatDate(notification.read_at)}` : 'Pendiente de lectura' }}</span>
 
                             <div class="demo-actions">
-                                <router-link v-if="notification.action_url" :to="notification.action_url" class="demo-link"> Abrir accion </router-link>
+                                <router-link v-if="notification.action_url" :to="notification.action_url" class="demo-link">Abrir accion</router-link>
                                 <button v-if="!notification.read_at" class="demo-secondary-button" @click="markAsRead(notification)">Marcar leida</button>
                             </div>
                         </div>
                     </article>
                 </div>
             </div>
+        </div>
+
+        <div class="col-span-12">
+            <DemoPatternGuide
+                title="Guia para notificaciones y bandeja"
+                :when-to-use="['cuando una accion necesita dejar rastro visible para el usuario', 'cuando una misma notificacion puede salir por varios canales', 'cuando la bandeja forma parte del shell y del flujo diario']"
+                :avoid-when="['cuando el mensaje deberia ser solo un toast efimero sin historial', 'cuando se notifican eventos sin valor real para el usuario final', 'cuando los canales externos no respetan preferencias o flags']"
+                :wiring="[
+                    'crear la notificacion, refrescar bandeja y mostrar feedback inmediato',
+                    'mostrar estado de lectura y entregas por canal en la misma vista',
+                    'mantener action_url opcional para conectar la notificacion con una pantalla real'
+                ]"
+                :notes="['esta demo conversa con el core real de notificaciones', 'si el flujo se vuelve mas complejo, combinar con settings y preferencias del usuario']"
+            />
         </div>
     </div>
 </template>
@@ -292,16 +288,12 @@ function resolveDeliverySeverity(status) {
     border: 1px solid var(--surface-border);
     border-radius: 1rem;
     padding: 1rem;
-    background: var(--surface-ground);
+    background: var(--surface-card);
 }
 
 .demo-notification-list {
     display: grid;
     gap: 1rem;
-}
-
-.demo-notification-card {
-    background: var(--surface-card);
 }
 
 .demo-notification-card.unread {

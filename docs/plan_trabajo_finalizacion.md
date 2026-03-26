@@ -222,7 +222,7 @@ Reducir riesgo de regresion antes del cierre.
   - pantallas administrativas criticas
 - agregar analisis estatico backend
 - definir type checking frontend si se decide TypeScript o mantener JS endurecido
-- preparar pipeline CI para lint, test y build
+- endurecer pipeline CI ya operativo para lint, test y build
 
 ### Criterio de salida
 
@@ -289,3 +289,8 @@ El siguiente ciclo de trabajo deberia concentrarse solo en estas cuatro metas:
 4. completar CRUDs backend/frontend del dominio base
 
 Ese bloque es el que mas reduce riesgo y el que mas acerca el proyecto a una version utilizable para clientes reales.
+
+Estado actualizado:
+
+- CI base ya esta operativo en GitHub Actions
+- el siguiente cierre de calidad ya no es "tener CI", sino ampliar pruebas frontend y checks de release
