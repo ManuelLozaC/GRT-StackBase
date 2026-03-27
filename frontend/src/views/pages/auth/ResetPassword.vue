@@ -1,6 +1,5 @@
 <script setup>
 import api from '@/service/api';
-import FloatingConfigurator from '@/components/FloatingConfigurator.vue';
 import { useToast } from 'primevue/usetoast';
 import { reactive, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
@@ -48,7 +47,6 @@ async function submitResetPassword() {
 </script>
 
 <template>
-    <FloatingConfigurator />
     <div class="auth-shell">
         <div class="auth-card">
             <div class="text-center mb-8">

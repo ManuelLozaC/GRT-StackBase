@@ -57,7 +57,20 @@ return Application::configure(basePath: dirname(__DIR__))
             }
 
             if ($exception instanceof ValidationException) {
-                return null;
+                $errors = $exception->errors();
+
+                return response()->json([
+                    'estado' => 'error',
+                    'datos' => null,
+                    'mensaje' => collect($errors)
+                        ->flatten()
+                        ->first() ?? 'Los datos enviados no son validos.',
+                    'meta' => array_filter([
+                        'error_code' => 'validation_error',
+                        'request_id' => $request->attributes->get('request_id'),
+                    ]),
+                    'errores' => $errors,
+                ], $exception->status);
             }
 
             if ($exception instanceof HttpExceptionInterface && $exception->getStatusCode() < 500) {

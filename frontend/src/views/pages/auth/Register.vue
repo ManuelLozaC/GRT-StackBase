@@ -1,6 +1,5 @@
 <script setup>
 import { sessionStore } from '@/core/auth/sessionStore';
-import FloatingConfigurator from '@/components/FloatingConfigurator.vue';
 import { useToast } from 'primevue/usetoast';
 import { reactive, ref } from 'vue';
 import { useRouter } from 'vue-router';
@@ -46,7 +45,6 @@ async function submitRegister() {
 </script>
 
 <template>
-    <FloatingConfigurator />
     <div class="auth-shell">
         <div class="auth-card">
             <div class="text-center mb-8">

@@ -1,4 +1,5 @@
 import { computed, reactive } from 'vue';
+import { applyPrimeThemeAppearance } from './layoutAppearance';
 
 const layoutConfig = reactive({
     preset: 'Aura',
@@ -37,6 +38,20 @@ export function useLayout() {
 
         layoutConfig.darkTheme = darkMode;
         document.documentElement.classList.toggle('app-dark', darkMode);
+    };
+
+    const applyVisualSettings = ({ theme = 'system', preset = 'Aura', primary = 'emerald', surface = 'slate', menuMode = 'static' } = {}) => {
+        layoutConfig.preset = preset;
+        layoutConfig.primary = primary;
+        layoutConfig.surface = surface;
+        layoutConfig.menuMode = menuMode;
+        layoutState.staticMenuInactive = false;
+        layoutState.mobileMenuActive = false;
+        layoutState.sidebarExpanded = false;
+        layoutState.menuHoverActive = false;
+        layoutState.anchored = false;
+        applyPrimeThemeAppearance({ preset, primary, surface });
+        applyThemePreference(theme);
     };
 
     const toggleDarkMode = () => {
@@ -101,6 +116,7 @@ export function useLayout() {
         changeMenuMode,
         isDesktop,
         hasOpenOverlay,
-        applyThemePreference
+        applyThemePreference,
+        applyVisualSettings
     };
 }

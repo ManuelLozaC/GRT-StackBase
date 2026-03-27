@@ -64,9 +64,9 @@ class UserManagementController extends Controller
 
         $payload = Validator::make($request->all(), [
             'persona_id' => ['nullable', 'integer', Rule::exists('personas', 'id')],
-            'name' => ['required', 'string', 'max:120'],
+            'name' => ['nullable', 'string', 'max:120'],
             'alias' => ['nullable', 'string', 'max:60', Rule::unique('users', 'alias')],
-            'email' => ['required', 'email', 'max:120', Rule::unique('users', 'email')],
+            'email' => ['nullable', 'email', 'max:120', Rule::unique('users', 'email')],
             'telefono' => ['nullable', 'string', 'max:30'],
             'activo' => ['nullable', 'boolean'],
             'roles' => ['nullable', 'array'],
@@ -84,12 +84,36 @@ class UserManagementController extends Controller
             );
         }
 
+        $resolvedName = $persona?->nombre_completo ?: ($payload['name'] ?? null);
+        $resolvedEmail = $payload['email'] ?? $persona?->correo;
+        $resolvedPhone = $persona?->telefono ?: ($payload['telefono'] ?? null);
+
+        if (! $resolvedName) {
+            return $this->errorResponse(
+                message: 'Debes seleccionar una persona o indicar un nombre de usuario.',
+                errors: [
+                    'name' => ['Debes seleccionar una persona o indicar un nombre de usuario.'],
+                ],
+                status: 422,
+            );
+        }
+
+        if (! $resolvedEmail) {
+            return $this->errorResponse(
+                message: 'Debes indicar un correo de acceso o seleccionar una persona con correo registrado.',
+                errors: [
+                    'email' => ['Debes indicar un correo de acceso o seleccionar una persona con correo registrado.'],
+                ],
+                status: 422,
+            );
+        }
+
         $user = User::query()->create([
             'persona_id' => $persona?->id,
-            'name' => $payload['name'],
+            'name' => $resolvedName,
             'alias' => $payload['alias'] ?? null,
-            'email' => $payload['email'],
-            'telefono' => $payload['telefono'] ?? null,
+            'email' => $resolvedEmail,
+            'telefono' => $resolvedPhone,
             'password' => $payload['password'],
             'activo' => $payload['activo'] ?? true,
             'primer_acceso_pendiente' => $payload['primer_acceso_pendiente'] ?? true,
@@ -133,9 +157,9 @@ class UserManagementController extends Controller
 
         $payload = Validator::make($request->all(), [
             'persona_id' => ['nullable', 'integer', Rule::exists('personas', 'id')],
-            'name' => ['sometimes', 'required', 'string', 'max:120'],
+            'name' => ['sometimes', 'nullable', 'string', 'max:120'],
             'alias' => ['nullable', 'string', 'max:60', Rule::unique('users', 'alias')->ignore($user->id)],
-            'email' => ['sometimes', 'required', 'email', 'max:120', Rule::unique('users', 'email')->ignore($user->id)],
+            'email' => ['sometimes', 'nullable', 'email', 'max:120', Rule::unique('users', 'email')->ignore($user->id)],
             'telefono' => ['nullable', 'string', 'max:30'],
             'activo' => ['nullable', 'boolean'],
             'roles' => ['nullable', 'array'],
@@ -155,12 +179,42 @@ class UserManagementController extends Controller
             );
         }
 
+        $resolvedName = $personaSpecified
+            ? ($persona?->nombre_completo ?: ($payload['name'] ?? null))
+            : ($payload['name'] ?? $user->name);
+        $resolvedEmail = array_key_exists('email', $payload)
+            ? ($payload['email'] ?: $persona?->correo ?: null)
+            : ($personaSpecified ? ($persona?->correo ?: $user->email) : $user->email);
+        $resolvedPhone = $personaSpecified
+            ? ($persona?->telefono ?: ($payload['telefono'] ?? null))
+            : (array_key_exists('telefono', $payload) ? $payload['telefono'] : $user->telefono);
+
+        if (! $resolvedName) {
+            return $this->errorResponse(
+                message: 'Debes seleccionar una persona o indicar un nombre de usuario.',
+                errors: [
+                    'name' => ['Debes seleccionar una persona o indicar un nombre de usuario.'],
+                ],
+                status: 422,
+            );
+        }
+
+        if (! $resolvedEmail) {
+            return $this->errorResponse(
+                message: 'Debes indicar un correo de acceso o seleccionar una persona con correo registrado.',
+                errors: [
+                    'email' => ['Debes indicar un correo de acceso o seleccionar una persona con correo registrado.'],
+                ],
+                status: 422,
+            );
+        }
+
         $user->fill([
             'persona_id' => $personaSpecified ? $persona?->id : $user->persona_id,
-            'name' => $payload['name'] ?? $user->name,
+            'name' => $resolvedName,
             'alias' => array_key_exists('alias', $payload) ? $payload['alias'] : $user->alias,
-            'email' => $payload['email'] ?? $user->email,
-            'telefono' => array_key_exists('telefono', $payload) ? $payload['telefono'] : $user->telefono,
+            'email' => $resolvedEmail,
+            'telefono' => $resolvedPhone,
             'activo' => $payload['activo'] ?? $user->activo,
             'primer_acceso_pendiente' => $payload['primer_acceso_pendiente'] ?? $user->primer_acceso_pendiente,
         ])->save();
@@ -540,6 +594,7 @@ class UserManagementController extends Controller
                         $persona->apellido_materno,
                     ]))),
                     'correo' => $persona->correo,
+                    'telefono' => $persona->telefono,
                 ];
             })
             ->all();

@@ -3,7 +3,7 @@ import { sessionStore } from '@/core/auth/sessionStore';
 import StateEmpty from '@/components/core/StateEmpty.vue';
 import StateSkeleton from '@/components/core/StateSkeleton.vue';
 import api from '@/service/api';
-import { computed, onMounted, reactive } from 'vue';
+import { computed, onMounted, reactive, watch } from 'vue';
 import { useRouter } from 'vue-router';
 import { useToast } from 'primevue/usetoast';
 
@@ -21,6 +21,7 @@ const state = reactive({
     items: [],
     availableRoles: [],
     availablePersonas: [],
+    formError: '',
     form: defaultUserForm(),
     passwordForm: defaultPasswordForm()
 });
@@ -29,6 +30,7 @@ const users = computed(() => state.items);
 const hasUsers = computed(() => state.items.length > 0);
 const isEditing = computed(() => Boolean(state.form.id));
 const personaOptions = computed(() => state.availablePersonas);
+const selectedPersona = computed(() => state.availablePersonas.find((persona) => persona.value === state.form.persona_id) ?? null);
 
 function defaultUserForm() {
     return {
@@ -37,7 +39,6 @@ function defaultUserForm() {
         name: '',
         alias: '',
         email: '',
-        telefono: '',
         activo: true,
         roles: [],
         password: '',
@@ -74,7 +75,8 @@ async function loadUsers() {
         state.availablePersonas = (response.data.meta?.available_personas ?? []).map((persona) => ({
             label: persona.label,
             value: persona.id,
-            correo: persona.correo
+            correo: persona.correo,
+            telefono: persona.telefono
         }));
     } finally {
         state.loading = false;
@@ -83,6 +85,7 @@ async function loadUsers() {
 
 function openCreateUser() {
     state.form = defaultUserForm();
+    state.formError = '';
     state.showUserDialog = true;
 }
 
@@ -99,24 +102,56 @@ function openEditUser(user) {
         password: '',
         password_confirmation: ''
     };
+    state.formError = '';
     state.showUserDialog = true;
 }
 
 function closeUserDialog() {
     state.showUserDialog = false;
+    state.formError = '';
     state.form = defaultUserForm();
 }
 
+function syncPersonaIntoForm(personaId) {
+    const persona = state.availablePersonas.find((candidate) => candidate.value === personaId) ?? null;
+
+    if (!persona) {
+        return;
+    }
+
+    state.form.name = persona.label;
+    state.form.telefono = persona.telefono || '';
+
+    if (!state.form.email) {
+        state.form.email = persona.correo || '';
+    }
+}
+
+watch(
+    () => state.form.persona_id,
+    (personaId) => {
+        if (!personaId) {
+            return;
+        }
+
+        syncPersonaIntoForm(personaId);
+    }
+);
+
 async function submitUserForm() {
+    if (state.savingForm) {
+        return;
+    }
+
     state.savingForm = true;
+    state.formError = '';
 
     try {
         const payload = {
             persona_id: state.form.persona_id || null,
-            name: state.form.name,
+            name: state.form.persona_id ? null : state.form.name,
             alias: state.form.alias || null,
-            email: state.form.email,
-            telefono: state.form.telefono || null,
+            email: state.form.email || null,
             activo: state.form.activo,
             roles: state.form.roles
         };
@@ -140,10 +175,11 @@ async function submitUserForm() {
             life: 3000
         });
     } catch (error) {
+        state.formError = error?.response?.data?.mensaje ?? 'Revisa los datos e intenta de nuevo.';
         toast.add({
             severity: 'error',
             summary: 'No se pudo guardar el usuario',
-            detail: error?.response?.data?.mensaje ?? 'Revisa los datos e intenta de nuevo.',
+            detail: state.formError,
             life: 4000
         });
     } finally {
@@ -370,24 +406,32 @@ onMounted(loadUsers);
                     <Select v-model="state.form.persona_id" :options="personaOptions" optionLabel="label" optionValue="value" showClear placeholder="Selecciona una persona" class="w-full" />
                 </div>
                 <div class="flex flex-col gap-2">
-                    <label class="text-sm font-medium text-slate-700">Nombre</label>
-                    <InputText v-model="state.form.name" />
-                </div>
-                <div class="flex flex-col gap-2">
                     <label class="text-sm font-medium text-slate-700">Alias</label>
                     <InputText v-model="state.form.alias" />
                 </div>
                 <div class="flex flex-col gap-2">
-                    <label class="text-sm font-medium text-slate-700">Correo</label>
+                    <label class="text-sm font-medium text-slate-700">Correo de acceso</label>
                     <InputText v-model="state.form.email" />
-                </div>
-                <div class="flex flex-col gap-2">
-                    <label class="text-sm font-medium text-slate-700">Telefono</label>
-                    <InputText v-model="state.form.telefono" />
                 </div>
                 <div class="flex flex-col gap-2">
                     <label class="text-sm font-medium text-slate-700">Roles</label>
                     <MultiSelect v-model="state.form.roles" :options="state.availableRoles" optionLabel="label" optionValue="value" display="chip" placeholder="Selecciona roles" class="w-full" />
+                </div>
+                <div v-if="selectedPersona" class="md:col-span-2 rounded-2xl border border-sky-200 bg-sky-50 p-4 text-sm text-sky-900">
+                    <div class="font-semibold mb-1">Datos heredados desde persona</div>
+                    <div>
+                        Nombre: <strong>{{ selectedPersona.label }}</strong>
+                    </div>
+                    <div>
+                        Correo registrado: <strong>{{ selectedPersona.correo || 'Sin correo en persona' }}</strong>
+                    </div>
+                    <div>
+                        Telefono: <strong>{{ selectedPersona.telefono || 'Sin telefono en persona' }}</strong>
+                    </div>
+                </div>
+                <div v-else class="flex flex-col gap-2 md:col-span-2">
+                    <label class="text-sm font-medium text-slate-700">Nombre de usuario</label>
+                    <InputText v-model="state.form.name" />
                 </div>
                 <div v-if="!isEditing" class="flex flex-col gap-2">
                     <label class="text-sm font-medium text-slate-700">Contrasena</label>
@@ -400,6 +444,9 @@ onMounted(loadUsers);
                 <div class="flex items-center gap-3 md:col-span-2">
                     <ToggleSwitch v-model="state.form.activo" />
                     <span class="text-sm text-slate-700">Usuario activo</span>
+                </div>
+                <div class="md:col-span-2">
+                    <Message v-if="state.formError" severity="error" :closable="false">{{ state.formError }}</Message>
                 </div>
             </div>
 

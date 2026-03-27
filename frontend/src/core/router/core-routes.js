@@ -88,6 +88,14 @@ export const coreRoutes = [
                 component: () => import('@/views/pages/UserAdministration.vue')
             },
             {
+                path: '/admin/roles',
+                name: 'role-administration',
+                meta: {
+                    permissionKey: 'roles.manage'
+                },
+                component: () => import('@/views/pages/RolePermissionAdministration.vue')
+            },
+            {
                 path: '/admin/security',
                 name: 'security-logs',
                 meta: {

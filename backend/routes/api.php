@@ -15,6 +15,7 @@ use App\Http\Controllers\Api\V1\NotificationController;
 use App\Http\Controllers\Api\V1\OpenApiController;
 use App\Http\Controllers\Api\V1\OperationsOverviewController;
 use App\Http\Controllers\Api\V1\ErrorLogController;
+use App\Http\Controllers\Api\V1\RoleManagementController;
 use App\Http\Controllers\Api\V1\SecurityLogController;
 use App\Http\Controllers\Api\V1\SettingController;
 use App\Http\Controllers\Api\V1\UserManagementController;
@@ -91,6 +92,12 @@ Route::prefix('v1')->group(function (): void {
             Route::patch('/users/{user}/status', [UserManagementController::class, 'updateStatus'])->middleware('throttle:data-writes');
             Route::post('/users/{user}/reset-password', [UserManagementController::class, 'resetPassword'])->middleware('throttle:data-writes');
             Route::patch('/users/{user}/roles', [UserManagementController::class, 'updateRoles']);
+        });
+
+        Route::middleware('permission:roles.manage')->group(function (): void {
+            Route::get('/roles', [RoleManagementController::class, 'index']);
+            Route::post('/roles', [RoleManagementController::class, 'store'])->middleware('throttle:data-writes');
+            Route::patch('/roles/{role}', [RoleManagementController::class, 'update'])->middleware('throttle:data-writes');
         });
 
         Route::middleware('permission:security.manage')->get('/security/logs', [SecurityLogController::class, 'index']);

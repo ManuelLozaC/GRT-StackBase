@@ -201,6 +201,15 @@ Puedes iniciar sesion con:
 - `mloza@grt.com.bo`
 - `mloza`
 
+Verificacion rapida por API:
+
+```bash
+curl -X POST http://localhost:8080/api/v1/auth/login \
+  -H "Accept: application/json" \
+  -H "Content-Type: application/json" \
+  -d '{"email":"mloza@grt.com.bo","password":"admin1984!","device_name":"frontend"}'
+```
+
 ## 8. Validaciones recomendadas
 
 Backend:
@@ -248,6 +257,32 @@ Revisa `frontend/.env`:
 ```env
 VITE_API_URL=http://localhost:8080/api
 ```
+
+### Las credenciales iniciales no funcionan
+
+Primero verifica si el bootstrap realmente fue seedado:
+
+```bash
+docker compose exec app php artisan db:seed --force
+```
+
+Si quieres dejar la base exactamente desde cero:
+
+```bash
+docker compose exec app php artisan migrate:fresh --seed
+```
+
+Validacion directa:
+
+```bash
+docker compose exec db mysql -N -B -ugrt_user -psecret -D grt_stackbase -e "SELECT id,name,alias,email,activo FROM users;"
+```
+
+Debes ver al menos este usuario:
+
+- alias: `mloza`
+- correo: `mloza@grt.com.bo`
+- contrasena: `admin1984!`
 
 ### Reiniciar servicios
 

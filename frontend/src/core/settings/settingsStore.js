@@ -19,9 +19,16 @@ function getSettingValue(scope, key, fallback = null) {
     return match ? match.value : fallback;
 }
 
-function applyThemeFromSettings() {
-    const { applyThemePreference } = useLayout();
-    applyThemePreference(getSettingValue('user', 'theme', 'system'));
+function applyLayoutFromSettings() {
+    const { applyVisualSettings } = useLayout();
+
+    applyVisualSettings({
+        theme: getSettingValue('global', 'ui_theme_mode', 'system'),
+        preset: getSettingValue('global', 'ui_preset', 'Aura'),
+        primary: getSettingValue('global', 'ui_primary_color', 'emerald'),
+        surface: getSettingValue('global', 'ui_surface_palette', 'slate'),
+        menuMode: getSettingValue('global', 'ui_menu_mode', 'static')
+    });
 }
 
 async function initialize(force = false) {
@@ -38,7 +45,7 @@ async function initialize(force = false) {
         state.user = response.data.datos?.user ?? [];
         state.featureFlags = response.data.datos?.feature_flags ?? {};
         state.initialized = true;
-        applyThemeFromSettings();
+        applyLayoutFromSettings();
     } finally {
         state.loading = false;
     }
@@ -50,6 +57,7 @@ async function updateGlobal(payload) {
     try {
         const response = await api.patch('/v1/settings/global', payload);
         state.global = response.data.datos ?? [];
+        applyLayoutFromSettings();
 
         return state.global;
     } finally {
@@ -76,7 +84,6 @@ async function updateUser(payload) {
     try {
         const response = await api.patch('/v1/settings/me', payload);
         state.user = response.data.datos ?? [];
-        applyThemeFromSettings();
 
         return state.user;
     } finally {
@@ -105,7 +112,14 @@ export const settingsStore = {
     organizationSettings: computed(() => state.organization),
     userSettings: computed(() => state.user),
     featureFlags: computed(() => state.featureFlags),
-    userTheme: computed(() => getSettingValue('user', 'theme', 'system')),
+    userTheme: computed(() => getSettingValue('global', 'ui_theme_mode', 'system')),
+    globalAppearance: computed(() => ({
+        theme: getSettingValue('global', 'ui_theme_mode', 'system'),
+        preset: getSettingValue('global', 'ui_preset', 'Aura'),
+        primary: getSettingValue('global', 'ui_primary_color', 'emerald'),
+        surface: getSettingValue('global', 'ui_surface_palette', 'slate'),
+        menuMode: getSettingValue('global', 'ui_menu_mode', 'static')
+    })),
     resolvedPreferences: computed(() => {
         const organizationLocale = getSettingValue('organization', 'locale', 'es-BO');
         const organizationDateFormat = getSettingValue('organization', 'date_format', 'DD/MM/YYYY');

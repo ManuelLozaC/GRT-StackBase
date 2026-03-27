@@ -486,16 +486,15 @@ class AuthFlowTest extends TestCase
         $createResponse = $this->withHeader('Authorization', 'Bearer '.$adminToken)
             ->postJson('/api/v1/users', [
                 'persona_id' => $persona->id,
-                'name' => 'Maria Suarez',
                 'alias' => 'msuarez',
                 'email' => 'maria.suarez@test.dev',
-                'telefono' => '70000012',
                 'activo' => true,
                 'roles' => ['admin'],
                 'password' => 'Password123',
                 'password_confirmation' => 'Password123',
             ])
             ->assertOk()
+            ->assertJsonPath('datos.name', 'Maria Suarez')
             ->assertJsonPath('datos.alias', 'msuarez')
             ->assertJsonPath('datos.persona.id', $persona->id);
 
@@ -503,12 +502,12 @@ class AuthFlowTest extends TestCase
 
         $this->withHeader('Authorization', 'Bearer '.$adminToken)
             ->patchJson('/api/v1/users/'.$userId, [
-                'name' => 'Maria Suarez Actualizada',
-                'telefono' => '70000013',
+                'email' => 'maria.actualizada@test.dev',
                 'activo' => false,
             ])
             ->assertOk()
-            ->assertJsonPath('datos.name', 'Maria Suarez Actualizada')
+            ->assertJsonPath('datos.name', 'Maria Suarez')
+            ->assertJsonPath('datos.email', 'maria.actualizada@test.dev')
             ->assertJsonPath('datos.activo', false);
 
         $this->withHeader('Authorization', 'Bearer '.$adminToken)
@@ -531,7 +530,7 @@ class AuthFlowTest extends TestCase
             'password' => 'NuevaPassword123',
         ])
             ->assertOk()
-            ->assertJsonPath('datos.user.email', 'maria.suarez@test.dev');
+            ->assertJsonPath('datos.user.email', 'maria.actualizada@test.dev');
     }
 
     public function test_user_can_create_list_and_revoke_api_tokens(): void

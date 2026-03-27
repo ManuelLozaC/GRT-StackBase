@@ -73,8 +73,11 @@
 - [x] Headers de seguridad base para respuestas API.
 - [x] Ajustes responsive en pantallas administrativas clave (`modulos`, `operations`, `security`, `API tokens`, `webhooks`).
 - [x] Bootstrap oficial inicial con `GRT SRL`, `TalentHub` y `Manuel Loza`.
+- [x] Bootstrap oficial inicial validado por API y endurecido para evitar duplicados funcionales al re-seedear.
 - [x] Recursos base del dominio expuestos por Data Engine: `organizations`, `offices`, `people`, `divisions`, `areas`, `positions`, `work-assignments`.
 - [x] Recursos base del dominio gestionables desde frontend a traves de Data Engine.
+- [x] Apariencia global del shell (`tema`, `preset`, `color primario`, `surface`, `tipo de menu`) administrable desde settings globales y aplicada a todos los usuarios.
+- [x] Topbar depurado: empresa/contexto movidos a modal y acciones poco frecuentes agrupadas bajo el resumen de usuario.
 
 ### Brechas principales de evolucion
 
@@ -147,6 +150,7 @@ Estado: En progreso
 - [x] Nuevo permiso operativo `settings.manage`.
 - [x] Administracion de usuarios con sync de roles e impersonacion.
 - [x] Gestion operativa de usuarios con alias, persona vinculada, estado y reset de contrasena.
+- [x] Administracion operativa de roles y permisos desde UI/API.
 - [x] Auth expone y mantiene `asignacion_laboral_activa` para preparar permisos por contexto.
 - [x] Frontend ya permite visualizar y cambiar la `asignacion_laboral_activa` desde la sesion del usuario.
 - [x] El control de permisos base ya puede resolverse desde la `asignacion_laboral_activa`, no solo desde roles globales.
@@ -195,6 +199,7 @@ Estado: En progreso
 - [x] Configuracion por organizacion.
 - [x] UI administrativa de settings.
 - [x] Bootstrap frontend de settings y preferencias.
+- [x] Layout visual global controlado desde settings administrativos, sin configuradores directos en login o header.
 
 ## P4. Motor de datos y CRUD universal
 Estado: En progreso
@@ -371,6 +376,7 @@ Estado: En progreso
 - [x] Depurar `core-menu` para dejar solo shell realmente transversal del producto.
 - [x] Convertir bootstrap modular frontend a metadata consumida por API.
 - [x] Refrescar catalogo modular completo tras toggles para no dejar estados derivados desfasados en frontend.
+- [x] Reubicar accesos de cuenta/contexto de baja frecuencia para reducir ruido operativo en el header.
 - [ ] Reducir mas el shell core a rutas/utilidades estrictamente transversales.
 
 ## P17. Higiene tecnica y operativa

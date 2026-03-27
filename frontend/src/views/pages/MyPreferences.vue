@@ -50,7 +50,7 @@ onMounted(loadPreferences);
         <div class="rounded-3xl border border-slate-200 bg-white p-8 shadow-sm">
             <div class="text-sm uppercase tracking-[0.3em] text-sky-600 font-semibold mb-3">My Account</div>
             <h1 class="text-3xl font-semibold text-slate-900 mb-3">Preferencias</h1>
-            <p class="text-slate-600 max-w-3xl">Aqui puedes ajustar tema, formato de fecha y preferencias de notificacion para que la experiencia del core sea mas personalizable desde el primer modulo.</p>
+            <p class="text-slate-600 max-w-3xl">Aqui puedes ajustar tus preferencias personales de formato, tablas y notificaciones sin tocar la configuracion global del shell.</p>
         </div>
 
         <div class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">

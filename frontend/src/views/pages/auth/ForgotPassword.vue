@@ -1,6 +1,5 @@
 <script setup>
 import api from '@/service/api';
-import FloatingConfigurator from '@/components/FloatingConfigurator.vue';
 import { useToast } from 'primevue/usetoast';
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
@@ -51,7 +50,6 @@ async function openReset() {
 </script>
 
 <template>
-    <FloatingConfigurator />
     <div class="auth-shell">
         <div class="auth-card">
             <div class="text-center mb-8">

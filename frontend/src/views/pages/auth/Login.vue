@@ -1,6 +1,5 @@
 <script setup>
 import { sessionStore } from '@/core/auth/sessionStore';
-import FloatingConfigurator from '@/components/FloatingConfigurator.vue';
 import { useToast } from 'primevue/usetoast';
 import { computed, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
@@ -55,7 +54,6 @@ async function submitLogin() {
 </script>
 
 <template>
-    <FloatingConfigurator />
     <div class="min-h-screen min-w-[100vw] overflow-hidden bg-[radial-gradient(circle_at_top,_#e0f2fe,_#f8fafc_45%,_#dbeafe_100%)] flex items-center justify-center px-6">
         <div class="flex flex-col items-center justify-center">
             <div class="rounded-[40px] p-[2px] bg-[linear-gradient(160deg,_#0f172a,_#0ea5e9,_#ffffff)] shadow-2xl">

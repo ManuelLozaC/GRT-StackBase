@@ -21,16 +21,6 @@ export const coreMenu = [
                 label: 'Documentation',
                 icon: 'pi pi-fw pi-book',
                 to: '/start/documentation'
-            },
-            {
-                label: 'My Preferences',
-                icon: 'pi pi-fw pi-sliders-h',
-                to: '/account/preferences'
-            },
-            {
-                label: 'API Tokens',
-                icon: 'pi pi-fw pi-key',
-                to: '/account/api-tokens'
             }
         ]
     },
@@ -74,6 +64,12 @@ export const coreMenu = [
                 permissionKey: 'users.manage_roles'
             },
             {
+                label: 'Roles & Permissions',
+                icon: 'pi pi-fw pi-shield',
+                to: '/admin/roles',
+                permissionKey: 'roles.manage'
+            },
+            {
                 label: 'Security Logs',
                 icon: 'pi pi-fw pi-shield',
                 to: '/admin/security',
@@ -84,6 +80,21 @@ export const coreMenu = [
                 icon: 'pi pi-fw pi-exclamation-circle',
                 to: '/admin/errors',
                 permissionKey: 'security.manage'
+            }
+        ]
+    },
+    {
+        label: 'Account',
+        items: [
+            {
+                label: 'My Preferences',
+                icon: 'pi pi-fw pi-user-edit',
+                to: '/account/preferences'
+            },
+            {
+                label: 'API Tokens',
+                icon: 'pi pi-fw pi-key',
+                to: '/account/api-tokens'
             }
         ]
     }

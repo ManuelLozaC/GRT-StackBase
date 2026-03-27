@@ -17,6 +17,7 @@ return [
                 'integrations.manage',
                 'users.manage_roles',
                 'users.impersonate',
+                'roles.manage',
                 'tenancy.manage',
                 'security.manage',
             ],

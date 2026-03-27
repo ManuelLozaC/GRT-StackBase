@@ -77,7 +77,7 @@ function submitForm() {
     }
 
     if (!state.form.password) {
-        state.errors.password = 'La password demo es obligatoria para este ejemplo.';
+        state.errors.password = 'La contrasena de ejemplo es obligatoria para este formulario.';
     }
 
     if (!state.form.fechaInicio) {
@@ -165,7 +165,7 @@ function resetForm() {
                     </div>
 
                     <div class="col-span-12 md:col-span-6">
-                        <label class="form-label">Password demo</label>
+                        <label class="form-label">Contrasena de ejemplo</label>
                         <Password v-model="state.form.password" fluid toggleMask :feedback="false" :invalid="Boolean(state.errors.password)" placeholder="********" />
                         <small v-if="state.errors.password" class="p-error">{{ state.errors.password }}</small>
                     </div>
