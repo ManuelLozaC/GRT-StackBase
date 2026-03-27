@@ -30,7 +30,6 @@ class SettingManagementTest extends TestCase
                 'app_banner_enabled' => true,
                 'app_banner_message' => 'Mantenimiento planificado',
                 'feature_global_error_toasts' => false,
-                'ui_theme_mode' => 'dark',
                 'ui_preset' => 'Nora',
                 'ui_primary_color' => 'sky',
                 'ui_surface_palette' => 'ocean',
@@ -71,10 +70,6 @@ class SettingManagementTest extends TestCase
             ->assertOk()
             ->assertJsonPath('datos.feature_flags.feature_global_error_toasts', false)
             ->assertJsonPath('datos.global.0.key', 'support_email')
-            ->assertJsonFragment([
-                'key' => 'ui_theme_mode',
-                'value' => 'dark',
-            ])
             ->assertJsonPath('datos.company.0.key', 'locale');
     }
 

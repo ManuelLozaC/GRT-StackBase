@@ -3,14 +3,15 @@ import { accessStore } from '@/core/auth/accessStore';
 import { sessionStore } from '@/core/auth/sessionStore';
 import { tenantStore } from '@/core/auth/tenantStore';
 import { notificationStore } from '@/core/notifications/notificationStore';
+import { settingsStore } from '@/core/settings/settingsStore';
 import { useLayout } from '@/layout/composables/layout';
 import { useToast } from 'primevue/usetoast';
-import { computed, reactive, ref, watch } from 'vue';
+import { computed, nextTick, reactive, ref, watch } from 'vue';
 import { useRouter } from 'vue-router';
 
 const router = useRouter();
 const toast = useToast();
-const { toggleMenu } = useLayout();
+const { toggleMenu, isDarkTheme } = useLayout();
 
 const organizations = computed(() => tenantStore.organizations.value);
 const activeOrganizationId = computed(() => tenantStore.activeOrganization.value?.id ?? '');
@@ -64,7 +65,9 @@ function openContextModal() {
     accountMenuOpen.value = false;
     contextState.organizationId = activeOrganizationId.value;
     contextState.workAssignmentId = activeWorkAssignmentId.value;
-    contextModalVisible.value = true;
+    nextTick(() => {
+        contextModalVisible.value = true;
+    });
 }
 
 async function applyOrganizationChange() {
@@ -110,6 +113,30 @@ async function openRoute(name) {
     await router.push({ name });
 }
 
+async function toggleThemePreference() {
+    const nextTheme = isDarkTheme.value ? 'light' : 'dark';
+
+    try {
+        await settingsStore.updateUser({
+            theme: nextTheme
+        });
+
+        toast.add({
+            severity: 'success',
+            summary: 'Tema actualizado',
+            detail: nextTheme === 'dark' ? 'Modo oscuro activado.' : 'Modo claro activado.',
+            life: 2200
+        });
+    } catch {
+        toast.add({
+            severity: 'error',
+            summary: 'No se pudo actualizar el tema',
+            detail: 'Intenta nuevamente en unos segundos.',
+            life: 3000
+        });
+    }
+}
+
 async function leaveImpersonation() {
     accountMenuOpen.value = false;
     await sessionStore.leaveImpersonation();
@@ -142,8 +169,15 @@ async function leaveImpersonation() {
                 <span v-if="unreadNotifications > 0" class="topbar-bell-badge">{{ unreadNotifications }}</span>
             </button>
 
+            <button type="button" class="layout-topbar-action topbar-theme-button" @click="toggleThemePreference">
+                <i :class="['pi', isDarkTheme ? 'pi-sun' : 'pi-moon']"></i>
+            </button>
+
             <div class="topbar-account-wrapper">
                 <button type="button" class="topbar-account-trigger" @click="toggleAccountMenu">
+                    <span class="topbar-account-avatar">
+                        {{ (sessionStore.state.user?.name || 'U').slice(0, 1).toUpperCase() }}
+                    </span>
                     <div class="topbar-user-summary">
                         <div class="topbar-user-name">{{ sessionStore.state.user?.name || 'Usuario' }}</div>
                         <div class="topbar-user-email">{{ sessionStore.state.user?.email || 'Sin correo' }}</div>
@@ -280,11 +314,25 @@ async function leaveImpersonation() {
     align-items: center;
     gap: 0.75rem;
     border: 1px solid var(--surface-border);
-    border-radius: 999px;
-    background: var(--surface-card);
+    border-radius: var(--shell-radius-md);
+    background: color-mix(in srgb, var(--surface-card), white 10%);
     color: var(--text-color);
-    padding: 0.35rem 0.75rem 0.35rem 0.95rem;
+    min-width: 15rem;
+    padding: 0.45rem 0.75rem;
     cursor: pointer;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.18);
+}
+
+.topbar-account-avatar {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2rem;
+    height: 2rem;
+    border-radius: var(--shell-radius-sm);
+    background: color-mix(in srgb, var(--primary-color), white 82%);
+    color: color-mix(in srgb, var(--primary-color), black 18%);
+    font-weight: 700;
 }
 
 .topbar-user-summary {
@@ -314,10 +362,10 @@ async function leaveImpersonation() {
     display: grid;
     gap: 0.55rem;
     border: 1px solid var(--surface-border);
-    border-radius: 1.2rem;
+    border-radius: var(--shell-radius-lg);
     background: var(--surface-card);
     padding: 0.9rem;
-    box-shadow: 0 24px 64px rgba(15, 23, 42, 0.16);
+    box-shadow: var(--shell-panel-shadow);
 }
 
 .topbar-impersonation-banner {
@@ -347,12 +395,17 @@ async function leaveImpersonation() {
     gap: 0.85rem;
     width: 100%;
     border: 1px solid var(--surface-border);
-    border-radius: 0.95rem;
+    border-radius: var(--shell-radius-md);
     background: var(--surface-ground);
     color: var(--text-color);
     padding: 0.85rem 0.95rem;
     cursor: pointer;
     text-align: left;
+}
+
+.topbar-theme-button {
+    border: 1px solid var(--surface-border);
+    background: color-mix(in srgb, var(--surface-card), white 8%);
 }
 
 .topbar-action-panel-item i {

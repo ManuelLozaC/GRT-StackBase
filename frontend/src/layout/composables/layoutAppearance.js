@@ -148,8 +148,12 @@ export function buildPresetExt(primaryName) {
 export function applyPrimeThemeAppearance({ preset = 'Aura', primary = 'emerald', surface = 'slate' } = {}) {
     const presetValue = layoutPresets[preset] ?? layoutPresets.Aura;
     const surfacePalette = findSurfacePalette(surface)?.palette;
+    const presetClassNames = ['ui-preset-aura', 'ui-preset-lara', 'ui-preset-nora'];
 
     $t().preset(presetValue).preset(buildPresetExt(primary)).surfacePalette(surfacePalette).use({ useDefaultOptions: true });
     updatePreset(buildPresetExt(primary));
     updateSurfacePalette(surfacePalette);
+
+    document.documentElement.classList.remove(...presetClassNames);
+    document.documentElement.classList.add(`ui-preset-${String(preset).toLowerCase()}`);
 }

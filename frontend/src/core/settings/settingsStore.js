@@ -23,7 +23,7 @@ function applyLayoutFromSettings() {
     const { applyVisualSettings } = useLayout();
 
     applyVisualSettings({
-        theme: getSettingValue('global', 'ui_theme_mode', 'system'),
+        theme: getSettingValue('user', 'theme', 'system'),
         preset: getSettingValue('global', 'ui_preset', 'Aura'),
         primary: getSettingValue('global', 'ui_primary_color', 'emerald'),
         surface: getSettingValue('global', 'ui_surface_palette', 'slate'),
@@ -112,9 +112,8 @@ export const settingsStore = {
     organizationSettings: computed(() => state.organization),
     userSettings: computed(() => state.user),
     featureFlags: computed(() => state.featureFlags),
-    userTheme: computed(() => getSettingValue('global', 'ui_theme_mode', 'system')),
+    userTheme: computed(() => getSettingValue('user', 'theme', 'system')),
     globalAppearance: computed(() => ({
-        theme: getSettingValue('global', 'ui_theme_mode', 'system'),
         preset: getSettingValue('global', 'ui_preset', 'Aura'),
         primary: getSettingValue('global', 'ui_primary_color', 'emerald'),
         surface: getSettingValue('global', 'ui_surface_palette', 'slate'),

@@ -16,22 +16,17 @@ const state = reactive({
 
 const globalSettings = computed(() => settingsStore.globalSettings.value);
 const organizationSettings = computed(() => settingsStore.organizationSettings.value);
-const globalAppearanceKeys = ['ui_theme_mode', 'ui_preset', 'ui_primary_color', 'ui_surface_palette', 'ui_menu_mode'];
+const globalAppearanceKeys = ['ui_preset', 'ui_primary_color', 'ui_surface_palette', 'ui_menu_mode'];
 const globalAppearanceSettings = computed(() => globalSettings.value.filter((setting) => globalAppearanceKeys.includes(setting.key)));
 const globalOperationalSettings = computed(() => globalSettings.value.filter((setting) => !globalAppearanceKeys.includes(setting.key)));
 const primaryPaletteMap = Object.fromEntries(primaryColorOptions.map((option) => [option.name, option.palette]));
 const surfacePaletteMap = Object.fromEntries(surfacePaletteOptions.map((option) => [option.name, option.palette]));
 
 const appearanceOptionHelp = {
-    ui_theme_mode: {
-        system: 'Respeta el modo claro u oscuro del dispositivo del usuario.',
-        light: 'Fuerza una interfaz clara para todos los usuarios.',
-        dark: 'Fuerza una interfaz oscura para todos los usuarios.'
-    },
     ui_preset: {
         Aura: 'Balanceado y moderno; buen punto de partida para la mayoria de sistemas.',
-        Lara: 'Mas sobrio y corporativo, con sensacion clasica.',
-        Nora: 'Mas marcado y expresivo, util cuando quieres una interfaz con mas personalidad.'
+        Lara: 'Mas sobrio, recto y corporativo, con menos redondez y mas estructura.',
+        Nora: 'Mas expresivo y elevado, con mas contraste visual y sensacion premium.'
     },
     ui_menu_mode: {
         static: 'El menu lateral queda visible en desktop y da navegacion mas estable.',
@@ -40,7 +35,6 @@ const appearanceOptionHelp = {
 };
 
 const appearanceImpact = {
-    ui_theme_mode: 'Impacta el nivel general de luz/contraste del shell.',
     ui_preset: 'Impacta la personalidad base de los componentes, bordes y densidad visual.',
     ui_primary_color: 'Impacta botones, links, badges, focos y acentos principales.',
     ui_surface_palette: 'Impacta fondos, cards, paneles, bordes y contraste general.',
@@ -151,7 +145,6 @@ function surfaceSwatchStyle(surfaceName) {
                             </div>
                         </div>
                         <div class="appearance-preview-summary">
-                            <span><b>Tema:</b> {{ currentSettingLabel(globalAppearanceSettings.find((item) => item.key === 'ui_theme_mode') || { options: [] }, state.globalForm.ui_theme_mode) }}</span>
                             <span><b>Preset:</b> {{ state.globalForm.ui_preset }}</span>
                             <span><b>Primario:</b> {{ state.globalForm.ui_primary_color }}</span>
                             <span><b>Surface:</b> {{ state.globalForm.ui_surface_palette }}</span>
@@ -185,7 +178,7 @@ function surfaceSwatchStyle(surfaceName) {
                                     <span>{{ option.label }}</span>
                                 </button>
                             </div>
-                            <div v-else-if="setting.key === 'ui_preset' || setting.key === 'ui_theme_mode' || setting.key === 'ui_menu_mode'" class="appearance-choice-grid">
+                            <div v-else-if="setting.key === 'ui_preset' || setting.key === 'ui_menu_mode'" class="appearance-choice-grid">
                                 <button
                                     v-for="option in setting.options"
                                     :key="option.value"

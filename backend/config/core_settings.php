@@ -64,18 +64,6 @@ return [
             'help' => 'Flag operativo para preparar el canal push.',
         ],
         [
-            'key' => 'ui_theme_mode',
-            'label' => 'Tema global del sistema',
-            'type' => 'select',
-            'default' => 'system',
-            'options' => [
-                ['label' => 'Segun el sistema', 'value' => 'system'],
-                ['label' => 'Claro', 'value' => 'light'],
-                ['label' => 'Oscuro', 'value' => 'dark'],
-            ],
-            'help' => 'Se aplica a todos los usuarios autenticados.',
-        ],
-        [
             'key' => 'ui_preset',
             'label' => 'Preset visual global',
             'type' => 'select',
@@ -196,6 +184,7 @@ return [
             'type' => 'select',
             'default' => 'system',
             'hidden' => true,
+            'help' => 'Preferencia personal de modo claro u oscuro para el shell.',
             'options' => [
                 ['label' => 'System', 'value' => 'system'],
                 ['label' => 'Light', 'value' => 'light'],
