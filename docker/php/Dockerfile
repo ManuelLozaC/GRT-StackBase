@@ -16,9 +16,13 @@ RUN docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd zip
 RUN pecl install redis && docker-php-ext-enable redis
 
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
+COPY ./docker/php/entrypoint.sh /usr/local/bin/grt-entrypoint
 
 WORKDIR /var/www/backend
 
 EXPOSE 9000
 
+RUN chmod +x /usr/local/bin/grt-entrypoint
+
+ENTRYPOINT ["grt-entrypoint"]
 CMD ["php-fpm"]

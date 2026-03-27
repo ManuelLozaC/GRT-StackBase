@@ -126,11 +126,19 @@ class ModuleRegistry
                 ->first();
 
             if ($existing) {
-                $this->modulesTableQuery()
-                    ->where('key', $key)
-                    ->update(array_merge($payload, [
-                        'updated_at' => now(),
-                    ]));
+                if (
+                    $existing->name !== $payload['name']
+                    || $existing->description !== $payload['description']
+                    || $existing->version !== $payload['version']
+                    || $existing->provider !== $payload['provider']
+                    || (bool) $existing->is_demo !== $payload['is_demo']
+                ) {
+                    $this->modulesTableQuery()
+                        ->where('key', $key)
+                        ->update(array_merge($payload, [
+                            'updated_at' => now(),
+                        ]));
+                }
 
                 continue;
             }

@@ -22,7 +22,12 @@ class TrackApiPerformance
 
         $response->headers->set('X-Response-Time-ms', (string) $durationMs);
 
-        if ($request->is('api/*') && ! $request->is('api/v1/health')) {
+        $shouldRecordHttpMetric = filter_var(
+            env('CORE_HTTP_METRICS_ENABLED', app()->environment('production')),
+            FILTER_VALIDATE_BOOL,
+        );
+
+        if ($shouldRecordHttpMetric && $request->is('api/*') && ! $request->is('api/v1/health')) {
             $route = $request->route();
             $routeName = $route?->getName() ?: $route?->uri();
             $moduleKey = str_contains((string) $request->path(), '/demo/')

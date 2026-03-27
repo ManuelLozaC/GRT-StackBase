@@ -44,7 +44,12 @@ APP_FALLBACK_LOCALE=es
 APP_FAKER_LOCALE=es_ES
 
 APP_MAINTENANCE_DRIVER=file
-BCRYPT_ROUNDS=12
+BCRYPT_ROUNDS=10
+CORE_METRICS_ENABLED=false
+CORE_HTTP_METRICS_ENABLED=false
+CORE_SECURITY_LOGS_ENABLED=true
+CORE_SECURITY_INFO_LOGS_ENABLED=false
+CORE_AUDIT_LOGS_ENABLED=true
 
 LOG_CHANNEL=stack
 LOG_STACK=single
@@ -121,7 +126,7 @@ Notas:
 Archivo: `frontend/.env`
 
 ```env
-VITE_API_URL=http://localhost:8080/api/v1
+VITE_API_URL=http://localhost:8080/api
 ```
 
 Tambien existe `frontend/.env.example`.
@@ -133,6 +138,12 @@ Desde la raiz del proyecto:
 ```bash
 docker compose up -d --build
 ```
+
+Notas de performance local:
+
+- `vendor`, `storage` y `node_modules` usan volumenes Docker para reducir el costo de I/O sobre Windows.
+- si trabajas con el repo en un disco/ruta de Windows, Docker Desktop puede seguir sintiendose notablemente mas lento que WSL2 nativo.
+- para la mejor experiencia local, conviene trabajar desde el filesystem de WSL2 y no desde un bind mount de Windows.
 
 Servicios incluidos en esta version base:
 
@@ -151,7 +162,7 @@ Servicios incluidos en esta version base:
 docker compose exec app composer install
 docker compose exec app php artisan key:generate
 docker compose exec app php artisan migrate:fresh --seed
-docker compose exec app php artisan optimize:clear
+docker compose exec app php artisan optimize
 ```
 
 ## 5. Inicializar frontend
@@ -235,7 +246,7 @@ docker compose exec app php artisan key:generate
 Revisa `frontend/.env`:
 
 ```env
-VITE_API_URL=http://localhost:8080/api/v1
+VITE_API_URL=http://localhost:8080/api
 ```
 
 ### Reiniciar servicios

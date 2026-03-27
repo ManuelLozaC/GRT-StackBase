@@ -23,6 +23,19 @@ class MetricsRecorder
         array $context = [],
         ?int $organizationId = null,
     ): CoreMetricEvent {
+        if (! $this->enabled()) {
+            return new CoreMetricEvent([
+                'organizacion_id' => $organizationId ?? $this->tenantContext->organizationId($actor),
+                'actor_id' => $actor?->id,
+                'module_key' => $moduleKey,
+                'event_key' => $eventKey,
+                'event_category' => $eventCategory,
+                'request_id' => $this->request->attributes->get('request_id'),
+                'context' => $context,
+                'occurred_at' => now(),
+            ]);
+        }
+
         return CoreMetricEvent::query()->create([
             'organizacion_id' => $organizationId ?? $this->tenantContext->organizationId($actor),
             'actor_id' => $actor?->id,
@@ -33,5 +46,13 @@ class MetricsRecorder
             'context' => $context,
             'occurred_at' => now(),
         ]);
+    }
+
+    protected function enabled(): bool
+    {
+        return filter_var(
+            env('CORE_METRICS_ENABLED', app()->environment('production')),
+            FILTER_VALIDATE_BOOL,
+        );
     }
 }
