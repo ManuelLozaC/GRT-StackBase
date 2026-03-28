@@ -1,0 +1,98 @@
+.app-panel-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1rem;
+    flex-wrap: wrap;
+    margin-bottom: 1rem;
+}
+
+.app-panel-header-copy {
+    display: grid;
+    gap: 0.25rem;
+    min-width: 0;
+}
+
+.app-panel-actions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+}
+
+.app-form-section {
+    display: grid;
+    gap: 1rem;
+}
+
+.app-form-section-header {
+    display: grid;
+    gap: 0.35rem;
+}
+
+.app-form-section-title {
+    font-size: 1rem;
+    line-height: 1.4;
+    font-weight: 600;
+    color: #0f172a;
+}
+
+.app-form-section-description {
+    margin: 0;
+    font-size: 0.875rem;
+    line-height: 1.6;
+    color: #64748b;
+}
+
+.app-form-grid {
+    display: grid;
+    gap: 1rem;
+}
+
+.app-dialog-footer {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+    width: 100%;
+}
+
+.app-button-standard,
+.app-button-standard.p-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    min-height: 2.75rem;
+    min-inline-size: 8.5rem;
+    padding-inline: 1rem;
+    border-radius: 1rem;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.app-button-standard.p-button .p-button-label {
+    flex: 0 0 auto;
+}
+
+.app-button-standard.p-button .p-button-icon {
+    font-size: 0.95rem;
+}
+
+@media (max-width: 768px) {
+    .app-panel-actions {
+        width: 100%;
+        justify-content: stretch;
+    }
+
+    .app-dialog-footer {
+        justify-content: stretch;
+    }
+
+    .app-button-standard,
+    .app-button-standard.p-button {
+        width: 100%;
+    }
+}

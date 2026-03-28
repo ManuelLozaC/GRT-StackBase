@@ -400,66 +400,76 @@ onMounted(loadUsers);
         </div>
 
         <Dialog v-model:visible="state.showUserDialog" modal :header="isEditing ? 'Editar usuario' : 'Nuevo usuario'" class="w-full max-w-3xl">
-            <div class="grid gap-4 md:grid-cols-2">
-                <div class="flex flex-col gap-2">
-                    <label class="text-sm font-medium text-slate-700">Persona</label>
-                    <Select v-model="state.form.persona_id" :options="personaOptions" optionLabel="label" optionValue="value" showClear placeholder="Selecciona una persona" class="w-full" />
+            <div class="app-form-section">
+                <div class="app-form-section-header">
+                    <div class="app-form-section-title">Datos de acceso</div>
+                    <p class="app-form-section-description">Configura persona, alias, correo, roles y estado del usuario dentro de la empresa activa.</p>
                 </div>
-                <div class="flex flex-col gap-2">
-                    <label class="text-sm font-medium text-slate-700">Alias</label>
-                    <InputText v-model="state.form.alias" />
-                </div>
-                <div class="flex flex-col gap-2">
-                    <label class="text-sm font-medium text-slate-700">Correo de acceso</label>
-                    <InputText v-model="state.form.email" />
-                </div>
-                <div class="flex flex-col gap-2">
-                    <label class="text-sm font-medium text-slate-700">Roles</label>
-                    <MultiSelect v-model="state.form.roles" :options="state.availableRoles" optionLabel="label" optionValue="value" display="chip" placeholder="Selecciona roles" class="w-full" />
-                </div>
-                <div v-if="selectedPersona" class="md:col-span-2 rounded-2xl border border-sky-200 bg-sky-50 p-4 text-sm text-sky-900">
-                    <div class="font-semibold mb-1">Datos heredados desde persona</div>
-                    <div>
-                        Nombre: <strong>{{ selectedPersona.label }}</strong>
+                <div class="app-form-grid md:grid-cols-2">
+                    <div class="flex flex-col gap-2">
+                        <label class="text-sm font-medium text-slate-700">Persona</label>
+                        <Select v-model="state.form.persona_id" :options="personaOptions" optionLabel="label" optionValue="value" showClear placeholder="Selecciona una persona" class="w-full" />
                     </div>
-                    <div>
-                        Correo registrado: <strong>{{ selectedPersona.correo || 'Sin correo en persona' }}</strong>
+                    <div class="flex flex-col gap-2">
+                        <label class="text-sm font-medium text-slate-700">Alias</label>
+                        <InputText v-model="state.form.alias" />
                     </div>
-                    <div>
-                        Telefono: <strong>{{ selectedPersona.telefono || 'Sin telefono en persona' }}</strong>
+                    <div class="flex flex-col gap-2">
+                        <label class="text-sm font-medium text-slate-700">Correo de acceso</label>
+                        <InputText v-model="state.form.email" />
                     </div>
-                </div>
-                <div v-else class="flex flex-col gap-2 md:col-span-2">
-                    <label class="text-sm font-medium text-slate-700">Nombre de usuario</label>
-                    <InputText v-model="state.form.name" />
-                </div>
-                <div v-if="!isEditing" class="flex flex-col gap-2">
-                    <label class="text-sm font-medium text-slate-700">Contrasena</label>
-                    <Password v-model="state.form.password" toggleMask :feedback="false" fluid />
-                </div>
-                <div v-if="!isEditing" class="flex flex-col gap-2">
-                    <label class="text-sm font-medium text-slate-700">Confirmar contrasena</label>
-                    <Password v-model="state.form.password_confirmation" toggleMask :feedback="false" fluid />
-                </div>
-                <div class="flex items-center gap-3 md:col-span-2">
-                    <ToggleSwitch v-model="state.form.activo" />
-                    <span class="text-sm text-slate-700">Usuario activo</span>
-                </div>
-                <div class="md:col-span-2">
-                    <Message v-if="state.formError" severity="error" :closable="false">{{ state.formError }}</Message>
+                    <div class="flex flex-col gap-2">
+                        <label class="text-sm font-medium text-slate-700">Roles</label>
+                        <MultiSelect v-model="state.form.roles" :options="state.availableRoles" optionLabel="label" optionValue="value" display="chip" placeholder="Selecciona roles" class="w-full" />
+                    </div>
+                    <div v-if="selectedPersona" class="md:col-span-2 rounded-2xl border border-sky-200 bg-sky-50 p-4 text-sm text-sky-900">
+                        <div class="font-semibold mb-1">Datos heredados desde persona</div>
+                        <div>
+                            Nombre: <strong>{{ selectedPersona.label }}</strong>
+                        </div>
+                        <div>
+                            Correo registrado: <strong>{{ selectedPersona.correo || 'Sin correo en persona' }}</strong>
+                        </div>
+                        <div>
+                            Telefono: <strong>{{ selectedPersona.telefono || 'Sin telefono en persona' }}</strong>
+                        </div>
+                    </div>
+                    <div v-else class="flex flex-col gap-2 md:col-span-2">
+                        <label class="text-sm font-medium text-slate-700">Nombre de usuario</label>
+                        <InputText v-model="state.form.name" />
+                    </div>
+                    <div v-if="!isEditing" class="flex flex-col gap-2">
+                        <label class="text-sm font-medium text-slate-700">Contrasena</label>
+                        <Password v-model="state.form.password" toggleMask :feedback="false" fluid />
+                    </div>
+                    <div v-if="!isEditing" class="flex flex-col gap-2">
+                        <label class="text-sm font-medium text-slate-700">Confirmar contrasena</label>
+                        <Password v-model="state.form.password_confirmation" toggleMask :feedback="false" fluid />
+                    </div>
+                    <div class="flex items-center gap-3 md:col-span-2">
+                        <ToggleSwitch v-model="state.form.activo" />
+                        <span class="text-sm text-slate-700">Usuario activo</span>
+                    </div>
+                    <div class="md:col-span-2">
+                        <Message v-if="state.formError" severity="error" :closable="false">{{ state.formError }}</Message>
+                    </div>
                 </div>
             </div>
 
             <template #footer>
-                <div class="flex justify-end gap-3">
-                    <Button label="Cancelar" severity="secondary" text @click="closeUserDialog" />
-                    <Button :label="isEditing ? 'Guardar cambios' : 'Crear usuario'" icon="pi pi-save" :loading="state.savingForm" @click="submitUserForm" />
+                <div class="app-dialog-footer">
+                    <Button class="app-button-standard" label="Cancelar" severity="secondary" text @click="closeUserDialog" />
+                    <Button class="app-button-standard" :label="isEditing ? 'Guardar cambios' : 'Crear usuario'" icon="pi pi-save" :loading="state.savingForm" @click="submitUserForm" />
                 </div>
             </template>
         </Dialog>
 
         <Dialog v-model:visible="state.showPasswordDialog" modal header="Restablecer contrasena" class="w-full max-w-xl">
-            <div class="space-y-4">
+            <div class="app-form-section">
+                <div class="app-form-section-header">
+                    <div class="app-form-section-title">Nueva contrasena</div>
+                    <p class="app-form-section-description">Este cambio invalida la contrasena anterior y obliga al usuario a usar la nueva al volver a ingresar.</p>
+                </div>
                 <p class="text-slate-600">
                     Define una nueva contrasena para <strong>{{ state.passwordForm.userName }}</strong
                     >. El usuario debera cambiarla al volver a ingresar.
@@ -475,9 +485,9 @@ onMounted(loadUsers);
             </div>
 
             <template #footer>
-                <div class="flex justify-end gap-3">
-                    <Button label="Cancelar" severity="secondary" text @click="closePasswordDialog" />
-                    <Button label="Restablecer" icon="pi pi-key" :loading="state.resettingPassword" @click="submitPasswordReset" />
+                <div class="app-dialog-footer">
+                    <Button class="app-button-standard" label="Cancelar" severity="secondary" text @click="closePasswordDialog" />
+                    <Button class="app-button-standard" label="Restablecer" icon="pi pi-key" :loading="state.resettingPassword" @click="submitPasswordReset" />
                 </div>
             </template>
         </Dialog>

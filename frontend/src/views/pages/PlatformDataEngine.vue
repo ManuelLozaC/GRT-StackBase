@@ -579,24 +579,37 @@ onMounted(async () => {
             <StateSkeleton v-if="state.loadingResources" />
 
             <div v-else class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-                <div class="grid grid-cols-12 gap-4">
-                    <div class="col-span-12 md:col-span-4">
-                        <label class="block text-sm font-semibold text-slate-600 mb-2">Recurso</label>
-                        <Select v-model="state.selectedResourceKey" :options="state.resources" optionLabel="name" optionValue="key" placeholder="Selecciona un recurso" class="w-full" :loading="state.loadingResources" />
+                <div class="data-engine-toolbar">
+                    <div class="data-engine-toolbar-header">
+                        <div>
+                            <div class="text-sm font-semibold text-slate-600 mb-1">Acciones del recurso</div>
+                            <p class="text-sm text-slate-500 m-0">Importar, exportar o crear registros sin mezclar esas acciones con los filtros de busqueda.</p>
+                        </div>
+                        <div class="data-engine-toolbar-actions">
+                            <Button v-if="resourceCapabilities.import" label="Importar CSV" icon="pi pi-upload" severity="secondary" outlined class="data-engine-toolbar-button app-button-standard" @click="openImportDialog" />
+                            <Button v-if="resourceCapabilities.export" label="Exportar CSV" icon="pi pi-download" severity="secondary" class="data-engine-toolbar-button app-button-standard" :loading="state.exporting" @click="exportResource" />
+                            <Button v-if="resourceCapabilities.create" label="Nuevo registro" icon="pi pi-plus" class="data-engine-toolbar-button app-button-standard" @click="openCreateDialog" />
+                        </div>
                     </div>
-                    <div class="col-span-12 md:col-span-4">
-                        <label class="block text-sm font-semibold text-slate-600 mb-2">Busqueda global</label>
-                        <IconField>
-                            <InputIcon class="pi pi-search" />
-                            <InputText v-model="state.search" class="w-full" placeholder="Buscar por nombre, empresa, email..." @keyup.enter="applyFilters" />
-                        </IconField>
-                    </div>
-                    <div class="col-span-12 md:col-span-4 flex items-end gap-3">
-                        <Button label="Buscar" icon="pi pi-search" @click="applyFilters" />
-                        <Button label="Limpiar" severity="secondary" outlined @click="clearSearch" />
-                        <Button v-if="resourceCapabilities.import" label="Importar CSV" icon="pi pi-upload" severity="secondary" outlined @click="openImportDialog" />
-                        <Button v-if="resourceCapabilities.export" label="Exportar CSV" icon="pi pi-download" severity="secondary" :loading="state.exporting" @click="exportResource" />
-                        <Button v-if="resourceCapabilities.create" label="Nuevo registro" icon="pi pi-plus" @click="openCreateDialog" />
+
+                    <div class="grid grid-cols-12 gap-4">
+                        <div class="col-span-12 lg:col-span-4">
+                            <label class="block text-sm font-semibold text-slate-600 mb-2">Recurso</label>
+                            <Select v-model="state.selectedResourceKey" :options="state.resources" optionLabel="name" optionValue="key" placeholder="Selecciona un recurso" class="w-full" :loading="state.loadingResources" />
+                        </div>
+                        <div class="col-span-12 lg:col-span-8">
+                            <label class="block text-sm font-semibold text-slate-600 mb-2">Busqueda global</label>
+                            <div class="data-engine-search-row">
+                                <IconField class="data-engine-search-input">
+                                    <InputIcon class="pi pi-search" />
+                                    <InputText v-model="state.search" class="w-full" placeholder="Buscar por nombre, empresa, email..." @keyup.enter="applyFilters" />
+                                </IconField>
+                                <div class="data-engine-search-actions">
+                                    <Button label="Buscar" icon="pi pi-search" class="data-engine-inline-action app-button-standard" @click="applyFilters" />
+                                    <Button label="Limpiar" severity="secondary" outlined class="data-engine-inline-action app-button-standard" @click="clearSearch" />
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
@@ -730,33 +743,45 @@ onMounted(async () => {
         </div>
 
         <Dialog v-model:visible="state.dialogVisible" modal :header="state.editingRecord ? 'Editar registro' : 'Nuevo registro'" :style="{ width: '42rem' }">
-            <div class="grid grid-cols-12 gap-4">
-                <div v-for="field in formFields" :key="field.key" class="col-span-12" :class="field.type === 'textarea' ? '' : 'md:col-span-6'">
-                    <label class="block text-sm font-semibold text-slate-600 mb-2">{{ field.label }}</label>
-                    <Select v-if="field.type === 'select'" v-model="state.form[field.key]" :options="field.options" optionLabel="label" optionValue="value" class="w-full" />
-                    <Select v-else-if="field.type === 'relation'" v-model="state.form[field.key]" :options="relationOptionsForField(field)" optionLabel="label" optionValue="value" showClear class="w-full" />
-                    <ToggleSwitch v-else-if="field.type === 'boolean'" v-model="state.form[field.key]" />
-                    <InputText v-else-if="field.type === 'date'" v-model="state.form[field.key]" class="w-full" type="date" />
-                    <Textarea v-else-if="field.type === 'textarea'" v-model="state.form[field.key]" rows="4" class="w-full" autoResize />
-                    <InputText v-else v-model="state.form[field.key]" class="w-full" :type="field.type === 'email' ? 'email' : 'text'" />
+            <div class="app-form-section">
+                <div class="app-form-section-header">
+                    <div class="app-form-section-title">Datos del registro</div>
+                    <p class="app-form-section-description">Completa los campos declarados por el recurso. El Data Engine respeta tipos, relaciones y custom fields configurados.</p>
                 </div>
-                <div v-if="customFields.length" class="col-span-12 pt-2">
-                    <div class="text-sm uppercase tracking-[0.2em] text-slate-500 font-semibold mb-3">Custom Fields</div>
-                </div>
-                <div v-for="field in customFields" :key="field.key" class="col-span-12 md:col-span-6">
-                    <label class="block text-sm font-semibold text-slate-600 mb-2">{{ field.label }}</label>
-                    <Select v-if="field.type === 'select'" v-model="state.form.custom_fields[field.key]" :options="field.options" optionLabel="label" optionValue="value" showClear class="w-full" />
-                    <InputText v-else v-model="state.form.custom_fields[field.key]" class="w-full" />
+                <div class="grid grid-cols-12 gap-4">
+                    <div v-for="field in formFields" :key="field.key" class="col-span-12" :class="field.type === 'textarea' ? '' : 'md:col-span-6'">
+                        <label class="block text-sm font-semibold text-slate-600 mb-2">{{ field.label }}</label>
+                        <Select v-if="field.type === 'select'" v-model="state.form[field.key]" :options="field.options" optionLabel="label" optionValue="value" class="w-full" />
+                        <Select v-else-if="field.type === 'relation'" v-model="state.form[field.key]" :options="relationOptionsForField(field)" optionLabel="label" optionValue="value" showClear class="w-full" />
+                        <ToggleSwitch v-else-if="field.type === 'boolean'" v-model="state.form[field.key]" />
+                        <InputText v-else-if="field.type === 'date'" v-model="state.form[field.key]" class="w-full" type="date" />
+                        <Textarea v-else-if="field.type === 'textarea'" v-model="state.form[field.key]" rows="4" class="w-full" autoResize />
+                        <InputText v-else v-model="state.form[field.key]" class="w-full" :type="field.type === 'email' ? 'email' : 'text'" />
+                    </div>
+                    <div v-if="customFields.length" class="col-span-12 pt-2">
+                        <div class="text-sm uppercase tracking-[0.2em] text-slate-500 font-semibold mb-3">Custom Fields</div>
+                    </div>
+                    <div v-for="field in customFields" :key="field.key" class="col-span-12 md:col-span-6">
+                        <label class="block text-sm font-semibold text-slate-600 mb-2">{{ field.label }}</label>
+                        <Select v-if="field.type === 'select'" v-model="state.form.custom_fields[field.key]" :options="field.options" optionLabel="label" optionValue="value" showClear class="w-full" />
+                        <InputText v-else v-model="state.form.custom_fields[field.key]" class="w-full" />
+                    </div>
                 </div>
             </div>
             <template #footer>
-                <Button label="Cancelar" severity="secondary" outlined @click="state.dialogVisible = false" />
-                <Button :label="state.editingRecord ? 'Guardar cambios' : 'Crear registro'" :loading="state.saving" @click="saveRecord" />
+                <div class="app-dialog-footer">
+                    <Button class="app-button-standard" label="Cancelar" severity="secondary" outlined @click="state.dialogVisible = false" />
+                    <Button class="app-button-standard" :label="state.editingRecord ? 'Guardar cambios' : 'Crear registro'" :loading="state.saving" @click="saveRecord" />
+                </div>
             </template>
         </Dialog>
 
         <Dialog v-model:visible="state.importDialogVisible" modal header="Importar CSV" :style="{ width: '34rem' }">
-            <div class="space-y-4">
+            <div class="app-form-section">
+                <div class="app-form-section-header">
+                    <div class="app-form-section-title">Carga de archivo CSV</div>
+                    <p class="app-form-section-description">Usa encabezados que coincidan con las claves del recurso para que la importacion pueda mapear y validar columnas correctamente.</p>
+                </div>
                 <div class="rounded-2xl border border-slate-200 bg-slate-50 p-4 text-sm text-slate-600">
                     Usa un archivo CSV con encabezados iguales a las claves del recurso. Para `Demo Contacts` puedes usar: `nombre,email,telefono,empresa,estado,prioridad,notas`.
                 </div>
@@ -769,9 +794,68 @@ onMounted(async () => {
                 </div>
             </div>
             <template #footer>
-                <Button label="Cancelar" severity="secondary" outlined @click="state.importDialogVisible = false" />
-                <Button label="Importar" icon="pi pi-upload" :disabled="!state.importFile" :loading="state.importing" @click="importResource" />
+                <div class="app-dialog-footer">
+                    <Button class="app-button-standard" label="Cancelar" severity="secondary" outlined @click="state.importDialogVisible = false" />
+                    <Button class="app-button-standard" label="Importar" icon="pi pi-upload" :disabled="!state.importFile" :loading="state.importing" @click="importResource" />
+                </div>
             </template>
         </Dialog>
     </div>
 </template>
+
+<style scoped>
+.data-engine-toolbar {
+    display: grid;
+    gap: 1.25rem;
+}
+
+.data-engine-toolbar-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.data-engine-toolbar-actions,
+.data-engine-search-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+}
+
+.data-engine-toolbar-button,
+.data-engine-inline-action {
+    white-space: nowrap;
+}
+
+.data-engine-search-row {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 0.75rem;
+    align-items: center;
+}
+
+.data-engine-search-input {
+    width: 100%;
+}
+
+@media (max-width: 1024px) {
+    .data-engine-toolbar-header,
+    .data-engine-search-row {
+        grid-template-columns: 1fr;
+        display: grid;
+    }
+
+    .data-engine-toolbar-actions,
+    .data-engine-search-actions {
+        width: 100%;
+    }
+
+    .data-engine-toolbar-button,
+    .data-engine-inline-action {
+        flex: 1 1 auto;
+    }
+}
+</style>

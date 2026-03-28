@@ -248,19 +248,27 @@ async function onToggle(moduleItem) {
         <Dialog v-model:visible="state.settingsDialogVisible" modal :header="state.selectedModule ? `Settings de ${state.selectedModule.name}` : 'Settings'" :style="{ width: '42rem' }" @hide="resetSettingsState">
             <div v-if="state.settingsLoading" class="py-8 text-center text-color-secondary">Cargando settings del modulo...</div>
             <div v-else-if="!state.settings.length" class="py-8 text-center text-color-secondary">Este modulo no expone settings configurables.</div>
-            <div v-else class="grid grid-cols-12 gap-4">
-                <div v-for="setting in state.settings" :key="setting.key" class="col-span-12">
-                    <label class="block text-sm font-semibold mb-2">{{ setting.label }}</label>
-                    <small v-if="setting.help" class="block mb-2 text-color-secondary">{{ setting.help }}</small>
-                    <ToggleSwitch v-if="setting.type === 'toggle'" v-model="state.form[setting.key]" />
-                    <InputNumber v-else-if="setting.type === 'number'" v-model="state.form[setting.key]" class="w-full" :useGrouping="false" fluid />
-                    <Select v-else-if="setting.type === 'select'" v-model="state.form[setting.key]" :options="setting.options" optionLabel="label" optionValue="value" class="w-full" />
-                    <InputText v-else v-model="state.form[setting.key]" class="w-full" />
+            <div v-else class="app-form-section">
+                <div class="app-form-section-header">
+                    <div class="app-form-section-title">Settings del modulo</div>
+                    <p class="app-form-section-description">Cada cambio actualiza la configuracion declarada del modulo seleccionado dentro de la empresa activa.</p>
+                </div>
+                <div class="grid grid-cols-12 gap-4">
+                    <div v-for="setting in state.settings" :key="setting.key" class="col-span-12">
+                        <label class="block text-sm font-semibold mb-2">{{ setting.label }}</label>
+                        <small v-if="setting.help" class="block mb-2 text-color-secondary">{{ setting.help }}</small>
+                        <ToggleSwitch v-if="setting.type === 'toggle'" v-model="state.form[setting.key]" />
+                        <InputNumber v-else-if="setting.type === 'number'" v-model="state.form[setting.key]" class="w-full" :useGrouping="false" fluid />
+                        <Select v-else-if="setting.type === 'select'" v-model="state.form[setting.key]" :options="setting.options" optionLabel="label" optionValue="value" class="w-full" />
+                        <InputText v-else v-model="state.form[setting.key]" class="w-full" />
+                    </div>
                 </div>
             </div>
             <template #footer>
-                <Button label="Cerrar" severity="secondary" outlined @click="state.settingsDialogVisible = false" />
-                <Button label="Guardar settings" :loading="state.settingsSaving" @click="saveSettings" />
+                <div class="app-dialog-footer">
+                    <Button class="app-button-standard" label="Cerrar" severity="secondary" outlined @click="state.settingsDialogVisible = false" />
+                    <Button class="app-button-standard" label="Guardar settings" :loading="state.settingsSaving" @click="saveSettings" />
+                </div>
             </template>
         </Dialog>
     </div>

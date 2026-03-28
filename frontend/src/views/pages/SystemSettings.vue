@@ -123,12 +123,14 @@ function surfaceSwatchStyle(surfaceName) {
         <div class="grid grid-cols-12 gap-6">
             <div class="col-span-12 xl:col-span-6">
                 <div class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm h-full">
-                    <div class="flex items-center justify-between mb-4">
-                        <div>
+                    <div class="app-panel-header">
+                        <div class="app-panel-header-copy">
                             <h2 class="text-xl font-semibold text-slate-900">Apariencia global</h2>
                             <p class="mt-1 text-sm text-slate-500">Estos valores se aplican a todos los usuarios autenticados y reemplazan el configurador visual del header.</p>
                         </div>
-                        <Button label="Guardar" icon="pi pi-save" :loading="state.savingGlobal" @click="saveGlobal" />
+                        <div class="app-panel-actions">
+                            <Button class="app-button-standard" label="Guardar" icon="pi pi-save" :loading="state.savingGlobal" @click="saveGlobal" />
+                        </div>
                     </div>
                     <div class="appearance-preview-card">
                         <div class="appearance-preview-shell">
@@ -202,12 +204,14 @@ function surfaceSwatchStyle(surfaceName) {
 
             <div class="col-span-12 xl:col-span-6">
                 <div class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm h-full">
-                    <div class="flex items-center justify-between mb-4">
-                        <div>
+                    <div class="app-panel-header">
+                        <div class="app-panel-header-copy">
                             <h2 class="text-xl font-semibold text-slate-900">Empresa activa</h2>
                             <p class="mt-1 text-sm text-slate-500">Locale, moneda y zona horaria base de la empresa seleccionada.</p>
                         </div>
-                        <Button label="Guardar" icon="pi pi-save" :loading="state.savingOrganization" @click="saveOrganization" />
+                        <div class="app-panel-actions">
+                            <Button class="app-button-standard" label="Guardar" icon="pi pi-save" :loading="state.savingOrganization" @click="saveOrganization" />
+                        </div>
                     </div>
                     <div class="space-y-4">
                         <div v-for="setting in organizationSettings" :key="setting.key">
@@ -223,12 +227,14 @@ function surfaceSwatchStyle(surfaceName) {
 
             <div class="col-span-12">
                 <div class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-                    <div class="flex items-center justify-between mb-4">
-                        <div>
+                    <div class="app-panel-header">
+                        <div class="app-panel-header-copy">
                             <h2 class="text-xl font-semibold text-slate-900">Operacion global</h2>
                             <p class="mt-1 text-sm text-slate-500">Banners, feature flags y ajustes operativos del shell.</p>
                         </div>
-                        <Button label="Guardar" icon="pi pi-save" :loading="state.savingGlobal" @click="saveGlobal" />
+                        <div class="app-panel-actions">
+                            <Button class="app-button-standard" label="Guardar" icon="pi pi-save" :loading="state.savingGlobal" @click="saveGlobal" />
+                        </div>
                     </div>
                     <div class="grid grid-cols-12 gap-4">
                         <div v-for="setting in globalOperationalSettings" :key="setting.key" class="col-span-12 md:col-span-6 xl:col-span-4">

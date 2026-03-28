@@ -216,14 +216,16 @@ onMounted(loadData);
 
         <div class="col-span-12 xl:col-span-8">
             <div class="card">
-                <div class="mb-4 flex items-center justify-between">
-                    <div>
+                <div class="app-panel-header">
+                    <div class="app-panel-header-copy">
                         <h3 class="m-0">Archivos disponibles</h3>
                         <p class="m-0 text-sm text-color-secondary">Listado del tenant activo con version, metadatos y asociacion opcional a un recurso real.</p>
                     </div>
-                    <button class="demo-secondary-button" :disabled="state.loading" @click="loadData">
-                        {{ state.loading ? 'Actualizando...' : 'Actualizar' }}
-                    </button>
+                    <div class="app-panel-actions">
+                        <button class="demo-secondary-button app-button-standard" :disabled="state.loading" @click="loadData">
+                            {{ state.loading ? 'Actualizando...' : 'Actualizar' }}
+                        </button>
+                    </div>
                 </div>
 
                 <div v-if="state.files.length === 0" class="demo-empty-state">Todavia no hay archivos en esta empresa. Sube uno para probar el flujo completo.</div>

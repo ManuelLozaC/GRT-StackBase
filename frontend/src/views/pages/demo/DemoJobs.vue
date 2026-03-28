@@ -142,14 +142,16 @@ onMounted(loadJobs);
 
         <div class="col-span-12 xl:col-span-8">
             <div class="card">
-                <div class="flex items-center justify-between mb-4">
-                    <div>
+                <div class="app-panel-header">
+                    <div class="app-panel-header-copy">
                         <h3 class="m-0">Historial de ejecuciones</h3>
                         <p class="m-0 text-sm text-color-secondary">Los jobs quedan registrados con payload, resultado, intentos y errores dentro del tenant activo.</p>
                     </div>
-                    <button class="demo-secondary-button" :disabled="state.loading" @click="loadJobs">
-                        {{ state.loading ? 'Actualizando...' : 'Actualizar' }}
-                    </button>
+                    <div class="app-panel-actions">
+                        <button class="demo-secondary-button app-button-standard" :disabled="state.loading" @click="loadJobs">
+                            {{ state.loading ? 'Actualizando...' : 'Actualizar' }}
+                        </button>
+                    </div>
                 </div>
 
                 <div v-if="state.jobs.length === 0" class="demo-empty-state">Todavia no hay ejecuciones. Lanza un job en cola o inmediato para validar el flujo.</div>

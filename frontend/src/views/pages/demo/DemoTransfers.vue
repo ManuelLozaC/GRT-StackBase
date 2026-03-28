@@ -205,9 +205,9 @@ onMounted(loadTransfers);
                         </div>
                     </div>
                     <div class="rounded-2xl border border-dashed border-slate-300 bg-slate-50 p-4 text-sm text-slate-600 mt-4">Para probar `async`, levanta un worker en backend con `php artisan queue:work --queue=data-exports,demo`.</div>
-                    <div class="mt-5 flex gap-3">
-                        <Button :label="state.exportMode === 'async' ? 'Encolar exportacion' : 'Descargar ahora'" icon="pi pi-download" :loading="state.exporting" @click="exportData" />
-                        <Button label="Refrescar historial" severity="secondary" outlined icon="pi pi-refresh" :loading="state.loading" @click="loadTransfers" />
+                    <div class="mt-5 flex flex-wrap gap-3">
+                        <Button class="app-button-standard" :label="state.exportMode === 'async' ? 'Encolar exportacion' : 'Descargar ahora'" icon="pi pi-download" :loading="state.exporting" @click="exportData" />
+                        <Button class="app-button-standard" label="Refrescar historial" severity="secondary" outlined icon="pi pi-refresh" :loading="state.loading" @click="loadTransfers" />
                     </div>
                 </div>
             </div>
@@ -221,19 +221,21 @@ onMounted(loadTransfers);
                         {{ state.importFile ? `Seleccionado: ${state.importFile.name}` : 'Todavia no seleccionaste un archivo.' }}
                     </div>
                     <div class="mt-5">
-                        <Button label="Importar CSV" icon="pi pi-upload" :disabled="!state.importFile" :loading="state.importing" @click="importCsv" />
+                        <Button class="app-button-standard" label="Importar CSV" icon="pi pi-upload" :disabled="!state.importFile" :loading="state.importing" @click="importCsv" />
                     </div>
                 </div>
             </div>
         </div>
 
         <div class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-            <div class="flex flex-col gap-3 md:flex-row md:items-center md:justify-between mb-4">
-                <div>
+            <div class="app-panel-header">
+                <div class="app-panel-header-copy">
                     <h2 class="text-xl font-semibold text-slate-900 mb-1">Historial de transferencias</h2>
                     <p class="text-sm text-slate-600 m-0">Las corridas se registran por tenant, incluyendo formato, modo, conteos y errores.</p>
                 </div>
-                <Tag severity="contrast" :value="`${completedRuns.length} completada${completedRuns.length === 1 ? '' : 's'}`" />
+                <div class="app-panel-actions">
+                    <Tag severity="contrast" :value="`${completedRuns.length} completada${completedRuns.length === 1 ? '' : 's'}`" />
+                </div>
             </div>
 
             <DataTable :value="state.transferRuns" dataKey="uuid" :loading="state.loading">

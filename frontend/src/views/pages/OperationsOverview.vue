@@ -109,12 +109,14 @@ onMounted(loadOverview);
 
             <div class="grid gap-6 xl:grid-cols-2">
                 <div class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-                    <div class="mb-4 flex items-center justify-between gap-3">
-                        <div>
+                    <div class="app-panel-header">
+                        <div class="app-panel-header-copy">
                             <h2 class="text-xl font-semibold text-slate-900">Jobs con error</h2>
                             <p class="text-sm text-slate-500">Ultimos jobs fallidos dentro del tenant activo.</p>
                         </div>
-                        <Tag severity="danger" :value="`${state.recentFailedJobs.length} item(s)`" />
+                        <div class="app-panel-actions">
+                            <Tag severity="danger" :value="`${state.recentFailedJobs.length} item(s)`" />
+                        </div>
                     </div>
 
                     <StateEmpty v-if="!state.recentFailedJobs.length" title="Sin jobs fallidos recientes" description="Todavia no hay jobs fallidos en la ventana operativa actual." icon="pi pi-server" />
@@ -133,12 +135,14 @@ onMounted(loadOverview);
                 </div>
 
                 <div class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-                    <div class="mb-4 flex items-center justify-between gap-3">
-                        <div>
+                    <div class="app-panel-header">
+                        <div class="app-panel-header-copy">
                             <h2 class="text-xl font-semibold text-slate-900">Transfers con error</h2>
                             <p class="text-sm text-slate-500">Exportaciones e importaciones que requieren seguimiento.</p>
                         </div>
-                        <Tag severity="warning" :value="`${state.recentFailedTransfers.length} item(s)`" />
+                        <div class="app-panel-actions">
+                            <Tag severity="warning" :value="`${state.recentFailedTransfers.length} item(s)`" />
+                        </div>
                     </div>
 
                     <StateEmpty v-if="!state.recentFailedTransfers.length" title="Sin transfers problematicos" description="No se detectaron transferencias fallidas o con errores parciales en la ventana actual." icon="pi pi-sync" />
@@ -159,12 +163,14 @@ onMounted(loadOverview);
             </div>
 
             <div class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-                <div class="mb-4 flex items-center justify-between gap-3">
-                    <div>
+                <div class="app-panel-header">
+                    <div class="app-panel-header-copy">
                         <h2 class="text-xl font-semibold text-slate-900">Eventos de seguridad recientes</h2>
                         <p class="text-sm text-slate-500">Trazabilidad operativa sensible con request ID y actor asociado.</p>
                     </div>
-                    <Tag severity="info" :value="`${state.recentSecurityEvents.length} item(s)`" />
+                    <div class="app-panel-actions">
+                        <Tag severity="info" :value="`${state.recentSecurityEvents.length} item(s)`" />
+                    </div>
                 </div>
 
                 <StateEmpty v-if="!state.recentSecurityEvents.length" title="Sin eventos de seguridad" description="Aun no hay eventos de seguridad recientes dentro del tenant activo." icon="pi pi-shield" />

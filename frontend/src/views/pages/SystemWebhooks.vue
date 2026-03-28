@@ -54,6 +54,11 @@ const receiverEventOptions = computed(() => {
 
     return selectedModule?.events ?? [];
 });
+const publicIncomingBaseUrl = computed(() => {
+    const apiBase = import.meta.env.VITE_API_URL ?? `${window.location.origin}/api`;
+
+    return apiBase.replace(/\/api\/?$/, '/api/v1/webhooks/incoming');
+});
 
 function resetForm() {
     state.form = defaultForm();
@@ -301,9 +306,194 @@ onMounted(loadData);
                     <h1 class="mb-3 text-3xl font-semibold text-slate-900">System Webhooks</h1>
                     <p class="max-w-3xl text-slate-600">Administra endpoints salientes y receivers entrantes por tenant para reaccionar a eventos del core y sincronizar integraciones externas sin romper el contrato declarativo de StackBase.</p>
                 </div>
-                <div class="flex flex-wrap gap-2">
-                    <Button label="Nuevo endpoint" icon="pi pi-plus" @click="openCreateDialog" />
-                    <Button label="Nuevo receiver" icon="pi pi-download" severity="secondary" outlined @click="openCreateReceiverDialog" />
+                <div class="app-panel-actions">
+                    <Button class="app-button-standard" label="Nuevo endpoint" icon="pi pi-plus" @click="openCreateDialog" />
+                    <Button class="app-button-standard" label="Nuevo receiver" icon="pi pi-download" severity="secondary" outlined @click="openCreateReceiverDialog" />
+                </div>
+            </div>
+        </div>
+
+        <div class="grid gap-4 xl:grid-cols-3">
+            <div class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+                <div class="mb-3 flex items-center gap-3">
+                    <div class="flex h-11 w-11 items-center justify-center rounded-2xl bg-sky-50 text-sky-700">
+                        <i class="pi pi-send text-lg"></i>
+                    </div>
+                    <div>
+                        <h2 class="text-lg font-semibold text-slate-900">Que es un webhook</h2>
+                        <p class="m-0 text-sm text-slate-500">Un aviso HTTP automatico entre sistemas.</p>
+                    </div>
+                </div>
+                <p class="m-0 text-sm leading-6 text-slate-600">
+                    Cuando ocurre un evento importante, StackBase puede enviar una peticion HTTP a otro sistema o recibirla desde uno externo. Eso evita integraciones manuales, polling innecesario y procesos de copia de datos mas frágiles.
+                </p>
+            </div>
+
+            <div class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+                <div class="mb-3 flex items-center gap-3">
+                    <div class="flex h-11 w-11 items-center justify-center rounded-2xl bg-emerald-50 text-emerald-700">
+                        <i class="pi pi-upload text-lg"></i>
+                    </div>
+                    <div>
+                        <h2 class="text-lg font-semibold text-slate-900">Webhook saliente</h2>
+                        <p class="m-0 text-sm text-slate-500">StackBase avisa a otro sistema.</p>
+                    </div>
+                </div>
+                <p class="m-0 text-sm leading-6 text-slate-600">
+                    Ejemplo: cuando se crea un usuario, cambia el estado de un modulo o se completa una importacion, StackBase puede notificar a un ERP, CRM, bot o middleware externo usando un endpoint tuyo.
+                </p>
+            </div>
+
+            <div class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+                <div class="mb-3 flex items-center gap-3">
+                    <div class="flex h-11 w-11 items-center justify-center rounded-2xl bg-violet-50 text-violet-700">
+                        <i class="pi pi-download text-lg"></i>
+                    </div>
+                    <div>
+                        <h2 class="text-lg font-semibold text-slate-900">Webhook entrante</h2>
+                        <p class="m-0 text-sm text-slate-500">Un sistema externo avisa a StackBase.</p>
+                    </div>
+                </div>
+                <p class="m-0 text-sm leading-6 text-slate-600">Ejemplo: un gateway de pago, CRM o partner externo envia un evento a StackBase para notificar un pago aprobado, una actualizacion de cliente o un cambio de estado en otro sistema.</p>
+            </div>
+        </div>
+
+        <div class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+            <div class="mb-4">
+                <h2 class="text-xl font-semibold text-slate-900">Como usar esta pantalla</h2>
+                <p class="m-0 text-sm text-slate-500">Guia rapida para admins e integradores.</p>
+            </div>
+            <div class="grid gap-4 xl:grid-cols-4">
+                <div class="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+                    <div class="mb-2 text-sm font-semibold uppercase tracking-[0.2em] text-slate-500">1. Elegir evento</div>
+                    <p class="m-0 text-sm leading-6 text-slate-600">Primero identifica el modulo y el evento. Solo puedes usar eventos declarados por el sistema en el catalogo disponible.</p>
+                </div>
+                <div class="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+                    <div class="mb-2 text-sm font-semibold uppercase tracking-[0.2em] text-slate-500">2. Registrar destino u origen</div>
+                    <p class="m-0 text-sm leading-6 text-slate-600">Si StackBase debe avisar hacia afuera, crea un endpoint. Si un sistema externo debe avisar a StackBase, crea un receiver.</p>
+                </div>
+                <div class="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+                    <div class="mb-2 text-sm font-semibold uppercase tracking-[0.2em] text-slate-500">3. Proteger con firma</div>
+                    <p class="m-0 text-sm leading-6 text-slate-600">Usa un secreto de firma para validar autenticidad. StackBase firma salientes y valida entrantes mediante HMAC.</p>
+                </div>
+                <div class="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+                    <div class="mb-2 text-sm font-semibold uppercase tracking-[0.2em] text-slate-500">4. Probar y auditar</div>
+                    <p class="m-0 text-sm leading-6 text-slate-600">Usa el boton Probar, luego revisa entregas y recepciones recientes para ver estado HTTP, firma, request ID y troubleshooting.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="grid gap-4 xl:grid-cols-2">
+            <div class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+                <div class="mb-3">
+                    <h2 class="text-xl font-semibold text-slate-900">Que URL usar en un endpoint saliente</h2>
+                    <p class="m-0 text-sm text-slate-500">Aqui StackBase llama a otro sistema.</p>
+                </div>
+                <p class="text-sm leading-6 text-slate-600">En <b>Target URL</b> debes poner una URL externa que pertenezca al sistema que quieres notificar. Esa URL no la genera StackBase: la define el sistema destino.</p>
+                <div class="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+                    <div class="mb-2 text-sm font-semibold text-slate-700">Ejemplos validos</div>
+                    <code class="block text-sm text-slate-700">https://crm.midominio.com/webhooks/stackbase/users</code>
+                    <code class="mt-2 block text-sm text-slate-700">https://erp.midominio.com/api/hooks/module-status</code>
+                </div>
+            </div>
+
+            <div class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+                <div class="mb-3">
+                    <h2 class="text-xl font-semibold text-slate-900">Que URL usar en un receiver entrante</h2>
+                    <p class="m-0 text-sm text-slate-500">Aqui un sistema externo llama a StackBase.</p>
+                </div>
+                <p class="text-sm leading-6 text-slate-600">Cuando creas un receiver, StackBase expone un endpoint publico por ID. Esa es la URL que debes entregar al sistema externo para que te envíe eventos.</p>
+                <div class="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+                    <div class="mb-2 text-sm font-semibold text-slate-700">Formato de la URL</div>
+                    <code class="block text-sm text-slate-700">{{ publicIncomingBaseUrl }}/:receiverId</code>
+                </div>
+            </div>
+        </div>
+
+        <div class="grid gap-4 xl:grid-cols-2">
+            <div class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+                <div class="mb-3">
+                    <h2 class="text-xl font-semibold text-slate-900">Ejemplo de payload saliente</h2>
+                    <p class="m-0 text-sm text-slate-500">Lo que StackBase puede enviar a un sistema externo.</p>
+                </div>
+                <p class="mb-4 text-sm leading-6 text-slate-600">El cuerpo exacto depende del evento, pero la estructura recomendada combina metadatos del webhook, tenant, request ID y datos del evento.</p>
+                <pre class="overflow-x-auto rounded-2xl border border-slate-200 bg-slate-950 p-4 text-xs leading-6 text-slate-100"><code>{
+  "event": "users.created",
+  "module": "core-users",
+  "occurred_at": "2026-03-28T19:20:31Z",
+  "request_id": "a7b2a79f-8f0c-4d9d-9df2-9b6f6bfa12d4",
+  "tenant": {
+    "id": 1,
+    "name": "GRT SRL"
+  },
+  "actor": {
+    "id": 1,
+    "email": "mloza@grt.com.bo"
+  },
+  "data": {
+    "user_id": 18,
+    "persona_id": 18,
+    "email": "demo@cliente.com",
+    "alias": "demo.cliente",
+    "estado": "activo"
+  }
+}</code></pre>
+                <div class="mt-4 rounded-2xl border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-900">
+                    Recomendacion: el sistema destino deberia guardar <code>event</code>, <code>request_id</code> y el ID de la entidad para deduplicar reintentos.
+                </div>
+            </div>
+
+            <div class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+                <div class="mb-3">
+                    <h2 class="text-xl font-semibold text-slate-900">Ejemplo de payload entrante</h2>
+                    <p class="m-0 text-sm text-slate-500">Lo que un sistema externo puede enviar a un receiver.</p>
+                </div>
+                <p class="mb-4 text-sm leading-6 text-slate-600">Cuando otro sistema llama a StackBase, conviene seguir una forma parecida para que el evento sea trazable y consistente.</p>
+                <pre class="overflow-x-auto rounded-2xl border border-slate-200 bg-slate-950 p-4 text-xs leading-6 text-slate-100"><code>{
+  "event": "payments.approved",
+  "source": "erp-central",
+  "occurred_at": "2026-03-28T19:25:10Z",
+  "request_id": "ext-9ac3b7f1",
+  "data": {
+    "invoice_id": "FAC-2026-00152",
+    "customer_code": "CLI-00451",
+    "amount": 850.75,
+    "currency": "BOB",
+    "status": "approved"
+  }
+}</code></pre>
+                <div class="mt-4 rounded-2xl border border-violet-200 bg-violet-50 p-4 text-sm text-violet-900">
+                    Recomendacion: aunque el receiver acepte cualquier JSON valido, conviene acordar un contrato estable con el sistema origen para evitar parseos fragiles.
+                </div>
+            </div>
+        </div>
+
+        <div class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+            <div class="mb-3">
+                <h2 class="text-xl font-semibold text-slate-900">Ejemplo de firma HMAC</h2>
+                <p class="m-0 text-sm text-slate-500">Referencia para validar autenticidad y evitar llamadas falsas.</p>
+            </div>
+            <div class="grid gap-4 xl:grid-cols-[1.1fr_0.9fr]">
+                <div>
+                    <p class="mb-4 text-sm leading-6 text-slate-600">StackBase firma el cuerpo JSON usando el secreto configurado. El sistema receptor debe calcular el hash HMAC del body crudo y compararlo con el header de firma recibido.</p>
+                    <pre class="overflow-x-auto rounded-2xl border border-slate-200 bg-slate-950 p-4 text-xs leading-6 text-slate-100"><code>POST /api/webhooks/stackbase/users
+Content-Type: application/json
+X-StackBase-Event: users.created
+X-StackBase-Request-Id: a7b2a79f-8f0c-4d9d-9df2-9b6f6bfa12d4
+X-StackBase-Signature: sha256=4d6f76f7f8aefb2f4f2fa2a7d5ce2b7f7c8f1c577f8d22a8f2d7b2e61e56c845
+
+{ ...json payload... }</code></pre>
+                </div>
+                <div class="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+                    <div class="mb-2 text-sm font-semibold text-slate-700">Pseudocodigo de validacion</div>
+                    <pre class="overflow-x-auto text-xs leading-6 text-slate-700"><code>firma_local = HMAC_SHA256(
+  raw_body,
+  signing_secret
+)
+
+if "sha256=" + firma_local != header_signature:
+  rechazar_request()</code></pre>
+                    <p class="mt-3 text-sm leading-6 text-slate-600">Si el webhook es entrante, StackBase aplica esta misma idea en sentido inverso para validar que el sistema externo conoce el secreto configurado.</p>
                 </div>
             </div>
         </div>
@@ -313,12 +503,14 @@ onMounted(loadData);
         <template v-else>
             <div class="grid gap-4 xl:grid-cols-[1.5fr_1fr]">
                 <div class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-                    <div class="mb-4 flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
-                        <div>
+                    <div class="app-panel-header">
+                        <div class="app-panel-header-copy">
                             <h2 class="text-xl font-semibold text-slate-900">Endpoints registrados</h2>
                             <p class="text-sm text-slate-500">Cada endpoint queda aislado por tenant y usa firma HMAC con secreto cifrado.</p>
                         </div>
-                        <Tag severity="contrast" :value="`${state.endpoints.length} endpoint(s)`" />
+                        <div class="app-panel-actions">
+                            <Tag severity="contrast" :value="`${state.endpoints.length} endpoint(s)`" />
+                        </div>
                     </div>
 
                     <StateEmpty v-if="!state.endpoints.length" title="Sin endpoints registrados" description="Todavia no configuraste webhooks salientes para el tenant activo." icon="pi pi-send" />
@@ -349,12 +541,14 @@ onMounted(loadData);
                 </div>
 
                 <div class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-                    <div class="mb-4 flex items-center justify-between gap-3">
-                        <div>
+                    <div class="app-panel-header">
+                        <div class="app-panel-header-copy">
                             <h2 class="text-xl font-semibold text-slate-900">Catalogo disponible</h2>
                             <p class="text-sm text-slate-500">Solo se permiten eventos declarados por el contrato modular.</p>
                         </div>
-                        <Tag severity="info" :value="`${state.catalog.length} modulo(s)`" />
+                        <div class="app-panel-actions">
+                            <Tag severity="info" :value="`${state.catalog.length} modulo(s)`" />
+                        </div>
                     </div>
 
                     <StateEmpty v-if="!state.catalog.length" title="Sin eventos declarados" description="Ningun modulo expone webhooks en el contrato actual." icon="pi pi-sitemap" />
@@ -375,12 +569,14 @@ onMounted(loadData);
             </div>
 
             <div class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-                <div class="mb-4 flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
-                    <div>
+                <div class="app-panel-header">
+                    <div class="app-panel-header-copy">
                         <h2 class="text-xl font-semibold text-slate-900">Entregas recientes</h2>
                         <p class="text-sm text-slate-500">Historial de ejecuciones para troubleshooting, auditoria y observabilidad operativa.</p>
                     </div>
-                    <Tag severity="contrast" :value="`${state.deliveries.length} entrega(s)`" />
+                    <div class="app-panel-actions">
+                        <Tag severity="contrast" :value="`${state.deliveries.length} entrega(s)`" />
+                    </div>
                 </div>
 
                 <StateEmpty v-if="!state.deliveries.length" title="Sin entregas registradas" description="Aun no se ejecutaron pruebas ni eventos reales hacia endpoints del tenant activo." icon="pi pi-history" />
@@ -406,12 +602,14 @@ onMounted(loadData);
 
             <div class="grid gap-4 xl:grid-cols-[1.5fr_1fr]">
                 <div class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-                    <div class="mb-4 flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
-                        <div>
+                    <div class="app-panel-header">
+                        <div class="app-panel-header-copy">
                             <h2 class="text-xl font-semibold text-slate-900">Receivers entrantes</h2>
                             <p class="text-sm text-slate-500">Cada receiver expone un endpoint publico controlado por firma HMAC y aislamiento por tenant.</p>
                         </div>
-                        <Tag severity="contrast" :value="`${state.receivers.length} receiver(s)`" />
+                        <div class="app-panel-actions">
+                            <Tag severity="contrast" :value="`${state.receivers.length} receiver(s)`" />
+                        </div>
                     </div>
 
                     <StateEmpty v-if="!state.receivers.length" title="Sin receivers configurados" description="Todavia no habilitaste recepcion de webhooks para el tenant activo." icon="pi pi-download" />
@@ -423,7 +621,7 @@ onMounted(loadData);
                             <Column field="event_key" header="Evento" style="min-width: 15rem" />
                             <Column header="Endpoint publico" style="min-width: 18rem">
                                 <template #body="slotProps">
-                                    <code>/api/v1/webhooks/incoming/{{ slotProps.data.id }}</code>
+                                    <code>{{ publicIncomingBaseUrl }}/{{ slotProps.data.id }}</code>
                                 </template>
                             </Column>
                             <Column field="last_received_at" header="Ultima recepcion" style="min-width: 12rem">
@@ -444,12 +642,14 @@ onMounted(loadData);
                 </div>
 
                 <div class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-                    <div class="mb-4 flex items-center justify-between gap-3">
-                        <div>
+                    <div class="app-panel-header">
+                        <div class="app-panel-header-copy">
                             <h2 class="text-xl font-semibold text-slate-900">Recepciones recientes</h2>
                             <p class="text-sm text-slate-500">Valida firmas, origen, request ID y estado de procesamiento.</p>
                         </div>
-                        <Tag severity="info" :value="`${state.receipts.length} item(s)`" />
+                        <div class="app-panel-actions">
+                            <Tag severity="info" :value="`${state.receipts.length} item(s)`" />
+                        </div>
                     </div>
 
                     <StateEmpty v-if="!state.receipts.length" title="Sin recepciones" description="Aun no llegaron eventos externos a los receivers del tenant activo." icon="pi pi-inbox" />
@@ -478,70 +678,88 @@ onMounted(loadData);
         </template>
 
         <Dialog v-model:visible="state.dialogVisible" modal :header="state.form.id ? 'Editar webhook' : 'Nuevo webhook'" :style="{ width: '42rem' }" @hide="resetForm">
-            <div class="grid gap-4">
-                <div>
-                    <label class="mb-2 block text-sm font-semibold text-slate-600">Modulo</label>
-                    <Select v-model="state.form.module_key" :options="moduleOptions" optionLabel="name" optionValue="key" class="w-full" placeholder="Selecciona un modulo" />
+            <div class="app-form-section">
+                <div class="app-form-section-header">
+                    <div class="app-form-section-title">Configuracion del endpoint</div>
+                    <p class="app-form-section-description">Define el evento, la URL destino y el secreto de firma para que StackBase pueda enviar notificaciones seguras al sistema externo.</p>
                 </div>
-                <div>
-                    <label class="mb-2 block text-sm font-semibold text-slate-600">Evento</label>
-                    <Select v-model="state.form.event_key" :options="eventOptions" optionLabel="label" optionValue="key" class="w-full" placeholder="Selecciona un evento" />
-                </div>
-                <div>
-                    <label class="mb-2 block text-sm font-semibold text-slate-600">Target URL</label>
-                    <InputText v-model="state.form.target_url" class="w-full" placeholder="https://tu-sistema.test/webhooks/stackbase" />
-                </div>
-                <div>
-                    <label class="mb-2 block text-sm font-semibold text-slate-600">
-                        {{ state.form.id ? 'Nuevo secreto (opcional)' : 'Secreto de firma' }}
-                    </label>
-                    <Password v-model="state.form.signing_secret" class="w-full" inputClass="w-full" :feedback="false" toggleMask />
-                    <small class="mt-2 block text-slate-500">Si dejas este campo vacio al editar, se conserva el secreto actual.</small>
-                </div>
-                <div>
-                    <label class="mb-2 block text-sm font-semibold text-slate-600">Headers custom</label>
-                    <Textarea v-model="state.form.custom_headers_text" class="w-full" rows="4" placeholder="X-App: StackBase&#10;X-Environment: staging" />
-                </div>
-                <div class="flex items-center gap-3">
-                    <ToggleSwitch v-model="state.form.is_active" />
-                    <span class="text-sm text-slate-600">Endpoint activo</span>
+                <div class="app-form-grid">
+                    <div>
+                        <label class="mb-2 block text-sm font-semibold text-slate-600">Modulo</label>
+                        <Select v-model="state.form.module_key" :options="moduleOptions" optionLabel="name" optionValue="key" class="w-full" placeholder="Selecciona un modulo" />
+                    </div>
+                    <div>
+                        <label class="mb-2 block text-sm font-semibold text-slate-600">Evento</label>
+                        <Select v-model="state.form.event_key" :options="eventOptions" optionLabel="label" optionValue="key" class="w-full" placeholder="Selecciona un evento" />
+                    </div>
+                    <div>
+                        <label class="mb-2 block text-sm font-semibold text-slate-600">Target URL</label>
+                        <InputText v-model="state.form.target_url" class="w-full" placeholder="https://tu-sistema.test/webhooks/stackbase" />
+                        <small class="mt-2 block text-slate-500">Debe ser una URL externa del sistema destino. StackBase enviara ahi el evento firmado.</small>
+                    </div>
+                    <div>
+                        <label class="mb-2 block text-sm font-semibold text-slate-600">
+                            {{ state.form.id ? 'Nuevo secreto (opcional)' : 'Secreto de firma' }}
+                        </label>
+                        <Password v-model="state.form.signing_secret" class="w-full" inputClass="w-full" :feedback="false" toggleMask />
+                        <small class="mt-2 block text-slate-500">Si dejas este campo vacio al editar, se conserva el secreto actual.</small>
+                    </div>
+                    <div>
+                        <label class="mb-2 block text-sm font-semibold text-slate-600">Headers custom</label>
+                        <Textarea v-model="state.form.custom_headers_text" class="w-full" rows="4" placeholder="X-App: StackBase&#10;X-Environment: staging" />
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <ToggleSwitch v-model="state.form.is_active" />
+                        <span class="text-sm text-slate-600">Endpoint activo</span>
+                    </div>
                 </div>
             </div>
             <template #footer>
-                <Button label="Cancelar" severity="secondary" outlined @click="state.dialogVisible = false" />
-                <Button label="Guardar webhook" :loading="state.saving" @click="saveEndpoint" />
+                <div class="app-dialog-footer">
+                    <Button class="app-button-standard" label="Cancelar" severity="secondary" outlined @click="state.dialogVisible = false" />
+                    <Button class="app-button-standard" label="Guardar webhook" :loading="state.saving" @click="saveEndpoint" />
+                </div>
             </template>
         </Dialog>
 
         <Dialog v-model:visible="state.receiverDialogVisible" modal :header="state.receiverForm.id ? 'Editar receiver' : 'Nuevo receiver'" :style="{ width: '38rem' }" @hide="resetReceiverForm">
-            <div class="grid gap-4">
-                <div>
-                    <label class="mb-2 block text-sm font-semibold text-slate-600">Modulo</label>
-                    <Select v-model="state.receiverForm.module_key" :options="moduleOptions" optionLabel="name" optionValue="key" class="w-full" placeholder="Selecciona un modulo" />
+            <div class="app-form-section">
+                <div class="app-form-section-header">
+                    <div class="app-form-section-title">Configuracion del receiver</div>
+                    <p class="app-form-section-description">Registra el origen esperado y el secreto compartido para que StackBase pueda recibir, validar y auditar eventos entrantes.</p>
                 </div>
-                <div>
-                    <label class="mb-2 block text-sm font-semibold text-slate-600">Evento</label>
-                    <Select v-model="state.receiverForm.event_key" :options="receiverEventOptions" optionLabel="label" optionValue="key" class="w-full" placeholder="Selecciona un evento" />
-                </div>
-                <div>
-                    <label class="mb-2 block text-sm font-semibold text-slate-600">Nombre del origen</label>
-                    <InputText v-model="state.receiverForm.source_name" class="w-full" placeholder="Ej. ERP, CRM, partner o bot externo" />
-                </div>
-                <div>
-                    <label class="mb-2 block text-sm font-semibold text-slate-600">
-                        {{ state.receiverForm.id ? 'Nuevo secreto (opcional)' : 'Secreto de firma' }}
-                    </label>
-                    <Password v-model="state.receiverForm.signing_secret" class="w-full" inputClass="w-full" :feedback="false" toggleMask />
-                    <small class="mt-2 block text-slate-500">Si lo dejas vacio al editar, se conserva el secreto actual.</small>
-                </div>
-                <div class="flex items-center gap-3">
-                    <ToggleSwitch v-model="state.receiverForm.is_active" />
-                    <span class="text-sm text-slate-600">Receiver activo</span>
+                <div class="app-form-grid">
+                    <div>
+                        <label class="mb-2 block text-sm font-semibold text-slate-600">Modulo</label>
+                        <Select v-model="state.receiverForm.module_key" :options="moduleOptions" optionLabel="name" optionValue="key" class="w-full" placeholder="Selecciona un modulo" />
+                    </div>
+                    <div>
+                        <label class="mb-2 block text-sm font-semibold text-slate-600">Evento</label>
+                        <Select v-model="state.receiverForm.event_key" :options="receiverEventOptions" optionLabel="label" optionValue="key" class="w-full" placeholder="Selecciona un evento" />
+                    </div>
+                    <div>
+                        <label class="mb-2 block text-sm font-semibold text-slate-600">Nombre del origen</label>
+                        <InputText v-model="state.receiverForm.source_name" class="w-full" placeholder="Ej. ERP, CRM, partner o bot externo" />
+                        <small class="mt-2 block text-slate-500">Luego de guardar, el sistema externo debe llamar a: {{ publicIncomingBaseUrl }}/{{ state.receiverForm.id || ':receiverId' }}</small>
+                    </div>
+                    <div>
+                        <label class="mb-2 block text-sm font-semibold text-slate-600">
+                            {{ state.receiverForm.id ? 'Nuevo secreto (opcional)' : 'Secreto de firma' }}
+                        </label>
+                        <Password v-model="state.receiverForm.signing_secret" class="w-full" inputClass="w-full" :feedback="false" toggleMask />
+                        <small class="mt-2 block text-slate-500">Si lo dejas vacio al editar, se conserva el secreto actual.</small>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <ToggleSwitch v-model="state.receiverForm.is_active" />
+                        <span class="text-sm text-slate-600">Receiver activo</span>
+                    </div>
                 </div>
             </div>
             <template #footer>
-                <Button label="Cancelar" severity="secondary" outlined @click="state.receiverDialogVisible = false" />
-                <Button label="Guardar receiver" :loading="state.receiverSaving" @click="saveReceiver" />
+                <div class="app-dialog-footer">
+                    <Button class="app-button-standard" label="Cancelar" severity="secondary" outlined @click="state.receiverDialogVisible = false" />
+                    <Button class="app-button-standard" label="Guardar receiver" :loading="state.receiverSaving" @click="saveReceiver" />
+                </div>
             </template>
         </Dialog>
     </div>

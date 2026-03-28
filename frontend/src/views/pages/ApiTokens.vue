@@ -106,17 +106,23 @@ onMounted(loadTokens);
         </div>
 
         <div class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-            <div class="grid gap-4 md:grid-cols-[2fr_1fr_auto]">
-                <div>
-                    <label class="block text-sm font-semibold text-slate-600 mb-2">Nombre del token</label>
-                    <InputText v-model="state.form.name" class="w-full" placeholder="Ej. Integracion BI o Script local" :disabled="state.saving" />
+            <div class="app-form-section">
+                <div class="app-form-section-header">
+                    <div class="app-form-section-title">Nuevo token personal</div>
+                    <p class="app-form-section-description">Crea credenciales personales para scripts, BI o integraciones que no usen sesion interactiva del frontend.</p>
                 </div>
-                <div>
-                    <label class="block text-sm font-semibold text-slate-600 mb-2">Expira en dias</label>
-                    <InputNumber v-model="state.form.expires_in_days" class="w-full" :useGrouping="false" :disabled="state.saving" />
-                </div>
-                <div class="flex items-end">
-                    <Button label="Crear token" icon="pi pi-key" :loading="state.saving" :disabled="state.saving" @click="createToken" />
+                <div class="grid gap-4 md:grid-cols-[2fr_1fr_auto]">
+                    <div>
+                        <label class="block text-sm font-semibold text-slate-600 mb-2">Nombre del token</label>
+                        <InputText v-model="state.form.name" class="w-full" placeholder="Ej. Integracion BI o Script local" :disabled="state.saving" />
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-slate-600 mb-2">Expira en dias</label>
+                        <InputNumber v-model="state.form.expires_in_days" class="w-full" :useGrouping="false" :disabled="state.saving" />
+                    </div>
+                    <div class="flex items-end">
+                        <Button class="app-button-standard" label="Crear token" icon="pi pi-key" :loading="state.saving" :disabled="state.saving" @click="createToken" />
+                    </div>
                 </div>
             </div>
 

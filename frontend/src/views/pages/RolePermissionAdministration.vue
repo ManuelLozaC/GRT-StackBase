@@ -153,7 +153,11 @@ onMounted(loadRoles);
         </div>
 
         <Dialog v-model:visible="state.showDialog" modal :header="isEditing ? 'Editar rol' : 'Nuevo rol'" class="w-full max-w-3xl">
-            <div class="space-y-4">
+            <div class="app-form-section">
+                <div class="app-form-section-header">
+                    <div class="app-form-section-title">Definicion del rol</div>
+                    <p class="app-form-section-description">Asigna un nombre claro y vincula permisos del catalogo para controlar acceso y acciones del shell.</p>
+                </div>
                 <div class="flex flex-col gap-2">
                     <label class="text-sm font-medium text-slate-700">Nombre del rol</label>
                     <InputText v-model="state.form.name" :disabled="state.saving" />
@@ -166,9 +170,9 @@ onMounted(loadRoles);
             </div>
 
             <template #footer>
-                <div class="flex justify-end gap-3">
-                    <Button label="Cancelar" severity="secondary" text @click="closeDialog" />
-                    <Button :label="isEditing ? 'Guardar cambios' : 'Crear rol'" icon="pi pi-save" :loading="state.saving" :disabled="state.saving" @click="submitRole" />
+                <div class="app-dialog-footer">
+                    <Button class="app-button-standard" label="Cancelar" severity="secondary" text @click="closeDialog" />
+                    <Button class="app-button-standard" :label="isEditing ? 'Guardar cambios' : 'Crear rol'" icon="pi pi-save" :loading="state.saving" :disabled="state.saving" @click="submitRole" />
                 </div>
             </template>
         </Dialog>
