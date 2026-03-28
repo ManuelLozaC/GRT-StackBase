@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Core\Auth\Models\PersonalAccessToken;
+use App\Core\Notifications\Models\CorePushSubscription;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
@@ -80,5 +81,10 @@ class User extends Authenticatable
     public function asignacionLaboralActiva(): BelongsTo
     {
         return $this->belongsTo(AsignacionLaboral::class, 'active_work_assignment_id');
+    }
+
+    public function pushSubscriptions(): HasMany
+    {
+        return $this->hasMany(CorePushSubscription::class);
     }
 }

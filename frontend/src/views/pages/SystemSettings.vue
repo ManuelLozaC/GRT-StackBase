@@ -14,8 +14,8 @@ const state = reactive({
     organizationForm: {}
 });
 
-const globalSettings = computed(() => settingsStore.globalSettings.value);
-const organizationSettings = computed(() => settingsStore.organizationSettings.value);
+const globalSettings = computed(() => settingsStore.globalSettings.value.filter((setting) => !setting.hidden));
+const organizationSettings = computed(() => settingsStore.organizationSettings.value.filter((setting) => !setting.hidden));
 const globalAppearanceKeys = ['ui_preset', 'ui_primary_color', 'ui_surface_palette', 'ui_menu_mode'];
 const globalAppearanceSettings = computed(() => globalSettings.value.filter((setting) => globalAppearanceKeys.includes(setting.key)));
 const globalOperationalSettings = computed(() => globalSettings.value.filter((setting) => !globalAppearanceKeys.includes(setting.key)));

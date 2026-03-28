@@ -19,7 +19,7 @@ class StoreDemoNotificationRequest extends FormRequest
             'level' => ['nullable', 'in:info,success,warning,danger'],
             'action_url' => ['nullable', 'string', 'max:255'],
             'channels' => ['nullable', 'array'],
-            'channels.*' => ['string', 'in:internal,email,whatsapp,push'],
+            'channels.*' => ['string', 'in:internal,email,push'],
         ];
     }
 }

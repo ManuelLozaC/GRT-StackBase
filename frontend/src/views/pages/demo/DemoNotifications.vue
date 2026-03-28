@@ -4,9 +4,10 @@ import DemoPatternGuide from '@/components/demo/DemoPatternGuide.vue';
 import StateEmpty from '@/components/core/StateEmpty.vue';
 import StateSkeleton from '@/components/core/StateSkeleton.vue';
 import { notificationStore } from '@/core/notifications/notificationStore';
+import { bindForegroundPushListener, getPushSubscriptionStatus, registerPushNotifications, releaseForegroundPushListener, unregisterPushNotifications } from '@/core/notifications/pushClient';
 import { settingsStore } from '@/core/settings/settingsStore';
 import api from '@/service/api';
-import { computed, reactive } from 'vue';
+import { computed, onMounted, onUnmounted, reactive } from 'vue';
 import { useToast } from 'primevue/usetoast';
 
 const toast = useToast();
@@ -18,13 +19,22 @@ const form = reactive({
     action_url: '/demo/notifications',
     channels: ['internal']
 });
+const pushState = reactive({
+    supported: false,
+    loading: false,
+    enabling: false,
+    disabling: false,
+    configured: false,
+    permission: typeof Notification !== 'undefined' ? Notification.permission : 'unsupported',
+    subscriptions: []
+});
 
 const channelOptions = computed(() => [
     { label: 'Internal', value: 'internal' },
     { label: `Email ${settingsStore.featureFlags.value.feature_notifications_email ? '' : '(flag off)'}`, value: 'email' },
-    { label: `WhatsApp ${settingsStore.featureFlags.value.feature_notifications_whatsapp ? '' : '(flag off)'}`, value: 'whatsapp' },
     { label: `Push ${settingsStore.featureFlags.value.feature_notifications_push ? '' : '(flag off)'}`, value: 'push' }
 ]);
+const hasPushSubscription = computed(() => pushState.subscriptions.some((item) => item.is_active));
 
 async function createNotification() {
     await api.post('/v1/demo/notifications', form);
@@ -94,6 +104,93 @@ function resolveDeliverySeverity(status) {
         }[status] ?? 'contrast'
     );
 }
+
+async function loadPushStatus() {
+    pushState.loading = true;
+    pushState.supported = 'Notification' in window && 'serviceWorker' in navigator;
+    pushState.permission = pushState.supported ? Notification.permission : 'unsupported';
+
+    try {
+        const data = await getPushSubscriptionStatus();
+
+        pushState.configured = Boolean(data.configured);
+        pushState.subscriptions = data.subscriptions ?? [];
+    } catch {
+        pushState.configured = false;
+        pushState.subscriptions = [];
+    } finally {
+        pushState.loading = false;
+    }
+}
+
+async function enablePush() {
+    pushState.enabling = true;
+
+    try {
+        await registerPushNotifications();
+        await loadPushStatus();
+        toast.add({
+            severity: 'success',
+            summary: 'Push habilitado',
+            detail: 'Este navegador ya quedo registrado para recibir notificaciones push.',
+            life: 3000
+        });
+    } catch (error) {
+        toast.add({
+            severity: 'error',
+            summary: 'No se pudo habilitar push',
+            detail: error?.message ?? 'Revisa permisos del navegador y configuracion de Firebase.',
+            life: 4000
+        });
+    } finally {
+        pushState.enabling = false;
+    }
+}
+
+async function disablePush() {
+    pushState.disabling = true;
+
+    try {
+        await unregisterPushNotifications();
+        await loadPushStatus();
+        toast.add({
+            severity: 'success',
+            summary: 'Push deshabilitado',
+            detail: 'Este navegador ya no recibira notificaciones push.',
+            life: 3000
+        });
+    } catch (error) {
+        toast.add({
+            severity: 'error',
+            summary: 'No se pudo deshabilitar push',
+            detail: error?.message ?? 'No se pudo revocar la suscripcion actual.',
+            life: 4000
+        });
+    } finally {
+        pushState.disabling = false;
+    }
+}
+
+onMounted(async () => {
+    await loadPushStatus();
+
+    try {
+        await bindForegroundPushListener((payload) => {
+            toast.add({
+                severity: 'info',
+                summary: payload.notification?.title ?? payload.data?.title ?? 'Nueva notificacion push',
+                detail: payload.notification?.body ?? payload.data?.message ?? 'Llegó una notificacion en foreground.',
+                life: 5000
+            });
+        });
+    } catch {
+        pushState.supported = false;
+    }
+});
+
+onUnmounted(() => {
+    releaseForegroundPushListener();
+});
 </script>
 
 <template>
@@ -143,6 +240,24 @@ function resolveDeliverySeverity(status) {
                 <input v-model="form.action_url" type="text" class="demo-input" placeholder="URL de accion opcional" />
 
                 <button class="demo-primary-button" @click="createNotification">Crear notificacion</button>
+
+                <div class="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+                    <div class="mb-2 text-sm font-semibold text-slate-800">Estado push web</div>
+                    <div class="space-y-2 text-sm text-slate-600">
+                        <div><strong>Soporte navegador:</strong> {{ pushState.supported ? 'Si' : 'No' }}</div>
+                        <div><strong>Permiso:</strong> {{ pushState.permission }}</div>
+                        <div><strong>FCM servidor:</strong> {{ pushState.configured ? 'Configurado' : 'Pendiente' }}</div>
+                        <div><strong>Dispositivos activos:</strong> {{ pushState.subscriptions.filter((item) => item.is_active).length }}</div>
+                    </div>
+                    <div class="mt-4 flex flex-wrap gap-3">
+                        <button class="demo-primary-button" :disabled="!pushState.supported || pushState.enabling" @click="enablePush">
+                            {{ pushState.enabling ? 'Habilitando...' : 'Habilitar push en este navegador' }}
+                        </button>
+                        <button class="demo-secondary-button" :disabled="!hasPushSubscription || pushState.disabling" @click="disablePush">
+                            {{ pushState.disabling ? 'Deshabilitando...' : 'Deshabilitar push' }}
+                        </button>
+                    </div>
+                </div>
             </div>
         </div>
 

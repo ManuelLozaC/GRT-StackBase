@@ -15,6 +15,7 @@ use App\Http\Controllers\Api\V1\NotificationController;
 use App\Http\Controllers\Api\V1\OpenApiController;
 use App\Http\Controllers\Api\V1\OperationsOverviewController;
 use App\Http\Controllers\Api\V1\ErrorLogController;
+use App\Http\Controllers\Api\V1\PushSubscriptionController;
 use App\Http\Controllers\Api\V1\RoleManagementController;
 use App\Http\Controllers\Api\V1\SecurityLogController;
 use App\Http\Controllers\Api\V1\SettingController;
@@ -61,6 +62,9 @@ Route::prefix('v1')->group(function (): void {
         Route::get('/notifications', [NotificationController::class, 'index']);
         Route::patch('/notifications/{notification}/read', [NotificationController::class, 'markAsRead']);
         Route::post('/notifications/read-all', [NotificationController::class, 'markAllAsRead']);
+        Route::get('/notifications/push-subscriptions', [PushSubscriptionController::class, 'index']);
+        Route::post('/notifications/push-subscriptions', [PushSubscriptionController::class, 'store'])->middleware('throttle:data-writes');
+        Route::delete('/notifications/push-subscriptions', [PushSubscriptionController::class, 'destroy'])->middleware('throttle:data-writes');
         Route::get('/settings/bootstrap', [SettingController::class, 'bootstrap']);
         Route::get('/settings/me', [SettingController::class, 'me']);
         Route::patch('/settings/me', [SettingController::class, 'updateMe']);

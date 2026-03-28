@@ -159,26 +159,26 @@ class DemoNotificationFlowTest extends TestCase
 
         app(CoreSettingsManager::class)->update('global', [
             'feature_notifications_email' => true,
-            'feature_notifications_whatsapp' => true,
+            'feature_notifications_push' => true,
         ]);
 
         app(CoreSettingsManager::class)->update('user', [
             'notifications_email' => true,
-            'notifications_whatsapp' => false,
+            'notifications_push' => false,
         ], null, $user->id);
 
         $this->withHeader('Authorization', 'Bearer '.$token)
             ->postJson('/api/v1/demo/notifications', [
                 'title' => 'Canales demo',
                 'message' => 'Debe registrar entregas por canal.',
-                'channels' => ['internal', 'email', 'whatsapp'],
+                'channels' => ['internal', 'email', 'push'],
             ])
             ->assertOk()
             ->assertJsonPath('datos.deliveries.0.channel', 'internal')
             ->assertJsonPath('datos.deliveries.0.status', 'delivered')
             ->assertJsonPath('datos.deliveries.1.channel', 'email')
             ->assertJsonPath('datos.deliveries.1.status', 'simulated')
-            ->assertJsonPath('datos.deliveries.2.channel', 'whatsapp')
+            ->assertJsonPath('datos.deliveries.2.channel', 'push')
             ->assertJsonPath('datos.deliveries.2.status', 'skipped_preference');
 
         $this->assertDatabaseHas('core_notification_deliveries', [

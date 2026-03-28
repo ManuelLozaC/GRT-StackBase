@@ -15,6 +15,7 @@ class NotificationCenter
     public function __construct(
         protected TenantContext $tenantContext,
         protected CoreSettingsManager $settings,
+        protected FirebasePushService $pushService,
     ) {
     }
 
@@ -108,7 +109,16 @@ class NotificationCenter
                 continue;
             }
 
-            [$status, $detail] = $this->resolveExternalChannelStatus($channel, $featureFlags, $userPreferences);
+            [$status, $detail, $destination, $channelMetadata] = $this->resolveExternalChannelStatus(
+                channel: $channel,
+                recipient: $recipient,
+                title: $title,
+                message: $message,
+                actionUrl: $actionUrl,
+                featureFlags: $featureFlags,
+                userPreferences: $userPreferences,
+                metadata: $metadata,
+            );
 
             $deliveries->push($this->logDelivery(
                 recipient: $recipient,
@@ -117,8 +127,8 @@ class NotificationCenter
                 organizationId: $organizationId,
                 status: $status,
                 detail: $detail,
-                destination: $channel === 'email' ? $recipient->email : null,
-                metadata: $metadata,
+                destination: $destination,
+                metadata: array_merge($metadata, $channelMetadata),
                 processedAt: now(),
             ));
         }
@@ -151,20 +161,50 @@ class NotificationCenter
             ]);
     }
 
-    protected function resolveExternalChannelStatus(string $channel, array $featureFlags, array $userPreferences): array
+    protected function resolveExternalChannelStatus(
+        string $channel,
+        User $recipient,
+        string $title,
+        string $message,
+        ?string $actionUrl,
+        array $featureFlags,
+        array $userPreferences,
+        array $metadata = [],
+    ): array
     {
         $featureKey = 'feature_notifications_'.$channel;
         $preferenceKey = 'notifications_'.$channel;
 
         if (! ($featureFlags[$featureKey] ?? false)) {
-            return ['skipped_disabled', 'Canal deshabilitado por feature flag global.'];
+            return ['skipped_disabled', 'Canal deshabilitado por feature flag global.', null, []];
         }
 
         if (! ($userPreferences[$preferenceKey] ?? false)) {
-            return ['skipped_preference', 'El usuario deshabilito este canal en sus preferencias.'];
+            return ['skipped_preference', 'El usuario deshabilito este canal en sus preferencias.', null, []];
         }
 
-        return ['simulated', 'Canal listo para integracion externa.'];
+        if ($channel === 'email') {
+            return ['simulated', 'Canal listo para integracion externa.', $recipient->email, []];
+        }
+
+        if ($channel === 'push') {
+            $result = $this->pushService->sendToUser(
+                recipient: $recipient,
+                title: $title,
+                message: $message,
+                actionUrl: $actionUrl,
+                metadata: $metadata,
+            );
+
+            return [
+                $result['status'],
+                $result['detail'],
+                $result['destination'] ?? null,
+                $result['metadata'] ?? [],
+            ];
+        }
+
+        return ['simulated', 'Canal listo para integracion externa.', null, []];
     }
 
     protected function logDelivery(

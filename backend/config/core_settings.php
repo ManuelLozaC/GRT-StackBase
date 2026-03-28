@@ -54,6 +54,7 @@ return [
             'label' => 'Canal WhatsApp habilitado',
             'type' => 'toggle',
             'default' => false,
+            'hidden' => true,
             'help' => 'Flag operativo para preparar el canal WhatsApp.',
         ],
         [
@@ -270,6 +271,7 @@ return [
             'label' => 'Notificaciones por WhatsApp',
             'type' => 'toggle',
             'default' => false,
+            'hidden' => true,
         ],
         [
             'key' => 'notifications_push',
