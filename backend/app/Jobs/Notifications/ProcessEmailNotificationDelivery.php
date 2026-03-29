@@ -37,13 +37,19 @@ class ProcessEmailNotificationDelivery implements ShouldQueue
         $delivery = CoreNotificationDelivery::query()
             ->with('recipient')
             ->findOrFail($this->deliveryId);
+        $attempts = $this->job?->attempts() ?? 1;
+        $metadata = $delivery->metadata ?? [];
 
         if ($delivery->recipient === null) {
             $delivery->forceFill([
                 'status' => 'failed',
                 'status_detail' => 'La entrega no tiene destinatario asociado.',
                 'processed_at' => now(),
-                'metadata' => array_merge($delivery->metadata ?? [], [
+                'metadata' => array_merge($metadata, [
+                    'attempts' => $attempts,
+                    'max_attempts' => $this->tries,
+                    'backoff_schedule' => $this->backoff,
+                    'last_attempt_at' => now()->toIso8601String(),
                     'queued' => true,
                     'error' => 'missing_recipient',
                 ]),
@@ -68,7 +74,14 @@ class ProcessEmailNotificationDelivery implements ShouldQueue
                 'destination' => $result['destination'] ?? $delivery->destination,
                 'status_detail' => $result['detail'],
                 'processed_at' => now(),
-                'metadata' => array_merge($delivery->metadata ?? [], $result['metadata'] ?? []),
+                'metadata' => array_merge($metadata, $result['metadata'] ?? [], [
+                    'attempts' => $attempts,
+                    'max_attempts' => $this->tries,
+                    'backoff_schedule' => $this->backoff,
+                    'last_attempt_at' => now()->toIso8601String(),
+                    'queued' => false,
+                    'retriable' => $result['status'] !== 'delivered',
+                ]),
             ])->save();
         } finally {
             $tenantContext->clear();

@@ -30,6 +30,7 @@ const pushState = reactive({
 });
 const deliveryHistory = reactive({
     loading: false,
+    retryingId: null,
     items: []
 });
 
@@ -158,6 +159,31 @@ async function loadDeliveryHistory() {
         deliveryHistory.items = response.data.datos ?? [];
     } finally {
         deliveryHistory.loading = false;
+    }
+}
+
+async function retryDelivery(delivery) {
+    deliveryHistory.retryingId = delivery.id;
+
+    try {
+        const response = await api.post(`/v1/notifications/deliveries/${delivery.id}/retry`);
+        await loadDeliveryHistory();
+
+        toast.add({
+            severity: 'success',
+            summary: 'Entrega reenviada',
+            detail: response.data.mensaje,
+            life: 3000
+        });
+    } catch (error) {
+        toast.add({
+            severity: 'error',
+            summary: 'No se pudo reintentar la entrega',
+            detail: error?.response?.data?.mensaje ?? error?.message ?? 'Ocurrio un error al reintentar la entrega.',
+            life: 4000
+        });
+    } finally {
+        deliveryHistory.retryingId = null;
     }
 }
 
@@ -384,11 +410,18 @@ onUnmounted(() => {
                             <div><strong>Procesado:</strong> {{ formatDate(delivery.processed_at) }}</div>
                             <div><strong>Mailer:</strong> {{ delivery.mailer || '-' }}</div>
                             <div><strong>Origen:</strong> {{ delivery.source || '-' }}</div>
+                            <div><strong>Intentos:</strong> {{ delivery.attempts }} / {{ delivery.max_attempts || '-' }}</div>
+                            <div><strong>Backoff:</strong> {{ delivery.backoff_schedule?.length ? `${delivery.backoff_schedule.join(', ')} s` : '-' }}</div>
                         </div>
 
                         <div class="demo-card-footer">
                             <span class="text-sm text-color-secondary">{{ delivery.status_detail }}</span>
-                            <router-link v-if="delivery.action_url" :to="delivery.action_url" class="demo-link">Abrir accion</router-link>
+                            <div class="demo-actions">
+                                <router-link v-if="delivery.action_url" :to="delivery.action_url" class="demo-link">Abrir accion</router-link>
+                                <button v-if="delivery.can_retry" class="demo-secondary-button" :disabled="deliveryHistory.retryingId === delivery.id" @click="retryDelivery(delivery)">
+                                    {{ deliveryHistory.retryingId === delivery.id ? 'Reintentando...' : 'Reintentar entrega' }}
+                                </button>
+                            </div>
                         </div>
                     </article>
                 </div>

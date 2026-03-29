@@ -61,6 +61,7 @@ Route::prefix('v1')->group(function (): void {
 
         Route::get('/notifications', [NotificationController::class, 'index']);
         Route::get('/notifications/deliveries', [NotificationController::class, 'deliveries']);
+        Route::post('/notifications/deliveries/{delivery}/retry', [NotificationController::class, 'retryDelivery'])->middleware('throttle:data-writes');
         Route::patch('/notifications/{notification}/read', [NotificationController::class, 'markAsRead']);
         Route::post('/notifications/read-all', [NotificationController::class, 'markAllAsRead']);
         Route::get('/notifications/push-subscriptions', [PushSubscriptionController::class, 'index']);
@@ -77,7 +78,13 @@ Route::prefix('v1')->group(function (): void {
             Route::get('/audit', [DemoAuditController::class, 'index']);
             Route::get('/files', [DemoFileController::class, 'index']);
             Route::post('/files', [DemoFileController::class, 'store']);
+            Route::get('/files/{file}/versions', [DemoFileController::class, 'versions']);
+            Route::post('/files/{file}/versions', [DemoFileController::class, 'storeVersion']);
             Route::get('/files/downloads', [DemoFileController::class, 'downloads']);
+            Route::get('/files/packages', [DemoFileController::class, 'packages']);
+            Route::post('/files/packages', [DemoFileController::class, 'queuePackage'])->middleware('throttle:data-writes');
+            Route::post('/files/packages/{jobRun}/retry', [DemoFileController::class, 'retryPackage'])->middleware('throttle:data-writes');
+            Route::get('/files/packages/{jobRun}/download', [DemoFileController::class, 'downloadPackage'])->middleware('throttle:downloads')->name('api.v1.demo.files.packages.download');
             Route::get('/files/{file}/download', [DemoFileController::class, 'download'])->middleware('throttle:downloads');
             Route::post('/files/{file}/temporary-link', [DemoFileController::class, 'temporaryLink']);
             Route::get('/jobs', [DemoJobController::class, 'index']);

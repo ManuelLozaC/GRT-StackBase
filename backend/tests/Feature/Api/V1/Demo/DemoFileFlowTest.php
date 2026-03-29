@@ -5,11 +5,14 @@ namespace Tests\Feature\Api\V1\Demo;
 use App\Core\Auth\Services\AccessTokenService;
 use App\Core\Files\Models\ManagedFile;
 use App\Core\Files\Services\FileManager;
+use App\Core\Jobs\Models\CoreJobRun;
 use App\Core\Modules\ModuleSettingsManager;
+use App\Jobs\Demo\ProcessDemoFilePackageRun;
 use App\Models\Organizacion;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
@@ -82,6 +85,150 @@ class DemoFileFlowTest extends TestCase
 
         $this->assertSame('local', $file->disk);
         Storage::disk('local')->assertExists($file->path);
+    }
+
+    public function test_user_can_upload_new_file_version_and_list_history(): void
+    {
+        Storage::fake('local');
+        config(['filesystems.default' => 'local']);
+
+        [$user, $token] = $this->authenticateUser();
+
+        $originalFile = app(FileManager::class)->storeUploadedFile(
+            UploadedFile::fake()->createWithContent('contrato-v1.pdf', 'version 1'),
+            $user,
+            ['source' => 'phpunit'],
+            [
+                'resource_key' => 'people',
+                'record_id' => 15,
+                'record_label' => 'Maria Suarez',
+            ],
+        );
+
+        $response = $this->withHeader('Authorization', 'Bearer '.$token)
+            ->post("/api/v1/demo/files/{$originalFile->uuid}/versions", [
+                'file' => UploadedFile::fake()->createWithContent('contrato-v2.pdf', 'version 2'),
+                'notes' => 'Segunda version',
+            ], [
+                'Accept' => 'application/json',
+            ]);
+
+        $response
+            ->assertOk()
+            ->assertJsonPath('datos.version', 2)
+            ->assertJsonPath('datos.previous_version_uuid', $originalFile->uuid);
+
+        $this->withHeader('Authorization', 'Bearer '.$token)
+            ->getJson('/api/v1/demo/files')
+            ->assertOk()
+            ->assertJsonPath('meta.total', 1)
+            ->assertJsonFragment([
+                'original_name' => 'contrato-v2.pdf',
+            ])
+            ->assertJsonMissing([
+                'original_name' => 'contrato-v1.pdf',
+            ]);
+
+        $historyResponse = $this->withHeader('Authorization', 'Bearer '.$token)
+            ->getJson('/api/v1/demo/files/'.$response->json('datos.uuid').'/versions');
+
+        $historyResponse
+            ->assertOk()
+            ->assertJsonPath('meta.total', 2)
+            ->assertJsonPath('datos.0.version', 2)
+            ->assertJsonPath('datos.1.version', 1);
+
+        $originalFile->refresh();
+        $latestFile = ManagedFile::query()->latest('id')->firstOrFail();
+
+        $this->assertNotNull($originalFile->superseded_at);
+        $this->assertSame($originalFile->version_group_uuid, $latestFile->version_group_uuid);
+        $this->assertSame($originalFile->id, $latestFile->previous_version_id);
+        $this->assertSame('people', $latestFile->attached_resource_key);
+        $this->assertSame(15, $latestFile->attached_record_id);
+    }
+
+    public function test_user_can_queue_async_file_package_and_download_when_processed(): void
+    {
+        Storage::fake('local');
+        config([
+            'filesystems.default' => 'local',
+            'queue.default' => 'sync',
+        ]);
+
+        [$user, $token] = $this->authenticateUser();
+
+        $first = app(FileManager::class)->storeUploadedFile(
+            UploadedFile::fake()->createWithContent('propuesta.pdf', 'contenido uno'),
+            $user,
+            ['source' => 'phpunit'],
+        );
+        $second = app(FileManager::class)->storeUploadedFile(
+            UploadedFile::fake()->createWithContent('resumen.txt', 'contenido dos'),
+            $user,
+            ['source' => 'phpunit'],
+        );
+
+        $response = $this->withHeader('Authorization', 'Bearer '.$token)
+            ->postJson('/api/v1/demo/files/packages', [
+                'file_uuids' => [$first->uuid, $second->uuid],
+            ]);
+
+        $response
+            ->assertOk()
+            ->assertJsonPath('datos.file_count', 2);
+
+        $run = CoreJobRun::query()->where('job_key', 'demo.files.package')->firstOrFail();
+        $this->assertSame('completed', $run->fresh()->status);
+
+        $this->withHeader('Authorization', 'Bearer '.$token)
+            ->getJson('/api/v1/demo/files/packages')
+            ->assertOk()
+            ->assertJsonPath('meta.total', 1)
+            ->assertJsonPath('datos.0.download_url', '/api/v1/demo/files/packages/'.$run->uuid.'/download');
+
+        $downloadResponse = $this->withHeader('Authorization', 'Bearer '.$token)
+            ->get('/api/v1/demo/files/packages/'.$run->uuid.'/download');
+
+        $downloadResponse->assertOk();
+        $this->assertStringContainsString('.zip', (string) $downloadResponse->headers->get('content-disposition'));
+    }
+
+    public function test_user_can_retry_failed_async_file_package(): void
+    {
+        Storage::fake('local');
+        config(['filesystems.default' => 'local']);
+        Queue::fake();
+
+        [$user, $token] = $this->authenticateUser();
+
+        $run = CoreJobRun::query()->create([
+            'uuid' => (string) \Illuminate\Support\Str::uuid(),
+            'organizacion_id' => $user->organizacion_activa_id,
+            'requested_by' => $user->id,
+            'job_key' => 'demo.files.package',
+            'queue' => 'files',
+            'status' => 'failed',
+            'requested_payload' => [
+                'file_uuids' => ['missing-uuid'],
+                'file_count' => 1,
+                'original_names' => ['faltante.txt'],
+            ],
+            'attempts' => 3,
+            'error_message' => 'fallo previo',
+            'failed_at' => now(),
+            'finished_at' => now(),
+            'dispatched_at' => now()->subMinute(),
+        ]);
+
+        $this->withHeader('Authorization', 'Bearer '.$token)
+            ->postJson('/api/v1/demo/files/packages/'.$run->uuid.'/retry')
+            ->assertOk()
+            ->assertJsonPath('datos.status', 'pending');
+
+        Queue::assertPushed(ProcessDemoFilePackageRun::class);
+        $this->assertSame('pending', $run->fresh()->status);
+        $this->assertNull($run->fresh()->error_message);
     }
 
     public function test_direct_download_is_recorded_in_history(): void

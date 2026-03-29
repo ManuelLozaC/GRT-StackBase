@@ -3,6 +3,7 @@
 namespace Tests\Feature\Api\V1\Demo;
 
 use App\Core\Modules\ModuleSettingsManager;
+use App\Core\Notifications\Models\CoreNotificationDelivery;
 use App\Core\Notifications\Mail\CoreNotificationMail;
 use App\Jobs\Notifications\ProcessEmailNotificationDelivery;
 use App\Core\Notifications\Services\NotificationCenter;
@@ -195,6 +196,45 @@ class DemoNotificationFlowTest extends TestCase
 
         Queue::assertPushed(ProcessEmailNotificationDelivery::class);
         Mail::assertNothingSent();
+    }
+
+    public function test_user_can_retry_failed_email_delivery(): void
+    {
+        Queue::fake();
+        [$user, $token] = $this->authenticateUser();
+
+        $delivery = CoreNotificationDelivery::query()->create([
+            'organizacion_id' => $user->organizacion_activa_id,
+            'recipient_id' => $user->id,
+            'channel' => 'email',
+            'status' => 'failed',
+            'destination' => $user->email,
+            'status_detail' => 'Fallo previo del proveedor.',
+            'metadata' => [
+                'title' => 'Retry email',
+                'message' => 'Mensaje para reintentar.',
+                'action_url' => '/demo/notifications',
+                'payload_context' => ['source' => 'test'],
+                'attempts' => 1,
+                'max_attempts' => 3,
+                'backoff_schedule' => [10, 30, 60],
+                'retriable' => true,
+                'queued' => false,
+            ],
+        ]);
+
+        $this->withHeader('Authorization', 'Bearer '.$token)
+            ->postJson("/api/v1/notifications/deliveries/{$delivery->id}/retry")
+            ->assertOk()
+            ->assertJsonPath('datos.status', 'queued')
+            ->assertJsonPath('datos.can_retry', true);
+
+        Queue::assertPushed(ProcessEmailNotificationDelivery::class, 1);
+
+        $this->assertDatabaseHas('core_notification_deliveries', [
+            'id' => $delivery->id,
+            'status' => 'queued',
+        ]);
     }
 
     protected function authenticateUser(): array

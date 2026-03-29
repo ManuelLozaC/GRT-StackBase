@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Collection;
 
 class ManagedFile extends Model
 {
@@ -23,6 +24,7 @@ class ManagedFile extends Model
         'disk',
         'path',
         'original_name',
+        'version_group_uuid',
         'extension',
         'mime_type',
         'size_bytes',
@@ -30,7 +32,9 @@ class ManagedFile extends Model
         'attached_resource_key',
         'attached_record_id',
         'attached_record_label',
+        'previous_version_id',
         'version',
+        'superseded_at',
         'security_token',
         'metadata',
     ];
@@ -39,6 +43,7 @@ class ManagedFile extends Model
     {
         return [
             'metadata' => 'array',
+            'superseded_at' => 'datetime',
         ];
     }
 
@@ -60,5 +65,23 @@ class ManagedFile extends Model
     public function downloads(): HasMany
     {
         return $this->hasMany(FileDownload::class, 'managed_file_id');
+    }
+
+    public function previousVersion(): BelongsTo
+    {
+        return $this->belongsTo(self::class, 'previous_version_id');
+    }
+
+    public function nextVersions(): HasMany
+    {
+        return $this->hasMany(self::class, 'previous_version_id');
+    }
+
+    public function versionHistory(): Collection
+    {
+        return self::query()
+            ->where('version_group_uuid', $this->version_group_uuid ?: $this->uuid)
+            ->orderByDesc('version')
+            ->get();
     }
 }

@@ -65,6 +65,59 @@ class NotificationController extends Controller
         );
     }
 
+    public function retryDelivery(Request $request, CoreNotificationDelivery $delivery): JsonResponse
+    {
+        /** @var User $user */
+        $user = $request->user();
+
+        if ((int) $delivery->recipient_id !== (int) $user->id) {
+            return $this->errorResponse(
+                message: 'No tienes acceso a esta entrega',
+                status: 403,
+            );
+        }
+
+        $canRetry = (bool) data_get($delivery->metadata, 'retriable', false);
+
+        if (! $canRetry || ! in_array($delivery->channel, ['email', 'push'], true)) {
+            return $this->errorResponse(
+                message: 'Esta entrega no admite reintentos manuales.',
+                status: 422,
+            );
+        }
+
+        $delivery = $this->notifications->retryDelivery($delivery);
+
+        $this->auditLogger->record(
+            eventKey: 'notification.delivery.retried',
+            actor: $user,
+            entityType: 'core_notification_delivery',
+            entityKey: (string) $delivery->id,
+            summary: 'Se reintento una entrega de notificacion.',
+            sourceModule: 'core-platform',
+            context: [
+                'channel' => $delivery->channel,
+                'status' => $delivery->status,
+            ],
+        );
+        $this->metrics->record(
+            moduleKey: 'core-platform',
+            eventKey: 'notification.delivery.retried',
+            eventCategory: 'notifications',
+            actor: $user,
+            context: [
+                'delivery_id' => $delivery->id,
+                'channel' => $delivery->channel,
+                'status' => $delivery->status,
+            ],
+        );
+
+        return $this->successResponse(
+            data: $this->transformDelivery($delivery),
+            message: 'Entrega reenviada correctamente',
+        );
+    }
+
     public function markAsRead(Request $request, CoreNotification $notification): JsonResponse
     {
         /** @var User $user */
@@ -172,6 +225,11 @@ class NotificationController extends Controller
             'action_url' => $delivery->notification?->action_url ?? data_get($delivery->metadata, 'action_url'),
             'source' => data_get($delivery->metadata, 'source'),
             'queued' => (bool) data_get($delivery->metadata, 'queued', false),
+            'attempts' => (int) data_get($delivery->metadata, 'attempts', 0),
+            'max_attempts' => (int) data_get($delivery->metadata, 'max_attempts', 0),
+            'backoff_schedule' => data_get($delivery->metadata, 'backoff_schedule', []),
+            'last_attempt_at' => data_get($delivery->metadata, 'last_attempt_at'),
+            'can_retry' => (bool) data_get($delivery->metadata, 'retriable', false),
             'mailer' => data_get($delivery->metadata, 'mailer'),
             'processed_at' => $delivery->processed_at?->toIso8601String(),
             'created_at' => $delivery->created_at?->toIso8601String(),

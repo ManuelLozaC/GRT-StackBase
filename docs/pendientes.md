@@ -95,7 +95,7 @@ Nota:
 - [ ] Multi-tenant operativo completo en todo el dominio.
 - [x] CRUD universal conectado a backend.
 - [ ] Sistema real de archivos.
-- [ ] Extender archivos hacia Spaces, versionado avanzado y descargas pesadas async.
+- [x] Extender archivos hacia Spaces, versionado avanzado y descargas pesadas async.
 - [ ] Jobs avanzados.
 - [ ] Notificaciones avanzadas y multicanal.
 - [ ] Auditoria y logs avanzados.
@@ -250,11 +250,11 @@ Estado: En progreso
 - [x] Demo funcional de archivos dentro del `Demo Module`.
 - [x] Subida hacia Spaces.
 - [x] Fallback controlado `spaces -> local` para desarrollo cuando faltan credenciales.
-- [ ] Asociacion archivo <-> entidad de negocio.
+- [x] Asociacion archivo <-> entidad de negocio.
 - [x] Asociacion base archivo <-> entidad de negocio mediante `resource_key`, `record_id` y `record_label`.
-- [ ] Cola de descargas pesadas.
-- [ ] Versionado de archivos real.
-- [ ] Procesamiento async de archivos.
+- [x] Cola de descargas pesadas.
+- [x] Versionado de archivos real.
+- [x] Procesamiento async de archivos.
 
 ## P6. Notificaciones
 Estado: En progreso
@@ -270,7 +270,8 @@ Estado: En progreso
 - [x] Push real si aplica. 
 - [x] Preferencias por usuario.
 - [x] Historial base de entregas por canal.
-- [ ] Reintentos reales por canal e integraciones externas.
+- [x] Reintentos reales por canal visibles desde historial operativo para `email` y `push`.
+- [ ] Integraciones externas adicionales y politica mas profunda de retry por proveedor.
 
 ## P7. UX transversal
 Estado: Parcial
@@ -448,7 +449,7 @@ Estado: En progreso
 ## Siguiente desarrollo recomendado
 1. Ampliar pruebas frontend desde la base actual de Vitest hacia topbar, auth visual, formularios y pantallas criticas.
 2. Seguir endureciendo tenancy transversal restante en modelos, jobs, servicios secundarios y auditoria.
-3. Cerrar versionado de archivos, descargas pesadas async y entidades de negocio restantes.
+3. Profundizar notificaciones avanzadas, Data Engine y otras integraciones transversales restantes del core.
 4. Automatizar despliegue continuo o semiautomatizado sobre Droplets y observabilidad externa.
 5. Mantener el `Demo Module` como biblioteca viva de referencia y onboarding tecnico.
 

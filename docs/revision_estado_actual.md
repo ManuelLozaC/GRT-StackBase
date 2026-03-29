@@ -13,6 +13,8 @@ La base actual ya cumple con lo principal que se definio durante el proyecto:
 - arquitectura local con Docker alineada a Droplets
 - storage real en DigitalOcean Spaces
 - push web real mediante FCM y email real mediante Resend
+- historial operativo de entregas con retry manual para `email` y `push`
+- versionado real de archivos con historial por grupo, nueva version desde la demo y paquetes async para descargas pesadas
 - bootstrap oficial inicial
 - tenancy base
 - RBAC base y permisos contextuales iniciales
@@ -48,7 +50,7 @@ La base actual ya cumple con lo principal que se definio durante el proyecto:
 
 - ampliar pruebas frontend
 - endurecer tenancy transversal en cada superficie restante
-- profundizar versionado y procesos async pesados de archivos
+- seguir refinando experiencias avanzadas de archivos sobre una base ya funcional
 - observabilidad, backups y despliegue automatizado
 
 ## Fortalezas reales
