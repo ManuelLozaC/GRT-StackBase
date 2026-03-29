@@ -75,5 +75,12 @@ export default defineConfig({
                 api: 'modern-compiler'
             }
         }
+    },
+    test: {
+        environment: 'jsdom',
+        globals: true,
+        setupFiles: './src/test/setupTests.js',
+        restoreMocks: true,
+        clearMocks: true
     }
 });

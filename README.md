@@ -59,6 +59,7 @@ cd backend
 php artisan test
 
 cd ../frontend
+npm run test:run
 npm run lint
 npm run build
 ```

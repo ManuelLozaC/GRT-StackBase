@@ -413,6 +413,7 @@ Estado: En progreso
 - [x] Pipeline CI operativo en GitHub Actions para backend y frontend, con timeouts, concurrencia y chequeo base de rutas.
 - [x] Smoke tests minimos de release para `auth`, `health`, `Data Engine`, `push` y `email`.
 - [x] Guia formal de extension para nuevos modulos, notificaciones, operacion y release.
+- [x] Base inicial de tests frontend con Vitest para stores de sesion, contexto, settings, permisos y guards del router.
 - [ ] Despliegue continuo o semiautomatizado sobre Droplets.
 - [ ] Observabilidad externa y alertas operativas fuera del panel interno.
 
@@ -443,7 +444,7 @@ Estado: En progreso
 - [x] Eventos clave de usuario.
 
 ## Siguiente desarrollo recomendado
-1. Ampliar pruebas frontend sobre stores, guards, auth, topbar, settings y formularios criticos.
+1. Ampliar pruebas frontend desde la base actual de Vitest hacia topbar, auth visual, formularios y pantallas criticas.
 2. Seguir endureciendo tenancy transversal restante en modelos, jobs, servicios secundarios y auditoria.
 3. Cerrar versionado de archivos, descargas pesadas async y entidades de negocio restantes.
 4. Automatizar despliegue continuo o semiautomatizado sobre Droplets y observabilidad externa.

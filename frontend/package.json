@@ -5,7 +5,9 @@
         "dev": "vite",
         "build": "vite build",
         "preview": "vite preview",
-        "lint": "eslint --fix . --ext .vue,.js,.jsx,.cjs,.mjs --fix --ignore-path .gitignore"
+        "lint": "eslint --fix . --ext .vue,.js,.jsx,.cjs,.mjs --fix --ignore-path .gitignore",
+        "test": "vitest",
+        "test:run": "vitest run"
     },
     "dependencies": {
         "@primeuix/themes": "^2.0.0",
@@ -27,10 +29,12 @@
         "@vue/eslint-config-prettier": "^9.0.0",
         "eslint": "^8.57.0",
         "eslint-plugin-vue": "^9.23.0",
+        "jsdom": "^26.1.0",
         "prettier": "^3.2.5",
         "sass": "^1.98.0",
         "tailwindcss": "^4.1.17",
         "unplugin-vue-components": "^0.27.3",
-        "vite": "^6.4.1"
+        "vite": "^6.4.1",
+        "vitest": "^3.2.4"
     }
 }
