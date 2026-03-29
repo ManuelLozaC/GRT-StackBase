@@ -219,7 +219,7 @@ onMounted(async () => {
             toast.add({
                 severity: 'info',
                 summary: payload.notification?.title ?? payload.data?.title ?? 'Nueva notificacion push',
-                detail: payload.notification?.body ?? payload.data?.message ?? 'Llegó una notificacion en foreground.',
+                detail: payload.notification?.body ?? payload.data?.message ?? 'Llego una notificacion mientras estabas usando la app.',
                 life: 5000
             });
         });

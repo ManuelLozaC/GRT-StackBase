@@ -79,7 +79,9 @@ Separar mas adelante:
    - `docker compose exec app php artisan key:generate`
    - `docker compose exec app php artisan migrate --force`
    - `docker compose exec app php artisan db:seed --force`
+   - `docker compose exec app php artisan settings:deduplicate`
    - `docker compose exec app php artisan optimize:clear`
+   - `docker compose exec app php artisan optimize`
 4. Verificar salud:
    - `docker compose ps`
    - `https://tu-dominio/api/v1/health`
@@ -93,6 +95,14 @@ Separar mas adelante:
 - scheduler corriendo
 - archivos subiendo a Spaces
 - health endpoint respondiendo
+- health endpoint con checks `database`, `redis`, `mail`, `queue` y `storage` en `ok`
+- smoke tests de release ejecutados antes del corte
+
+## Rotacion y secretos
+
+- mantener las llaves de `Resend`, `Firebase`, `Spaces` y webhooks solo en variables de entorno o secret manager
+- rotar credenciales expuestas en desarrollo antes de cualquier despliegue productivo
+- preferir subdominios dedicados para envio (`notificaciones@...`) y storage externo antes que disco local del Droplet
 
 ## Objetivos de mediano plazo
 

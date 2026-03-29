@@ -121,10 +121,10 @@ Estado: En progreso
 - [x] Pantalla de administracion de modulos.
 - [x] Route guard frontend para modulos deshabilitados.
 - [x] `Demo Module` inicial.
-- [ ] Contrato formal de un modulo: permisos, menus, rutas, migraciones, settings, jobs, webhooks, dashboards.
+- [x] Contrato formal de un modulo: permisos, menus, rutas, migraciones, settings, jobs, webhooks, dashboards.
 - [x] Webhooks declarados por modulo y consumidos por UI/API administrativa.
 - [x] Metadata modular extendida con `jobs`, `webhooks`, `dashboards`, `seeders` y `assets`.
-- [ ] Contrato formal de una demo por capacidad transversal.
+- [x] Contrato formal de una demo por capacidad transversal.
 - [x] Carga de menus y rutas del `Demo Module` desde manifest declarativa frontend.
 - [x] Carga de menus y rutas del `Demo Module` desde metadata declarativa backend/API.
 - [x] Orden de carga y dependencias entre modulos para el bootstrap actual.
@@ -194,7 +194,7 @@ Estado: En progreso
 - [x] Variables globales persistentes.
 - [x] Configuracion por modulo.
 - [x] Feature flags.
-- [ ] Parametros dinamicos sin deploy.
+- [x] Parametros dinamicos sin deploy.
 - [x] Configuracion por usuario.
 - [x] Configuracion por organizacion.
 - [x] UI administrativa de settings.
@@ -246,9 +246,9 @@ Estado: En progreso
 - [x] Marcado masivo de lectura.
 - [x] Campanita con contador basico.
 - [x] Demo funcional de notificaciones dentro del `Demo Module`.
-- [ ] Email real.
+- [x] Email real.
 - [ ] SMS / WhatsApp real. // no avanzar de momento
-- [ ] Push real si aplica. 
+- [x] Push real si aplica. 
 - [x] Preferencias por usuario.
 - [x] Historial base de entregas por canal.
 - [ ] Reintentos reales por canal e integraciones externas.
@@ -393,6 +393,8 @@ Estado: En progreso
 - [x] Recuperar `lint` frontend en verde.
 - [x] Retirar modelos, tablas y seeders inactivos que no pertenecian al contrato modular actual.
 - [x] Pipeline CI operativo en GitHub Actions para backend y frontend, con timeouts, concurrencia y chequeo base de rutas.
+- [x] Smoke tests minimos de release para `auth`, `health`, `Data Engine`, `push` y `email`.
+- [x] Guia formal de extension para nuevos modulos, notificaciones, operacion y release.
 
 ## P18. Responsive y soporte movil
 Estado: Parcial
@@ -421,18 +423,18 @@ Estado: En progreso
 - [x] Eventos clave de usuario.
 
 ## Siguiente desarrollo recomendado
-1. Seguir refinando `Demo Module` como biblioteca viva, didactica y consistente del stack.
-2. Ampliar pruebas frontend y cobertura automatica de release.
-3. Endurecer tenancy transversal restante en modelos, jobs, auditoria y notificaciones externas.
-4. Cerrar versionado de archivos, descargas pesadas async y entidades de negocio restantes.
-5. Automatizar observabilidad, backups y despliegue continuo sobre Droplets.
+1. Ampliar pruebas frontend sobre stores, guards y formularios criticos.
+2. Seguir endureciendo tenancy transversal restante en modelos, jobs y auditoria.
+3. Cerrar versionado de archivos, descargas pesadas async y entidades de negocio restantes.
+4. Automatizar backups, restores y despliegue continuo sobre Droplets.
+5. Mantener el `Demo Module` como biblioteca viva de referencia y onboarding tecnico.
 
 ## Objetivos inmediatos desde aqui en adelante
 1. Mantener la version base estable mientras el `Demo Module` sigue creciendo como referencia de implementacion.
 2. Endurecer tenancy transversal en modelos, jobs, archivos y auditoria.
-3. Ampliar pruebas frontend y checks de release sin inflar el core.
-4. Mantener visibles los objetivos de mediano plazo: observabilidad, backups, despliegue automatizado y evolucion modular.
-5. Seguir limpiando residuales tecnicos sin reabrir deuda estructural de la base.
+3. Mantener guias de extension, release checklist y operacion como fuente viva para nuevos modulos.
+4. Ampliar pruebas frontend y checks de release sin inflar el core.
+5. Seguir limpiando residuales tecnicos y microcopy sin reabrir deuda estructural de la base.
 
 ## Indicador de avance global
 

@@ -12,6 +12,7 @@ La base actual ya cumple con lo principal que se definio durante el proyecto:
 - frontend Vue 3 modular
 - arquitectura local con Docker alineada a Droplets
 - storage real en DigitalOcean Spaces
+- push web real mediante FCM y email real mediante Resend
 - bootstrap oficial inicial
 - tenancy base
 - RBAC base y permisos contextuales iniciales
@@ -40,6 +41,8 @@ La base actual ya cumple con lo principal que se definio durante el proyecto:
   implementado y validado con escritura, lectura y borrado reales.
 - `CI`:
   operativa en GitHub Actions.
+- `Canales reales de notificacion`:
+  `push` y `email` ya pueden probarse end-to-end con proveedores reales.
 
 ### Requerimientos que quedan como evolucion, no como bloqueo de cierre base
 
@@ -69,8 +72,9 @@ La base actual ya cumple con lo principal que se definio durante el proyecto:
 ### Operacion
 
 - Docker Compose ya modela `worker` y `scheduler`
-- CI valida backend y frontend
+- CI valida backend y frontend, incluyendo smoke tests de release
 - Spaces ya esta integrado
+- healthcheck operativo ya expone `database`, `redis`, `mail`, `queue` y `storage`
 
 ## Debilidades vigentes
 
@@ -124,6 +128,7 @@ La base ya esta usable, pero la siguiente inversion de calidad debe ir a stores,
 - refinamiento continuo del Demo Module como biblioteca unificada
 - observabilidad mas profunda
 - automatizacion de despliegues
+- mas pruebas frontend sobre stores, guards y formularios criticos
 
 ## Conclusion
 

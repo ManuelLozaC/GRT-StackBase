@@ -86,17 +86,43 @@ class CoreSettingsManager
 
         if ($this->canUsePersistence()) {
             foreach ($validated as $settingKey => $value) {
-                CoreSetting::query()->updateOrCreate(
-                    [
-                        'scope' => $scope,
-                        'organizacion_id' => $organizationId,
-                        'user_id' => $userId,
-                        'setting_key' => $settingKey,
-                    ],
-                    [
+                $query = CoreSetting::query()
+                    ->where('scope', $scope)
+                    ->where('setting_key', $settingKey);
+
+                $organizationId === null
+                    ? $query->whereNull('organizacion_id')
+                    : $query->where('organizacion_id', $organizationId);
+
+                $userId === null
+                    ? $query->whereNull('user_id')
+                    : $query->where('user_id', $userId);
+
+                $current = $query->latest('id')->first();
+
+                if ($current !== null) {
+                    $current->forceFill([
                         'value_json' => ['value' => $value],
-                    ],
-                );
+                    ])->save();
+
+                    CoreSetting::query()
+                        ->where('scope', $scope)
+                        ->where('setting_key', $settingKey)
+                        ->when($organizationId === null, fn ($cleanup) => $cleanup->whereNull('organizacion_id'), fn ($cleanup) => $cleanup->where('organizacion_id', $organizationId))
+                        ->when($userId === null, fn ($cleanup) => $cleanup->whereNull('user_id'), fn ($cleanup) => $cleanup->where('user_id', $userId))
+                        ->where('id', '!=', $current->id)
+                        ->delete();
+
+                    continue;
+                }
+
+                CoreSetting::query()->create([
+                    'scope' => $scope,
+                    'organizacion_id' => $organizationId,
+                    'user_id' => $userId,
+                    'setting_key' => $settingKey,
+                    'value_json' => ['value' => $value],
+                ]);
             }
         }
 

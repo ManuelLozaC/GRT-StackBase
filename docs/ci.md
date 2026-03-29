@@ -20,6 +20,7 @@ Jobs incluidos:
    - `php artisan migrate --force`
    - `php artisan route:list`
    - `php artisan test`
+   - `php artisan test --filter=ReleaseSmokeTest`
 
 2. `Frontend Quality`
    - Node `20`
@@ -41,6 +42,18 @@ Jobs incluidos:
 - valida frontend con lint y build
 - usa `FILESYSTEM_DISK=local` en CI para no depender aun de credenciales de Spaces
 - valida que el arbol de rutas backend siga resolviendo correctamente antes de correr tests
+- ejecuta smoke tests minimos de:
+  - auth (`login` + `me`)
+  - healthchecks operativos
+  - Data Engine
+  - push subscriptions
+  - entrega email encolada
+
+## Disciplina recomendada
+
+- cualquier cambio que altere contratos base del shell, auth o Data Engine debe venir acompanado de un ajuste en `ReleaseSmokeTest`
+- los smoke tests no sustituyen la suite completa; actuan como red minima de release
+- cuando un canal externo no pueda validarse de forma real en CI, debe verificarse al menos el contrato interno (`queued`, `delivered`, `simulated`, `skipped_*`)
 
 ## Pendiente para la siguiente iteracion
 

@@ -400,6 +400,10 @@ class AuthController extends Controller
             return null;
         }
 
+        $user->loadMissing([
+            'organizacionActiva:id,nombre,slug',
+            'organizaciones:id,nombre,slug',
+        ]);
         $user = $this->ensureActiveWorkAssignment($user) ?? $user;
         $activeOrganizationId = $user->organizacion_activa_id;
         $availableAssignments = $user->asignacionesLaborales
@@ -454,7 +458,7 @@ class AuthController extends Controller
             return null;
         }
 
-        $user->loadMissing('organizaciones:id');
+        $user->loadMissing('organizaciones:id,nombre,slug');
 
         $organizacionIds = $user->organizaciones
             ->pluck('id')

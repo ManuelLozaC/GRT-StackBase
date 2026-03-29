@@ -29,8 +29,10 @@ Resolver una sola vez las capacidades transversales del producto y reutilizarlas
 - multi-rol, administracion de usuarios, reset de contrasena e impersonacion
 - observabilidad base: request IDs, security logs, error logs y metrics
 - webhooks salientes y entrantes, API tokens y OpenAPI JSON
+- push web real con FCM y email real con Resend
 - bootstrap oficial inicial con `GRT SRL`, `TalentHub` y `Manuel Loza`
 - pipeline CI operativo con backend `PHP 8.3 + MySQL + Redis` y frontend `Node 20`
+- smoke tests de release para auth, Data Engine, healthchecks y canales base
 - `Demo Module` expandido como biblioteca viva de ejemplos tecnicos, UI y recipes de pantalla
 
 ## Fuente de verdad documental
@@ -41,8 +43,12 @@ Resolver una sola vez las capacidades transversales del producto y reutilizarlas
 - arquitectura base: [docs/stackbase.md](./docs/stackbase.md)
 - dominio vigente: [docs/modelo_dominio.md](./docs/modelo_dominio.md)
 - contrato modular: [docs/contrato_modulos.md](./docs/contrato_modulos.md)
+- guia de nuevo modulo: [docs/guia_nuevo_modulo.md](./docs/guia_nuevo_modulo.md)
+- patrones de notificaciones: [docs/patrones_notificaciones.md](./docs/patrones_notificaciones.md)
 - demo module: [docs/demo_module.md](./docs/demo_module.md)
 - pipeline CI: [docs/ci.md](./docs/ci.md)
+- operacion base: [docs/operacion_base.md](./docs/operacion_base.md)
+- release checklist: [docs/release_checklist.md](./docs/release_checklist.md)
 - despliegue Droplet: [docs/deploy_droplet.md](./docs/deploy_droplet.md)
 - decisiones cerradas: [preguntas.md](./preguntas.md)
 
