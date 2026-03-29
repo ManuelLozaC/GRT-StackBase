@@ -4,8 +4,8 @@ namespace App\Core\Notifications\Services;
 
 use App\Core\Notifications\Models\CorePushSubscription;
 use App\Models\User;
+use Carbon\CarbonImmutable;
 use Illuminate\Http\Client\Factory as HttpFactory;
-use Illuminate\Support\CarbonImmutable;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Str;
@@ -157,6 +157,19 @@ class FirebasePushService
     protected function sendToToken(string $token, string $title, string $message, ?string $actionUrl = null, array $metadata = []): array
     {
         $credentials = $this->credentials();
+        $webpush = [
+            'notification' => [
+                'title' => $title,
+                'body' => $message,
+            ],
+        ];
+
+        if (is_string($actionUrl) && preg_match('/^https?:\/\//i', $actionUrl) === 1) {
+            $webpush['fcm_options'] = [
+                'link' => $actionUrl,
+            ];
+        }
+
         $response = $this->http
             ->withToken($this->accessToken())
             ->acceptJson()
@@ -175,15 +188,7 @@ class FirebasePushService
                             'action_url' => $actionUrl,
                             'payload' => json_encode($metadata),
                         ], fn ($value) => $value !== null && $value !== false),
-                        'webpush' => [
-                            'fcm_options' => array_filter([
-                                'link' => $actionUrl,
-                            ]),
-                            'notification' => [
-                                'title' => $title,
-                                'body' => $message,
-                            ],
-                        ],
+                        'webpush' => $webpush,
                     ],
                 ],
             );

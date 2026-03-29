@@ -60,6 +60,7 @@ Route::prefix('v1')->group(function (): void {
         Route::delete('/data/{resourceKey}/{recordId}', [DataResourceController::class, 'destroy'])->middleware('throttle:data-writes');
 
         Route::get('/notifications', [NotificationController::class, 'index']);
+        Route::get('/notifications/deliveries', [NotificationController::class, 'deliveries']);
         Route::patch('/notifications/{notification}/read', [NotificationController::class, 'markAsRead']);
         Route::post('/notifications/read-all', [NotificationController::class, 'markAllAsRead']);
         Route::get('/notifications/push-subscriptions', [PushSubscriptionController::class, 'index']);

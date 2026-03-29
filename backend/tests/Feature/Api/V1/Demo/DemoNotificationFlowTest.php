@@ -3,11 +3,15 @@
 namespace Tests\Feature\Api\V1\Demo;
 
 use App\Core\Modules\ModuleSettingsManager;
+use App\Core\Notifications\Mail\CoreNotificationMail;
+use App\Jobs\Notifications\ProcessEmailNotificationDelivery;
 use App\Core\Notifications\Services\NotificationCenter;
 use App\Core\Settings\CoreSettingsManager;
 use App\Models\Organizacion;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Queue;
 use Tests\TestCase;
 
 class DemoNotificationFlowTest extends TestCase
@@ -156,6 +160,8 @@ class DemoNotificationFlowTest extends TestCase
     public function test_demo_notification_logs_multichannel_deliveries(): void
     {
         [$user, $token] = $this->authenticateUser();
+        Mail::fake();
+        Queue::fake();
 
         app(CoreSettingsManager::class)->update('global', [
             'feature_notifications_email' => true,
@@ -177,15 +183,18 @@ class DemoNotificationFlowTest extends TestCase
             ->assertJsonPath('datos.deliveries.0.channel', 'internal')
             ->assertJsonPath('datos.deliveries.0.status', 'delivered')
             ->assertJsonPath('datos.deliveries.1.channel', 'email')
-            ->assertJsonPath('datos.deliveries.1.status', 'simulated')
+            ->assertJsonPath('datos.deliveries.1.status', 'queued')
             ->assertJsonPath('datos.deliveries.2.channel', 'push')
             ->assertJsonPath('datos.deliveries.2.status', 'skipped_preference');
 
         $this->assertDatabaseHas('core_notification_deliveries', [
             'channel' => 'email',
-            'status' => 'simulated',
+            'status' => 'queued',
             'recipient_id' => $user->id,
         ]);
+
+        Queue::assertPushed(ProcessEmailNotificationDelivery::class);
+        Mail::assertNothingSent();
     }
 
     protected function authenticateUser(): array

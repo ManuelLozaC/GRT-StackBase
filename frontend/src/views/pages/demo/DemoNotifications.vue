@@ -4,7 +4,7 @@ import DemoPatternGuide from '@/components/demo/DemoPatternGuide.vue';
 import StateEmpty from '@/components/core/StateEmpty.vue';
 import StateSkeleton from '@/components/core/StateSkeleton.vue';
 import { notificationStore } from '@/core/notifications/notificationStore';
-import { bindForegroundPushListener, getPushSubscriptionStatus, registerPushNotifications, releaseForegroundPushListener, unregisterPushNotifications } from '@/core/notifications/pushClient';
+import { bindForegroundPushListener, getPushSubscriptionStatus, registerPushNotifications, releaseForegroundPushListener, showForegroundSystemNotification, unregisterPushNotifications } from '@/core/notifications/pushClient';
 import { settingsStore } from '@/core/settings/settingsStore';
 import api from '@/service/api';
 import { computed, onMounted, onUnmounted, reactive } from 'vue';
@@ -16,7 +16,7 @@ const form = reactive({
     title: 'Proceso completado',
     message: 'La demo genero una notificacion interna correctamente.',
     level: 'info',
-    action_url: '/demo/notifications',
+    action_url: '',
     channels: ['internal']
 });
 const pushState = reactive({
@@ -28,6 +28,10 @@ const pushState = reactive({
     permission: typeof Notification !== 'undefined' ? Notification.permission : 'unsupported',
     subscriptions: []
 });
+const deliveryHistory = reactive({
+    loading: false,
+    items: []
+});
 
 const channelOptions = computed(() => [
     { label: 'Internal', value: 'internal' },
@@ -37,15 +41,25 @@ const channelOptions = computed(() => [
 const hasPushSubscription = computed(() => pushState.subscriptions.some((item) => item.is_active));
 
 async function createNotification() {
-    await api.post('/v1/demo/notifications', form);
-    await notificationStore.loadNotifications();
+    try {
+        await api.post('/v1/demo/notifications', form);
+        await notificationStore.loadNotifications();
+        await loadDeliveryHistory();
 
-    toast.add({
-        severity: 'success',
-        summary: 'Notificacion creada',
-        detail: 'La notificacion demo ya aparece en la bandeja interna.',
-        life: 2500
-    });
+        toast.add({
+            severity: 'success',
+            summary: 'Notificacion creada',
+            detail: 'La notificacion demo ya aparece en la bandeja interna.',
+            life: 2500
+        });
+    } catch (error) {
+        toast.add({
+            severity: 'error',
+            summary: 'No se pudo crear la notificacion',
+            detail: error?.response?.data?.mensaje ?? error?.message ?? 'Ocurrio un error al enviar la notificacion demo.',
+            life: 4000
+        });
+    }
 }
 
 async function markAsRead(notification) {
@@ -105,6 +119,19 @@ function resolveDeliverySeverity(status) {
     );
 }
 
+function resolveDeliveryHistorySeverity(status) {
+    return (
+        {
+            delivered: 'success',
+            queued: 'info',
+            failed: 'danger',
+            skipped_disabled: 'warning',
+            skipped_preference: 'secondary',
+            skipped_missing_target: 'contrast'
+        }[status] ?? 'contrast'
+    );
+}
+
 async function loadPushStatus() {
     pushState.loading = true;
     pushState.supported = 'Notification' in window && 'serviceWorker' in navigator;
@@ -120,6 +147,17 @@ async function loadPushStatus() {
         pushState.subscriptions = [];
     } finally {
         pushState.loading = false;
+    }
+}
+
+async function loadDeliveryHistory() {
+    deliveryHistory.loading = true;
+
+    try {
+        const response = await api.get('/v1/notifications/deliveries');
+        deliveryHistory.items = response.data.datos ?? [];
+    } finally {
+        deliveryHistory.loading = false;
     }
 }
 
@@ -173,9 +211,11 @@ async function disablePush() {
 
 onMounted(async () => {
     await loadPushStatus();
+    await loadDeliveryHistory();
 
     try {
         await bindForegroundPushListener((payload) => {
+            showForegroundSystemNotification(payload).catch(() => {});
             toast.add({
                 severity: 'info',
                 summary: payload.notification?.title ?? payload.data?.title ?? 'Nueva notificacion push',
@@ -310,6 +350,52 @@ onUnmounted(() => {
         </div>
 
         <div class="col-span-12">
+            <div class="card">
+                <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3 mb-4">
+                    <div>
+                        <h3 class="m-0">Historial de entregas</h3>
+                        <p class="m-0 text-sm text-color-secondary">Muestra el estado operativo de email, push e internal, incluyendo cola, destino y detalle del proveedor.</p>
+                    </div>
+                    <div class="demo-actions">
+                        <button class="demo-secondary-button" :disabled="deliveryHistory.loading" @click="loadDeliveryHistory">
+                            {{ deliveryHistory.loading ? 'Actualizando...' : 'Actualizar historial' }}
+                        </button>
+                    </div>
+                </div>
+
+                <StateSkeleton v-if="deliveryHistory.loading" />
+
+                <StateEmpty v-else-if="deliveryHistory.items.length === 0" title="Todavia no hay entregas" description="Genera correos, push o notificaciones internas para ver aqui el resultado por canal." icon="pi pi-send" />
+
+                <div v-else class="demo-notification-list">
+                    <article v-for="delivery in deliveryHistory.items" :key="delivery.id" class="demo-notification-card">
+                        <div class="flex items-start justify-between gap-3">
+                            <div>
+                                <div class="font-semibold">{{ delivery.title || 'Entrega sin titulo visible' }}</div>
+                                <div class="text-sm text-color-secondary">{{ formatDate(delivery.created_at) }}</div>
+                            </div>
+                            <Tag :severity="resolveDeliveryHistorySeverity(delivery.status)" :value="`${delivery.channel}: ${delivery.status}`" />
+                        </div>
+
+                        <p class="text-sm mb-3 mt-3">{{ delivery.message || delivery.status_detail }}</p>
+
+                        <div class="demo-delivery-grid">
+                            <div><strong>Destino:</strong> {{ delivery.destination || '-' }}</div>
+                            <div><strong>Procesado:</strong> {{ formatDate(delivery.processed_at) }}</div>
+                            <div><strong>Mailer:</strong> {{ delivery.mailer || '-' }}</div>
+                            <div><strong>Origen:</strong> {{ delivery.source || '-' }}</div>
+                        </div>
+
+                        <div class="demo-card-footer">
+                            <span class="text-sm text-color-secondary">{{ delivery.status_detail }}</span>
+                            <router-link v-if="delivery.action_url" :to="delivery.action_url" class="demo-link">Abrir accion</router-link>
+                        </div>
+                    </article>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-span-12">
             <DemoPatternGuide
                 title="Guia para notificaciones y bandeja"
                 :when-to-use="['cuando una accion necesita dejar rastro visible para el usuario', 'cuando una misma notificacion puede salir por varios canales', 'cuando la bandeja forma parte del shell y del flujo diario']"
@@ -435,5 +521,14 @@ onUnmounted(() => {
     gap: 0.5rem;
     flex-wrap: wrap;
     margin-bottom: 1rem;
+}
+
+.demo-delivery-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+    gap: 0.75rem 1rem;
+    margin-bottom: 1rem;
+    font-size: 0.92rem;
+    color: var(--text-color-secondary);
 }
 </style>

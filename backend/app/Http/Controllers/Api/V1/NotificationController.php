@@ -6,6 +6,7 @@ use App\Core\Audit\Services\AuditLogger;
 use App\Core\Http\Concerns\ApiResponse;
 use App\Core\Metrics\MetricsRecorder;
 use App\Core\Notifications\Models\CoreNotification;
+use App\Core\Notifications\Models\CoreNotificationDelivery;
 use App\Core\Notifications\Services\NotificationCenter;
 use App\Http\Controllers\Controller;
 use App\Models\User;
@@ -40,6 +41,26 @@ class NotificationController extends Controller
             meta: [
                 'total' => $notifications->count(),
                 'unread_count' => $notifications->whereNull('read_at')->count(),
+            ],
+        );
+    }
+
+    public function deliveries(Request $request): JsonResponse
+    {
+        /** @var User $user */
+        $user = $request->user();
+        $deliveries = CoreNotificationDelivery::query()
+            ->with('notification:id,uuid,title,message,level,action_url')
+            ->where('recipient_id', $user->id)
+            ->latest('id')
+            ->limit(50)
+            ->get();
+
+        return $this->successResponse(
+            data: $deliveries->map(fn (CoreNotificationDelivery $delivery): array => $this->transformDelivery($delivery))->all(),
+            message: 'Entregas listadas',
+            meta: [
+                'total' => $deliveries->count(),
             ],
         );
     }
@@ -128,17 +149,33 @@ class NotificationController extends Controller
             'action_url' => $notification->action_url,
             'metadata' => $notification->metadata,
             'deliveries' => $notification->deliveries
-                ->map(fn ($delivery): array => [
-                    'channel' => $delivery->channel,
-                    'status' => $delivery->status,
-                    'destination' => $delivery->destination,
-                    'status_detail' => $delivery->status_detail,
-                    'processed_at' => $delivery->processed_at?->toIso8601String(),
-                ])
+                ->map(fn ($delivery): array => $this->transformDelivery($delivery))
                 ->values()
                 ->all(),
             'read_at' => $notification->read_at?->toIso8601String(),
             'created_at' => $notification->created_at?->toIso8601String(),
+        ];
+    }
+
+    protected function transformDelivery(CoreNotificationDelivery $delivery): array
+    {
+        return [
+            'id' => $delivery->id,
+            'notification_uuid' => $delivery->notification?->uuid,
+            'channel' => $delivery->channel,
+            'status' => $delivery->status,
+            'destination' => $delivery->destination,
+            'status_detail' => $delivery->status_detail,
+            'title' => $delivery->notification?->title ?? data_get($delivery->metadata, 'title'),
+            'message' => $delivery->notification?->message ?? data_get($delivery->metadata, 'message'),
+            'level' => $delivery->notification?->level ?? data_get($delivery->metadata, 'level'),
+            'action_url' => $delivery->notification?->action_url ?? data_get($delivery->metadata, 'action_url'),
+            'source' => data_get($delivery->metadata, 'source'),
+            'queued' => (bool) data_get($delivery->metadata, 'queued', false),
+            'mailer' => data_get($delivery->metadata, 'mailer'),
+            'processed_at' => $delivery->processed_at?->toIso8601String(),
+            'created_at' => $delivery->created_at?->toIso8601String(),
+            'metadata' => $delivery->metadata ?? [],
         ];
     }
 }

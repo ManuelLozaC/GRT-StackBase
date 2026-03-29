@@ -106,3 +106,31 @@ export function releaseForegroundPushListener() {
     foregroundUnsubscribe?.();
     foregroundUnsubscribe = null;
 }
+
+export async function showForegroundSystemNotification(payload) {
+    if (!('Notification' in window) || Notification.permission !== 'granted') {
+        return;
+    }
+
+    const title = payload.notification?.title ?? payload.data?.title ?? 'Nueva notificacion push';
+    const body = payload.notification?.body ?? payload.data?.message ?? '';
+    const actionUrl = payload.data?.action_url ?? '/';
+    const registration = await navigator.serviceWorker.getRegistration('/firebase-messaging-sw.js');
+
+    if (registration) {
+        await registration.showNotification(title, {
+            body,
+            data: {
+                action_url: actionUrl
+            }
+        });
+        return;
+    }
+
+    const notification = new Notification(title, { body });
+    notification.onclick = () => {
+        if (actionUrl) {
+            window.open(actionUrl, '_blank');
+        }
+    };
+}

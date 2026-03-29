@@ -2,6 +2,7 @@
 
 namespace App\Core\Notifications\Services;
 
+use App\Jobs\Notifications\ProcessEmailNotificationDelivery;
 use App\Core\Notifications\Models\CoreNotificationDelivery;
 use App\Core\Settings\CoreSettingsManager;
 use App\Core\Notifications\Models\CoreNotification;
@@ -15,6 +16,7 @@ class NotificationCenter
     public function __construct(
         protected TenantContext $tenantContext,
         protected CoreSettingsManager $settings,
+        protected EmailNotificationService $emailService,
         protected FirebasePushService $pushService,
     ) {
     }
@@ -65,6 +67,11 @@ class NotificationCenter
 
         $featureFlags = $this->settings->resolveValues('global');
         $userPreferences = $this->settings->resolveValues('user', null, $recipient->id);
+        $deliveryMetadata = array_merge($metadata, [
+            'title' => $title,
+            'message' => $message,
+            'action_url' => $actionUrl,
+        ]);
         $notification = null;
         $deliveries = collect();
 
@@ -78,7 +85,7 @@ class NotificationCenter
                         organizationId: $organizationId,
                         status: 'skipped_preference',
                         detail: 'El usuario deshabilito notificaciones internas.',
-                        metadata: $metadata,
+                        metadata: $deliveryMetadata,
                     ));
                     continue;
                 }
@@ -102,7 +109,7 @@ class NotificationCenter
                     organizationId: $organizationId,
                     status: 'delivered',
                     detail: 'Entregada en bandeja interna.',
-                    metadata: $metadata,
+                    metadata: $deliveryMetadata,
                     processedAt: now(),
                 ));
 
@@ -117,10 +124,10 @@ class NotificationCenter
                 actionUrl: $actionUrl,
                 featureFlags: $featureFlags,
                 userPreferences: $userPreferences,
-                metadata: $metadata,
+                metadata: $deliveryMetadata,
             );
 
-            $deliveries->push($this->logDelivery(
+            $delivery = $this->logDelivery(
                 recipient: $recipient,
                 notification: $notification,
                 channel: $channel,
@@ -128,9 +135,21 @@ class NotificationCenter
                 status: $status,
                 detail: $detail,
                 destination: $destination,
-                metadata: array_merge($metadata, $channelMetadata),
+                metadata: array_merge($deliveryMetadata, $channelMetadata),
                 processedAt: now(),
-            ));
+            );
+
+            if ($channel === 'email' && $status === 'queued') {
+                ProcessEmailNotificationDelivery::dispatch(
+                    deliveryId: $delivery->id,
+                    title: $title,
+                    message: $message,
+                    actionUrl: $actionUrl,
+                    metadata: $deliveryMetadata,
+                );
+            }
+
+            $deliveries->push($delivery);
         }
 
         return [
@@ -184,7 +203,23 @@ class NotificationCenter
         }
 
         if ($channel === 'email') {
-            return ['simulated', 'Canal listo para integracion externa.', $recipient->email, []];
+            if (! $this->emailService->canSendToUser($recipient)) {
+                return ['skipped_missing_target', 'El usuario no tiene correo electronico configurado.', null, []];
+            }
+
+            if (! $this->emailService->isConfigured()) {
+                return ['simulated', 'Canal email listo para integracion, pero sin credenciales completas.', $recipient->email, []];
+            }
+
+            return [
+                'queued',
+                'Entrega de correo encolada para procesamiento asincrono.',
+                $recipient->email,
+                [
+                    'mailer' => config('mail.default'),
+                    'queued' => true,
+                ],
+            ];
         }
 
         if ($channel === 'push') {
