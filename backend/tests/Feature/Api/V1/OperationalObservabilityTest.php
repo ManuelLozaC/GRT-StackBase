@@ -3,8 +3,11 @@
 namespace Tests\Feature\Api\V1;
 
 use App\Core\Auth\Services\AccessTokenService;
+use App\Core\Errors\ErrorLogger;
 use App\Core\Errors\Models\CoreErrorLog;
 use App\Core\Metrics\Models\CoreMetricEvent;
+use App\Core\Metrics\MetricsRecorder;
+use App\Core\Tenancy\TenantContext;
 use App\Models\Organizacion;
 use App\Models\User;
 use Database\Seeders\RolePermissionSeeder;
@@ -120,5 +123,58 @@ class OperationalObservabilityTest extends TestCase
         $this->assertGreaterThanOrEqual(2, $metricsPayload['events_last_24h']);
         $this->assertGreaterThanOrEqual(1, $metricsPayload['active_modules_last_24h']);
         $this->assertGreaterThanOrEqual(1, $metricsPayload['active_categories_last_24h']);
+    }
+
+    public function test_metrics_and_error_logs_can_inherit_actor_from_tenant_context(): void
+    {
+        config()->set('app.env', 'production');
+        putenv('CORE_METRICS_ENABLED=true');
+        $_ENV['CORE_METRICS_ENABLED'] = 'true';
+        $_SERVER['CORE_METRICS_ENABLED'] = 'true';
+
+        $organization = Organizacion::query()->create([
+            'nombre' => 'Context Observability',
+            'slug' => 'context-observability',
+        ]);
+
+        $user = User::factory()->create([
+            'organizacion_activa_id' => $organization->id,
+        ]);
+        $user->organizaciones()->attach($organization->id);
+
+        $tenantContext = app(TenantContext::class);
+        $tenantContext->setFromUser($user);
+        request()->attributes->set('request_id', 'req-context-observability');
+
+        try {
+            app(MetricsRecorder::class)->record(
+                moduleKey: 'demo-platform',
+                eventKey: 'demo.context.metric',
+                eventCategory: 'demo',
+            );
+
+            app(ErrorLogger::class)->log(
+                new \RuntimeException('Context observability error'),
+                'context_error',
+                ['source' => 'tenant-context'],
+            );
+        } finally {
+            $tenantContext->clear();
+        }
+
+        $this->assertDatabaseHas('core_metric_events', [
+            'event_key' => 'demo.context.metric',
+            'organizacion_id' => $organization->id,
+            'actor_id' => $user->id,
+        ]);
+
+        $this->assertDatabaseHas('core_error_logs', [
+            'error_code' => 'context_error',
+            'organizacion_id' => $organization->id,
+            'actor_id' => $user->id,
+        ]);
+
+        putenv('CORE_METRICS_ENABLED');
+        unset($_ENV['CORE_METRICS_ENABLED'], $_SERVER['CORE_METRICS_ENABLED']);
     }
 }

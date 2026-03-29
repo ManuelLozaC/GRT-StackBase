@@ -23,10 +23,13 @@ class SecurityLogger
         array $context = [],
         ?int $organizationId = null,
     ): CoreSecurityLog {
+        $resolvedOrganizationId = $organizationId ?? $this->tenantContext->organizationId($actor);
+        $resolvedActorId = $actor?->id ?? $this->tenantContext->actorId();
+
         if (! $this->enabledFor($severity)) {
             return new CoreSecurityLog([
-                'organizacion_id' => $organizationId ?? $this->tenantContext->organizationId($actor),
-                'actor_id' => $actor?->id,
+                'organizacion_id' => $resolvedOrganizationId,
+                'actor_id' => $resolvedActorId,
                 'event_key' => $eventKey,
                 'severity' => $severity,
                 'ip_address' => $this->request->ip(),
@@ -38,8 +41,8 @@ class SecurityLogger
         }
 
         return CoreSecurityLog::query()->create([
-            'organizacion_id' => $organizationId ?? $this->tenantContext->organizationId($actor),
-            'actor_id' => $actor?->id,
+            'organizacion_id' => $resolvedOrganizationId,
+            'actor_id' => $resolvedActorId,
             'event_key' => $eventKey,
             'severity' => $severity,
             'ip_address' => $this->request->ip(),

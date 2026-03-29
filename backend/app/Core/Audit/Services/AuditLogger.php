@@ -23,10 +23,13 @@ class AuditLogger
         array $context = [],
         ?int $organizationId = null,
     ): AuditLog {
+        $resolvedOrganizationId = $organizationId ?? $this->tenantContext->organizationId($actor);
+        $resolvedActorId = $actor?->id ?? $this->tenantContext->actorId();
+
         if (! $this->enabled()) {
             return new AuditLog([
-                'organizacion_id' => $organizationId ?? $this->tenantContext->organizationId($actor),
-                'actor_id' => $actor?->id,
+                'organizacion_id' => $resolvedOrganizationId,
+                'actor_id' => $resolvedActorId,
                 'event_key' => $eventKey,
                 'entity_type' => $entityType,
                 'entity_key' => $entityKey,
@@ -38,8 +41,8 @@ class AuditLogger
         }
 
         return AuditLog::query()->create([
-            'organizacion_id' => $organizationId ?? $this->tenantContext->organizationId($actor),
-            'actor_id' => $actor?->id,
+            'organizacion_id' => $resolvedOrganizationId,
+            'actor_id' => $resolvedActorId,
             'event_key' => $eventKey,
             'entity_type' => $entityType,
             'entity_key' => $entityKey,

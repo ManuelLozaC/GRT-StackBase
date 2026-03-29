@@ -7,6 +7,7 @@ use App\Core\DataEngine\Services\DataTransferManager;
 use App\Core\Files\Services\StorageDiskResolver;
 use App\Core\Modules\ModuleSettingsManager;
 use App\Core\Settings\CoreSettingsManager;
+use App\Core\Tenancy\TenantContext;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\RateLimiter;
@@ -19,6 +20,8 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
+        $this->app->singleton(TenantContext::class, fn (): TenantContext => new TenantContext());
+
         $this->app->singleton(DataResourceRegistry::class, function ($app): DataResourceRegistry {
             return new DataResourceRegistry(
                 config('data_resources', []),

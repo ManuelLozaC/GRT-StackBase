@@ -3,6 +3,8 @@
 namespace Tests\Feature\Api\V1;
 
 use App\Core\Auth\Services\AccessTokenService;
+use App\Core\Security\SecurityLogger;
+use App\Core\Tenancy\TenantContext;
 use App\Models\Organizacion;
 use App\Models\User;
 use Database\Seeders\RolePermissionSeeder;
@@ -183,5 +185,39 @@ class OperationalSecurityTest extends TestCase
             ->assertJsonPath('datos.summary.notifications.unread', 1)
             ->assertJsonPath('datos.summary.security.warnings_last_24h', 1)
             ->assertJsonPath('meta.window_hours', 24);
+    }
+
+    public function test_security_logger_can_inherit_actor_from_tenant_context(): void
+    {
+        $organization = Organizacion::query()->create([
+            'nombre' => 'Context Security',
+            'slug' => 'context-security',
+        ]);
+
+        $user = User::factory()->create([
+            'organizacion_activa_id' => $organization->id,
+        ]);
+        $user->organizaciones()->attach($organization->id);
+
+        $tenantContext = app(TenantContext::class);
+        $tenantContext->setFromUser($user);
+        request()->attributes->set('request_id', 'req-context-security');
+
+        try {
+            app(SecurityLogger::class)->log(
+                eventKey: 'security.context.inherited',
+                severity: 'warning',
+                summary: 'Security event using tenant context actor',
+                context: ['source' => 'tenant-context'],
+            );
+        } finally {
+            $tenantContext->clear();
+        }
+
+        $this->assertDatabaseHas('core_security_logs', [
+            'event_key' => 'security.context.inherited',
+            'organizacion_id' => $organization->id,
+            'actor_id' => $user->id,
+        ]);
     }
 }

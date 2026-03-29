@@ -3,6 +3,7 @@
 namespace Tests\Feature\Api\V1\Demo;
 
 use App\Core\Audit\Services\AuditLogger;
+use App\Core\Tenancy\TenantContext;
 use App\Models\Organizacion;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -141,6 +142,32 @@ class DemoAuditFlowTest extends TestCase
             ->assertJsonMissing([
                 'event_key' => 'demo.audit.primary',
             ]);
+    }
+
+    public function test_audit_logger_uses_tenant_context_when_actor_is_not_passed(): void
+    {
+        [$user] = $this->authenticateUser();
+
+        $tenantContext = app(TenantContext::class);
+        $tenantContext->setFromUser($user);
+
+        try {
+            app(AuditLogger::class)->record(
+                eventKey: 'demo.audit.contextual',
+                entityType: 'demo',
+                entityKey: 'contextual',
+                summary: 'Evento heredado desde tenant context',
+                sourceModule: 'demo-platform',
+            );
+        } finally {
+            $tenantContext->clear();
+        }
+
+        $this->assertDatabaseHas('core_audit_logs', [
+            'event_key' => 'demo.audit.contextual',
+            'organizacion_id' => $user->organizacion_activa_id,
+            'actor_id' => $user->id,
+        ]);
     }
 
     protected function authenticateUser(): array

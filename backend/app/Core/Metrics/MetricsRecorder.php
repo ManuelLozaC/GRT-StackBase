@@ -23,10 +23,13 @@ class MetricsRecorder
         array $context = [],
         ?int $organizationId = null,
     ): CoreMetricEvent {
+        $resolvedOrganizationId = $organizationId ?? $this->tenantContext->organizationId($actor);
+        $resolvedActorId = $actor?->id ?? $this->tenantContext->actorId();
+
         if (! $this->enabled()) {
             return new CoreMetricEvent([
-                'organizacion_id' => $organizationId ?? $this->tenantContext->organizationId($actor),
-                'actor_id' => $actor?->id,
+                'organizacion_id' => $resolvedOrganizationId,
+                'actor_id' => $resolvedActorId,
                 'module_key' => $moduleKey,
                 'event_key' => $eventKey,
                 'event_category' => $eventCategory,
@@ -37,8 +40,8 @@ class MetricsRecorder
         }
 
         return CoreMetricEvent::query()->create([
-            'organizacion_id' => $organizationId ?? $this->tenantContext->organizationId($actor),
-            'actor_id' => $actor?->id,
+            'organizacion_id' => $resolvedOrganizationId,
+            'actor_id' => $resolvedActorId,
             'module_key' => $moduleKey,
             'event_key' => $eventKey,
             'event_category' => $eventCategory,

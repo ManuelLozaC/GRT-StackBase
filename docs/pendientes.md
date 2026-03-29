@@ -205,6 +205,7 @@ Estado: En progreso
 - [x] Settings bootstrap, API administrativa y frontend ya aceptan/consumen alias `company` como capa preferente del dominio.
 - [x] Selector visual de contexto laboral activo en topbar y dashboard.
 - [x] RBAC contextual inicial reutiliza las mismas claves de permiso del sistema a traves de metadata por asignacion.
+- [x] `TenantContext` ya propaga tambien `actor_id` para jobs, auditoria, seguridad, errores y metricas cuando el flujo no pasa usuario explicito.
 
 ## P3. Configuracion del sistema
 Estado: En progreso
@@ -337,6 +338,7 @@ Estado: En progreso
 - [x] Correlation IDs y trazabilidad tecnica base.
 - [x] Historial administrativo de entregas de webhooks salientes.
 - [x] Historial administrativo de recepciones de webhooks entrantes.
+- [x] Auditoria, seguridad, errores y metricas ya pueden heredar actor/tenant desde `TenantContext` en servicios secundarios.
 
 ## P12. API e integraciones
 Estado: Parcial

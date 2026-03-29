@@ -22,9 +22,12 @@ class ErrorLogger
         array $context = [],
         ?User $actor = null,
     ): CoreErrorLog {
+        $resolvedOrganizationId = $this->tenantContext->organizationId($actor);
+        $resolvedActorId = $actor?->id ?? $this->tenantContext->actorId();
+
         return CoreErrorLog::query()->create([
-            'organizacion_id' => $this->tenantContext->organizationId($actor),
-            'actor_id' => $actor?->id,
+            'organizacion_id' => $resolvedOrganizationId,
+            'actor_id' => $resolvedActorId,
             'request_id' => $this->request->attributes->get('request_id'),
             'ip_address' => $this->request->ip(),
             'error_class' => $exception::class,
