@@ -293,10 +293,10 @@ Estado: En progreso
 - [x] Logs de ejecucion por job basicos.
 - [x] Demo funcional de jobs dentro del `Demo Module`.
 - [x] Workers supervisados en Docker Compose base.
-- [ ] Retries y backoff definidos.
+- [x] Retries y backoff definidos.
 - [x] Cron jobs base mediante servicio `scheduler`.
-- [ ] Propagacion de tenant y actor.
-- [ ] Reintentos visibles por UI y observabilidad operativa.
+- [x] Propagacion de tenant y actor.
+- [x] Reintentos visibles por UI y observabilidad operativa.
 - [ ] Demo funcional de jobs con procesamiento realmente asincrono en entorno local dockerizado.
 
 ## P9. Exportacion e importacion

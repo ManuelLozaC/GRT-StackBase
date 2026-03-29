@@ -82,6 +82,7 @@ Route::prefix('v1')->group(function (): void {
             Route::post('/files/{file}/temporary-link', [DemoFileController::class, 'temporaryLink']);
             Route::get('/jobs', [DemoJobController::class, 'index']);
             Route::post('/jobs', [DemoJobController::class, 'store']);
+            Route::post('/jobs/{jobRun}/retry', [DemoJobController::class, 'retry'])->middleware('throttle:data-writes');
             Route::post('/notifications', [DemoNotificationController::class, 'store']);
         });
 

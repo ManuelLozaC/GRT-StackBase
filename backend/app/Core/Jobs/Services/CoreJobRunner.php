@@ -36,6 +36,8 @@ class CoreJobRunner
             return $jobRun;
         }
 
+        $jobRun->loadMissing('requester');
+
         $jobRun->forceFill([
             'status' => 'processing',
             'attempts' => $attempts,
@@ -59,6 +61,7 @@ class CoreJobRunner
                 'reversed_message' => Str::reverse($normalized),
                 'word_count' => str_word_count($normalized),
                 'processed_by' => 'demo.text-transform',
+                'runtime_context' => $this->tenantContext->snapshot($jobRun->requester),
             ];
 
             $jobRun->forceFill([

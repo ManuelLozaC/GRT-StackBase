@@ -15,6 +15,7 @@ const form = reactive({
 const state = reactive({
     loading: false,
     submitting: false,
+    retryingUuid: null,
     jobs: [],
     workerHint: 'Ejecuta php artisan queue:work --queue=demo para procesar jobs pendientes.'
 });
@@ -54,6 +55,29 @@ async function dispatchJob() {
         await loadJobs();
     } finally {
         state.submitting = false;
+    }
+}
+
+async function retryJob(job) {
+    state.retryingUuid = job.uuid;
+
+    try {
+        const response = await api.post(`/v1/demo/jobs/${job.uuid}/retry`);
+
+        if (response.data.meta?.worker_hint) {
+            state.workerHint = response.data.meta.worker_hint;
+        }
+
+        toast.add({
+            severity: 'success',
+            summary: 'Job reenviado',
+            detail: response.data.mensaje,
+            life: 3000
+        });
+
+        await loadJobs();
+    } finally {
+        state.retryingUuid = null;
     }
 }
 
@@ -168,8 +192,15 @@ onMounted(loadJobs);
 
                         <div class="demo-job-meta">
                             <span><strong>Intentos:</strong> {{ job.attempts }}</span>
+                            <span><strong>Maximo:</strong> {{ job.max_tries }}</span>
+                            <span><strong>Backoff:</strong> {{ job.backoff_schedule.join(', ') }} s</span>
                             <span><strong>Despachado:</strong> {{ formatDate(job.dispatched_at) }}</span>
                             <span><strong>Finalizado:</strong> {{ formatDate(job.finished_at) }}</span>
+                        </div>
+
+                        <div class="demo-job-meta">
+                            <span><strong>Tenant:</strong> {{ job.organizacion_id || '-' }}</span>
+                            <span><strong>Actor:</strong> {{ job.requested_by || 'sistema' }} (#{{ job.requested_by_id || '-' }})</span>
                         </div>
 
                         <div class="demo-payload-box">
@@ -185,6 +216,12 @@ onMounted(loadJobs);
                                 <strong>Error</strong>
                                 <pre>{{ job.error_message }}</pre>
                             </div>
+                        </div>
+
+                        <div class="demo-job-actions">
+                            <button v-if="job.can_retry" class="demo-secondary-button" :disabled="state.retryingUuid === job.uuid" @click="retryJob(job)">
+                                {{ state.retryingUuid === job.uuid ? 'Reintentando...' : 'Reintentar en cola' }}
+                            </button>
                         </div>
                     </article>
                 </div>
@@ -313,6 +350,12 @@ onMounted(loadJobs);
 .demo-payload-box {
     display: grid;
     gap: 0.75rem;
+    margin-top: 1rem;
+}
+
+.demo-job-actions {
+    display: flex;
+    justify-content: flex-end;
     margin-top: 1rem;
 }
 

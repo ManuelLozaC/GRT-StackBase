@@ -13,6 +13,7 @@ use App\Jobs\Demo\ProcessDemoJobRun;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Symfony\Component\HttpFoundation\Response;
 
 class DemoJobController extends Controller
 {
@@ -127,6 +128,61 @@ class DemoJobController extends Controller
         );
     }
 
+    public function retry(Request $request, CoreJobRun $jobRun): JsonResponse
+    {
+        /** @var User $user */
+        $user = $request->user();
+
+        if (! in_array($jobRun->status, ['failed', 'pending'], true)) {
+            return $this->errorResponse(
+                message: 'Solo se pueden reintentar jobs fallidos o pendientes.',
+                status: Response::HTTP_UNPROCESSABLE_ENTITY,
+            );
+        }
+
+        $jobRun->forceFill([
+            'status' => 'pending',
+            'started_at' => null,
+            'finished_at' => null,
+            'failed_at' => null,
+            'error_message' => null,
+            'result_payload' => null,
+            'dispatched_at' => now(),
+        ])->save();
+
+        ProcessDemoJobRun::dispatch($jobRun->id);
+
+        $this->auditLogger->record(
+            eventKey: 'demo.job.retried',
+            actor: $user,
+            entityType: 'core_job_run',
+            entityKey: $jobRun->uuid,
+            summary: 'Se reintento un job de demo',
+            sourceModule: 'demo-platform',
+            context: [
+                'job_uuid' => $jobRun->uuid,
+                'attempts' => $jobRun->attempts,
+            ],
+        );
+        $this->metrics->record(
+            moduleKey: 'demo-platform',
+            eventKey: 'demo.job.retried',
+            eventCategory: 'jobs',
+            actor: $user,
+            context: [
+                'job_uuid' => $jobRun->uuid,
+            ],
+        );
+
+        return $this->successResponse(
+            data: $this->transformRun($jobRun->fresh()->load('requester:id,name')),
+            message: 'Job demo reenviado a cola',
+            meta: [
+                'worker_hint' => 'Ejecuta php artisan queue:work --queue=demo para procesar jobs pendientes.',
+            ],
+        );
+    }
+
     protected function transformRun(CoreJobRun $run): array
     {
         return [
@@ -139,6 +195,11 @@ class DemoJobController extends Controller
             'result_payload' => $run->result_payload,
             'error_message' => $run->error_message,
             'requested_by' => $run->requester?->name,
+            'requested_by_id' => $run->requested_by,
+            'organizacion_id' => $run->organizacion_id,
+            'max_tries' => 3,
+            'backoff_schedule' => [5, 15],
+            'can_retry' => in_array($run->status, ['failed', 'pending'], true),
             'dispatched_at' => $run->dispatched_at?->toIso8601String(),
             'started_at' => $run->started_at?->toIso8601String(),
             'finished_at' => $run->finished_at?->toIso8601String(),

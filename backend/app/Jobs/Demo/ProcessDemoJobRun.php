@@ -32,6 +32,7 @@ class ProcessDemoJobRun implements ShouldQueue
         $attempts = $this->job?->attempts() ?? 1;
 
         $tenantContext->setOrganizationId($jobRun->organizacion_id);
+        $tenantContext->setActorId($jobRun->requested_by);
 
         try {
             $jobRunner->runDemoJob($jobRun, $attempts);
