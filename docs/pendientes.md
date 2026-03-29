@@ -78,6 +78,11 @@
 - [x] Recursos base del dominio gestionables desde frontend a traves de Data Engine.
 - [x] Apariencia global del shell (`tema`, `preset`, `color primario`, `surface`, `tipo de menu`) administrable desde settings globales y aplicada a todos los usuarios.
 - [x] Topbar depurado: empresa/contexto movidos a modal y acciones poco frecuentes agrupadas bajo el resumen de usuario.
+- [x] Healthcheck operativo con checks de `database`, `redis`, `mail`, `queue` y `storage`.
+- [x] Email real con Resend y procesamiento asincrono por cola.
+- [x] Push web real con FCM sobre dispositivos registrados por usuario.
+- [x] Historial enriquecido de entregas por canal para email, push e internal.
+- [x] Documentacion arquitectonica final para modulos, notificaciones, operacion y release.
 
 ### Brechas principales de evolucion
 
@@ -100,6 +105,19 @@ Nota:
 - [x] Unificar metadata modular backend/frontend para que rutas y menu se consuman por API.
 - [x] Pipeline CI base para backend y frontend.
 - [x] Arquitectura operativa base alineada entre Docker local y Droplets.
+- [ ] Pruebas frontend mas profundas sobre stores, guards, topbar, auth y pantallas administrativas criticas.
+- [ ] Tenancy transversal mas estricto en jobs, auditoria y servicios secundarios.
+- [ ] Automatizacion operativa de despliegue y observabilidad externa.
+
+### Fuera de alcance actual
+
+Nota:
+
+- estos items no se ejecutaran en esta etapa del proyecto
+- no deben contarse como deuda bloqueante de la base actual
+
+- [ ] Backups/restores automatizados. // fuera de alcance por ahora
+- [ ] Rotacion automatizada de secretos. // fuera de alcance por ahora
 
 ## Regla transversal del proyecto
 - [x] Toda funcionalidad generica importante debe vivir en el core.
@@ -395,6 +413,8 @@ Estado: En progreso
 - [x] Pipeline CI operativo en GitHub Actions para backend y frontend, con timeouts, concurrencia y chequeo base de rutas.
 - [x] Smoke tests minimos de release para `auth`, `health`, `Data Engine`, `push` y `email`.
 - [x] Guia formal de extension para nuevos modulos, notificaciones, operacion y release.
+- [ ] Despliegue continuo o semiautomatizado sobre Droplets.
+- [ ] Observabilidad externa y alertas operativas fuera del panel interno.
 
 ## P18. Responsive y soporte movil
 Estado: Parcial
@@ -423,10 +443,10 @@ Estado: En progreso
 - [x] Eventos clave de usuario.
 
 ## Siguiente desarrollo recomendado
-1. Ampliar pruebas frontend sobre stores, guards y formularios criticos.
-2. Seguir endureciendo tenancy transversal restante en modelos, jobs y auditoria.
+1. Ampliar pruebas frontend sobre stores, guards, auth, topbar, settings y formularios criticos.
+2. Seguir endureciendo tenancy transversal restante en modelos, jobs, servicios secundarios y auditoria.
 3. Cerrar versionado de archivos, descargas pesadas async y entidades de negocio restantes.
-4. Automatizar backups, restores y despliegue continuo sobre Droplets.
+4. Automatizar despliegue continuo o semiautomatizado sobre Droplets y observabilidad externa.
 5. Mantener el `Demo Module` como biblioteca viva de referencia y onboarding tecnico.
 
 ## Objetivos inmediatos desde aqui en adelante
@@ -434,7 +454,7 @@ Estado: En progreso
 2. Endurecer tenancy transversal en modelos, jobs, archivos y auditoria.
 3. Mantener guias de extension, release checklist y operacion como fuente viva para nuevos modulos.
 4. Ampliar pruebas frontend y checks de release sin inflar el core.
-5. Seguir limpiando residuales tecnicos y microcopy sin reabrir deuda estructural de la base.
+5. Seguir limpiando residuales tecnicos, microcopy y consistencia visual sin reabrir deuda estructural de la base.
 
 ## Indicador de avance global
 
