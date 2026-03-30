@@ -19,6 +19,10 @@ La base actual ya cumple con lo principal que se definio durante el proyecto:
 - Data Engine mas profundo con duplicado de registros, busqueda por relaciones y `custom_fields` filtrables/exportables/importables
 - busqueda real con Meilisearch y reindex manual por recurso desde API/UI/Artisan
 - deploy productivo endurecido: preserva `APP_KEY`, evita reseed destructivo, compila frontend a `dist` y reindexa todos los recursos buscables
+- endurecimiento de seguridad base: autenticacion web con cookie `HttpOnly`, login con throttling mas estricto y webhooks con proteccion anti-replay
+- `TenantContext` mas expresivo: ya propaga alias de `empresa` y `asignacion_laboral_activa` en runtime, y la navegacion administrativa respeta permisos finos reales en menu y rutas
+- RBAC del core mas maduro: el shell ya separa permisos de `view` y `manage` para `modules`, `settings`, `integrations`, `users` y `roles`, evitando regalar acciones mutables solo por abrir una pantalla
+- demo de jobs mas operativa en local: ya muestra estado de cola, `worker_hint`, auto-poll y pending counts sobre `database queue`
 - suite frontend ya cubre stores, guards y componentes criticos como topbar, login, settings y administracion de usuarios
 - shell endurecido con permisos minimos para `demo`, `data engine`, `documentacion tecnica` y `API tokens`
 - bootstrap oficial inicial
@@ -83,6 +87,7 @@ La base actual ya cumple con lo principal que se definio durante el proyecto:
 - CI valida backend y frontend, incluyendo smoke tests de release
 - Spaces ya esta integrado
 - healthcheck operativo ya expone `database`, `redis`, `mail`, `queue` y `storage`
+- documentacion operativa ya incluye guia explicita de despliegue seguro con Cloudflare, firewall, secretos y topologia recomendada
 
 ## Debilidades vigentes
 

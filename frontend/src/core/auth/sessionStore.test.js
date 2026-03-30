@@ -51,10 +51,9 @@ describe('sessionStore', () => {
         notificationLoadMock.mockReset();
         settingsResetMock.mockReset();
         settingsInitializeMock.mockReset();
-        localStorage.clear();
     });
 
-    it('persists login session and restores authenticated user', async () => {
+    it('stores authenticated user in memory without persisting token', async () => {
         const { sessionStore } = await import('./sessionStore');
 
         apiMock.post.mockResolvedValueOnce({
@@ -76,29 +75,11 @@ describe('sessionStore', () => {
         });
 
         expect(user.email).toBe('user@example.com');
-        expect(sessionStore.state.token).toBe('token-1');
-        expect(setApiAccessTokenMock).toHaveBeenCalledWith('token-1');
-        expect(JSON.parse(localStorage.getItem('stackbase.auth'))).toEqual({
-            token: 'token-1',
-            user: {
-                id: 7,
-                email: 'user@example.com'
-            }
-        });
+        expect(sessionStore.state.token).toBeNull();
+        expect(setApiAccessTokenMock).toHaveBeenCalledWith(null);
     });
 
-    it('initializes from persisted session and refreshes /me', async () => {
-        localStorage.setItem(
-            'stackbase.auth',
-            JSON.stringify({
-                token: 'persisted-token',
-                user: {
-                    id: 1,
-                    email: 'old@example.com'
-                }
-            })
-        );
-
+    it('initializes from backend cookie session via /me', async () => {
         apiMock.get.mockResolvedValueOnce({
             data: {
                 datos: {
@@ -113,15 +94,16 @@ describe('sessionStore', () => {
 
         await sessionStore.initialize();
 
-        expect(apiMock.get).toHaveBeenCalledWith('/v1/auth/me');
+        expect(apiMock.get).toHaveBeenCalledWith('/v1/auth/me', {
+            suppressUiError: true
+        });
         expect(sessionStore.state.user.email).toBe('fresh@example.com');
-        expect(setApiAccessTokenMock).toHaveBeenCalledWith('persisted-token');
     });
 
     it('clears session and dependent stores when logout finishes', async () => {
         const { sessionStore } = await import('./sessionStore');
 
-        sessionStore.setSession('token-logout', {
+        sessionStore.setSession(null, {
             id: 3,
             email: 'logout@example.com'
         });
@@ -140,7 +122,6 @@ describe('sessionStore', () => {
         expect(moduleCatalogResetMock).toHaveBeenCalled();
         expect(notificationResetMock).toHaveBeenCalled();
         expect(settingsResetMock).toHaveBeenCalled();
-        expect(localStorage.getItem('stackbase.auth')).toBeNull();
         expect(setApiAccessTokenMock).toHaveBeenLastCalledWith(null);
     });
 });

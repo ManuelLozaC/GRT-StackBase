@@ -31,6 +31,7 @@ Hoy ya existen demos funcionales de:
 - UI advanced inputs
 - UI screen recipes
 - tutorial guiado para construir un modulo nuevo
+- tutorial guiado completo del modulo `Noticias`
 - notificaciones
 - archivos
 - jobs
@@ -161,6 +162,7 @@ Cada ejemplo del `Demo Module` debe mostrar:
 - `demo.ui.advanced-inputs`
 - `demo.ui.screen-recipes`
 - `demo.module-tutorial`
+- `demo.news-module-tutorial`
 
 ## Criterio de calidad
 

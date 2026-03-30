@@ -1,7 +1,7 @@
 <script setup>
 import DemoPatternGuide from '@/components/demo/DemoPatternGuide.vue';
 import api from '@/service/api';
-import { onMounted, reactive } from 'vue';
+import { computed, onBeforeUnmount, onMounted, reactive } from 'vue';
 import { useToast } from 'primevue/usetoast';
 
 const toast = useToast();
@@ -17,8 +17,11 @@ const state = reactive({
     submitting: false,
     retryingUuid: null,
     jobs: [],
-    workerHint: 'Ejecuta php artisan queue:work --queue=demo para procesar jobs pendientes.'
+    workerHint: 'Docker local: docker compose up -d worker scheduler. Manual: php artisan queue:work --queue=demo',
+    queueRuntime: null
 });
+
+let pollingHandle = null;
 
 async function loadJobs() {
     state.loading = true;
@@ -26,6 +29,7 @@ async function loadJobs() {
     try {
         const response = await api.get('/v1/demo/jobs');
         state.jobs = response.data.datos ?? [];
+        state.queueRuntime = response.data.meta?.queue_runtime ?? null;
     } finally {
         state.loading = false;
     }
@@ -43,6 +47,10 @@ async function dispatchJob() {
 
         if (response.data.meta?.worker_hint) {
             state.workerHint = response.data.meta.worker_hint;
+        }
+
+        if (response.data.meta?.queue_runtime) {
+            state.queueRuntime = response.data.meta.queue_runtime;
         }
 
         toast.add({
@@ -66,6 +74,10 @@ async function retryJob(job) {
 
         if (response.data.meta?.worker_hint) {
             state.workerHint = response.data.meta.worker_hint;
+        }
+
+        if (response.data.meta?.queue_runtime) {
+            state.queueRuntime = response.data.meta.queue_runtime;
         }
 
         toast.add({
@@ -108,7 +120,38 @@ function resolveSeverity(status) {
     return 'warning';
 }
 
-onMounted(loadJobs);
+const hasAsyncWorkInProgress = computed(() => {
+    const hasPendingRuns = state.jobs.some((job) => ['pending', 'processing'].includes(job.status));
+    const pendingQueue = (state.queueRuntime?.pending_total ?? 0) > 0;
+
+    return hasPendingRuns || pendingQueue;
+});
+
+function startPolling() {
+    if (pollingHandle !== null) {
+        return;
+    }
+
+    pollingHandle = window.setInterval(() => {
+        if (hasAsyncWorkInProgress.value) {
+            loadJobs();
+        }
+    }, 5000);
+}
+
+function stopPolling() {
+    if (pollingHandle !== null) {
+        window.clearInterval(pollingHandle);
+        pollingHandle = null;
+    }
+}
+
+onMounted(async () => {
+    await loadJobs();
+    startPolling();
+});
+
+onBeforeUnmount(stopPolling);
 </script>
 
 <template>
@@ -135,7 +178,7 @@ onMounted(loadJobs);
             <div class="card flex flex-col gap-4">
                 <div>
                     <h3 class="m-0 mb-2">Lanzar job demo</h3>
-                    <p class="m-0 text-sm text-color-secondary">El job transforma texto y puede simular fallos para probar reintentos y errores controlados.</p>
+                    <p class="m-0 text-sm text-color-secondary">El job transforma texto y puede simular fallos para probar reintentos, cola real y observabilidad operativa en local.</p>
                 </div>
 
                 <textarea v-model="form.message" rows="5" class="demo-textarea" placeholder="Texto a procesar"></textarea>
@@ -161,6 +204,13 @@ onMounted(loadJobs);
                     <strong>Tip worker</strong>
                     <span>{{ state.workerHint }}</span>
                 </div>
+
+                <div v-if="state.queueRuntime" class="demo-hint-box">
+                    <strong>Estado de cola</strong>
+                    <span>Conexion: {{ state.queueRuntime.connection }}</span>
+                    <span>Pendientes: {{ state.queueRuntime.pending_total ?? '-' }}</span>
+                    <span>Fallidos: {{ state.queueRuntime.failed_total ?? '-' }}</span>
+                </div>
             </div>
         </div>
 
@@ -172,6 +222,7 @@ onMounted(loadJobs);
                         <p class="m-0 text-sm text-color-secondary">Los jobs quedan registrados con payload, resultado, intentos y errores dentro del tenant activo.</p>
                     </div>
                     <div class="app-panel-actions">
+                        <Tag v-if="hasAsyncWorkInProgress" severity="info" value="Auto-poll activo" />
                         <button class="demo-secondary-button app-button-standard" :disabled="state.loading" @click="loadJobs">
                             {{ state.loading ? 'Actualizando...' : 'Actualizar' }}
                         </button>
@@ -200,6 +251,7 @@ onMounted(loadJobs);
 
                         <div class="demo-job-meta">
                             <span><strong>Tenant:</strong> {{ job.organizacion_id || '-' }}</span>
+                            <span><strong>Empresa:</strong> {{ job.empresa_id || '-' }}</span>
                             <span><strong>Actor:</strong> {{ job.requested_by || 'sistema' }} (#{{ job.requested_by_id || '-' }})</span>
                         </div>
 
@@ -231,10 +283,10 @@ onMounted(loadJobs);
         <div class="col-span-12">
             <DemoPatternGuide
                 title="Guia para jobs y background processing"
-                :when-to-use="['cuando una accion necesita salir del request principal', 'cuando conviene ofrecer modo queued y modo immediate para pruebas', 'cuando el equipo necesita ver payload, resultado e intentos del job']"
+                :when-to-use="['cuando una accion necesita salir del request principal', 'cuando conviene ofrecer modo queued y modo immediate para pruebas', 'cuando el equipo necesita ver payload, resultado, intentos y diagnostico de cola']"
                 :avoid-when="['cuando el trabajo es trivial y solo agrega complejidad moverlo a cola', 'cuando no existe una forma clara de observar estado o errores', 'cuando el usuario necesita respuesta inmediata y el flujo no tolera asincronia']"
-                :wiring="['registrar payload solicitado, resultado y error dentro del run', 'exponer worker hints o feedback de operacion local cuando aplique', 'mantener historial visible por tenant y actor']"
-                :notes="['esta demo usa el core real de jobs del stack', 'si el flujo crece, combinarlo con async patterns para una UX mas rica']"
+                :wiring="['registrar payload solicitado, resultado y error dentro del run', 'exponer worker hints, pending counts y auto-poll cuando aplique', 'mantener historial visible por tenant, empresa y actor']"
+                :notes="['esta demo usa el core real de jobs del stack', 'si el flujo crece, combinarlo con async patterns para una UX mas rica y notificaciones al finalizar']"
             />
         </div>
     </div>

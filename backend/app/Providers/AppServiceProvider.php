@@ -57,8 +57,12 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         RateLimiter::for('auth-api', function (Request $request): array {
+            $login = strtolower(trim((string) $request->input('email', '')));
+            $ip = $request->ip() ?: 'auth-api';
+
             return [
-                Limit::perMinute(10)->by($request->ip() ?: 'auth-api'),
+                Limit::perMinute(10)->by('auth-ip:'.$ip),
+                Limit::perMinute(5)->by('auth-login:'.sha1($login.'|'.$ip)),
             ];
         });
 

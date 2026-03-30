@@ -52,7 +52,7 @@ export const coreRoutes = [
                 path: '/admin/operations',
                 name: 'operations-overview',
                 meta: {
-                    permissionKey: 'security.manage'
+                    permissionKey: 'operations.view'
                 },
                 component: () => import('@/views/pages/OperationsOverview.vue')
             },
@@ -60,7 +60,7 @@ export const coreRoutes = [
                 path: '/admin/metrics',
                 name: 'usage-metrics',
                 meta: {
-                    permissionKey: 'security.manage'
+                    permissionKey: 'metrics.view'
                 },
                 component: () => import('@/views/pages/UsageMetrics.vue')
             },
@@ -68,7 +68,7 @@ export const coreRoutes = [
                 path: '/admin/modules',
                 name: 'system-modules',
                 meta: {
-                    permissionKey: 'modules.manage'
+                    permissionKey: 'modules.view'
                 },
                 component: () => import('@/views/pages/SystemModules.vue')
             },
@@ -76,7 +76,7 @@ export const coreRoutes = [
                 path: '/admin/webhooks',
                 name: 'system-webhooks',
                 meta: {
-                    permissionKey: 'integrations.manage'
+                    permissionKey: 'integrations.view'
                 },
                 component: () => import('@/views/pages/SystemWebhooks.vue')
             },
@@ -84,7 +84,7 @@ export const coreRoutes = [
                 path: '/admin/settings',
                 name: 'system-settings',
                 meta: {
-                    permissionKey: 'settings.manage'
+                    permissionKey: 'settings.view'
                 },
                 component: () => import('@/views/pages/SystemSettings.vue')
             },
@@ -92,7 +92,7 @@ export const coreRoutes = [
                 path: '/admin/users',
                 name: 'user-administration',
                 meta: {
-                    permissionKey: 'users.manage_roles'
+                    permissionKey: 'users.view'
                 },
                 component: () => import('@/views/pages/UserAdministration.vue')
             },
@@ -100,7 +100,7 @@ export const coreRoutes = [
                 path: '/admin/roles',
                 name: 'role-administration',
                 meta: {
-                    permissionKey: 'roles.manage'
+                    permissionKey: 'roles.view'
                 },
                 component: () => import('@/views/pages/RolePermissionAdministration.vue')
             },
@@ -108,7 +108,7 @@ export const coreRoutes = [
                 path: '/admin/security',
                 name: 'security-logs',
                 meta: {
-                    permissionKey: 'security.manage'
+                    permissionKey: 'security.logs.view'
                 },
                 component: () => import('@/views/pages/SecurityLogs.vue')
             },
@@ -116,7 +116,7 @@ export const coreRoutes = [
                 path: '/admin/errors',
                 name: 'error-logs',
                 meta: {
-                    permissionKey: 'security.manage'
+                    permissionKey: 'error-logs.view'
                 },
                 component: () => import('@/views/pages/ErrorLogs.vue')
             }

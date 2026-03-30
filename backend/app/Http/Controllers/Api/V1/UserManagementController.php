@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api\V1;
 
 use App\Core\Audit\Services\AuditLogger;
+use App\Core\Auth\Services\AuthCookieService;
 use App\Core\Auth\Models\PersonalAccessToken;
 use App\Core\Auth\Services\AccessTokenService;
 use App\Core\Http\Concerns\ApiResponse;
@@ -27,6 +28,7 @@ class UserManagementController extends Controller
 
     public function __construct(
         protected AccessTokenService $tokens,
+        protected AuthCookieService $authCookies,
         protected AuditLogger $auditLogger,
         protected SecurityLogger $securityLogger,
         protected MetricsRecorder $metrics,
@@ -420,7 +422,7 @@ class UserManagementController extends Controller
                 ),
             ],
             message: 'Impersonacion iniciada',
-        );
+        )->withCookie($this->authCookies->make($token));
     }
 
     public function leaveImpersonation(Request $request): JsonResponse
@@ -497,7 +499,7 @@ class UserManagementController extends Controller
                 'user' => $this->transformUser($restoredUser),
             ],
             message: 'Impersonacion finalizada',
-        );
+        )->withCookie($this->authCookies->make($restoredToken));
     }
 
     protected function transformUser(User $user, array $impersonation = []): array

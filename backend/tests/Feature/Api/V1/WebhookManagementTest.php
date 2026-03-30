@@ -221,9 +221,13 @@ class WebhookManagementTest extends TestCase
             'external_id' => 'evt-100',
             'title' => 'Webhook inbound',
         ];
-        $signature = hash_hmac('sha256', json_encode($payload), 'incoming-secret-123');
+        $timestamp = (string) now()->timestamp;
+        $requestId = 'webhook-test-evt-100';
+        $signature = hash_hmac('sha256', $timestamp.'.'.json_encode($payload), 'incoming-secret-123');
 
-        $this->withHeader('X-StackBase-Signature', 'sha256='.$signature)
+        $this->withHeader('X-StackBase-Request-Id', $requestId)
+            ->withHeader('X-StackBase-Timestamp', $timestamp)
+            ->withHeader('X-StackBase-Signature', 'sha256='.$signature)
             ->postJson('/api/v1/webhooks/incoming/'.$receiverId, $payload)
             ->assertOk()
             ->assertJsonPath('datos.signature_status', 'valid')
@@ -270,7 +274,9 @@ class WebhookManagementTest extends TestCase
             ->assertOk()
             ->json('datos.id');
 
-        $this->withHeader('X-StackBase-Signature', 'sha256=firma-invalida')
+        $this->withHeader('X-StackBase-Request-Id', 'webhook-invalid-evt')
+            ->withHeader('X-StackBase-Timestamp', (string) now()->timestamp)
+            ->withHeader('X-StackBase-Signature', 'sha256=firma-invalida')
             ->postJson('/api/v1/webhooks/incoming/'.$receiverId, [
                 'external_id' => 'evt-invalid',
             ])
@@ -291,6 +297,47 @@ class WebhookManagementTest extends TestCase
         ]);
     }
 
+    public function test_incoming_webhook_rejects_replayed_requests(): void
+    {
+        [$user, $token] = $this->authenticateIntegrationAdmin();
+
+        $receiverId = $this->withHeader('Authorization', 'Bearer '.$token)
+            ->postJson('/api/v1/webhooks/receivers', [
+                'module_key' => 'demo-platform',
+                'event_key' => 'demo.notification.created',
+                'source_name' => 'Replay Guard',
+                'signing_secret' => 'incoming-secret-789',
+            ])
+            ->assertOk()
+            ->json('datos.id');
+
+        $payload = ['external_id' => 'evt-replay'];
+        $timestamp = (string) now()->timestamp;
+        $requestId = 'webhook-replay-evt';
+        $signature = hash_hmac('sha256', $timestamp.'.'.json_encode($payload), 'incoming-secret-789');
+
+        $this->withHeader('X-StackBase-Request-Id', $requestId)
+            ->withHeader('X-StackBase-Timestamp', $timestamp)
+            ->withHeader('X-StackBase-Signature', 'sha256='.$signature)
+            ->postJson('/api/v1/webhooks/incoming/'.$receiverId, $payload)
+            ->assertOk()
+            ->assertJsonPath('datos.signature_status', 'valid');
+
+        $this->withHeader('X-StackBase-Request-Id', $requestId)
+            ->withHeader('X-StackBase-Timestamp', $timestamp)
+            ->withHeader('X-StackBase-Signature', 'sha256='.$signature)
+            ->postJson('/api/v1/webhooks/incoming/'.$receiverId, $payload)
+            ->assertStatus(401)
+            ->assertJsonPath('mensaje', 'Firma invalida');
+
+        $this->assertDatabaseHas('core_webhook_receipts', [
+            'receiver_id' => $receiverId,
+            'organizacion_id' => $user->organizacion_activa_id,
+            'signature_status' => 'replayed',
+            'processing_status' => 'rejected',
+        ]);
+    }
+
     protected function authenticateIntegrationAdmin(): array
     {
         $organization = Organizacion::query()->create([
@@ -308,8 +355,13 @@ class WebhookManagementTest extends TestCase
             'name' => 'integrations.manage',
             'guard_name' => 'web',
         ]);
+        $demoPermission = Permission::query()->firstOrCreate([
+            'name' => 'demo.access',
+            'guard_name' => 'web',
+        ]);
 
         $user->givePermissionTo($permission);
+        $user->givePermissionTo($demoPermission);
 
         return [
             $user,

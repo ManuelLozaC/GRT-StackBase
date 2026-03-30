@@ -33,55 +33,55 @@ export const coreMenu = [
                 label: 'Operations',
                 icon: 'pi pi-fw pi-chart-line',
                 to: '/admin/operations',
-                permissionKey: 'security.manage'
+                permissionKey: 'operations.view'
             },
             {
                 label: 'Usage Metrics',
                 icon: 'pi pi-fw pi-wave-pulse',
                 to: '/admin/metrics',
-                permissionKey: 'security.manage'
+                permissionKey: 'metrics.view'
             },
             {
                 label: 'Modules',
                 icon: 'pi pi-fw pi-cog',
                 to: '/admin/modules',
-                permissionKey: 'modules.manage'
+                permissionKey: 'modules.view'
             },
             {
                 label: 'Webhooks',
                 icon: 'pi pi-fw pi-send',
                 to: '/admin/webhooks',
-                permissionKey: 'integrations.manage'
+                permissionKey: 'integrations.view'
             },
             {
                 label: 'System Settings',
                 icon: 'pi pi-fw pi-sliders-v',
                 to: '/admin/settings',
-                permissionKey: 'settings.manage'
+                permissionKey: 'settings.view'
             },
             {
                 label: 'Users',
                 icon: 'pi pi-fw pi-users',
                 to: '/admin/users',
-                permissionKey: 'users.manage_roles'
+                permissionKey: 'users.view'
             },
             {
                 label: 'Roles & Permissions',
                 icon: 'pi pi-fw pi-shield',
                 to: '/admin/roles',
-                permissionKey: 'roles.manage'
+                permissionKey: 'roles.view'
             },
             {
                 label: 'Security Logs',
                 icon: 'pi pi-fw pi-shield',
                 to: '/admin/security',
-                permissionKey: 'security.manage'
+                permissionKey: 'security.logs.view'
             },
             {
                 label: 'Error Logs',
                 icon: 'pi pi-fw pi-exclamation-circle',
                 to: '/admin/errors',
-                permissionKey: 'security.manage'
+                permissionKey: 'error-logs.view'
             }
         ]
     },

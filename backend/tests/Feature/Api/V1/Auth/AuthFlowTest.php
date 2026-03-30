@@ -11,6 +11,7 @@ use App\Models\Persona;
 use App\Models\User;
 use Database\Seeders\RolePermissionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Spatie\Permission\Models\Permission;
 use Tests\TestCase;
 
 class AuthFlowTest extends TestCase
@@ -40,7 +41,8 @@ class AuthFlowTest extends TestCase
 
         $loginResponse
             ->assertOk()
-            ->assertJsonPath('estado', 'ok');
+            ->assertJsonPath('estado', 'ok')
+            ->assertCookie(config('security.auth_cookie.name', 'stackbase_access_token'));
 
         $token = $loginResponse->json('datos.token');
 
@@ -48,12 +50,47 @@ class AuthFlowTest extends TestCase
             ->getJson('/api/v1/auth/me')
             ->assertOk()
             ->assertJsonPath('datos.email', 'admin@stackbase.local')
+            ->assertJsonPath('datos.organizacion_activa_id', $organizacion->id)
+            ->assertJsonPath('datos.empresa_activa_id', $organizacion->id)
             ->assertJsonPath('datos.organizacion_activa.nombre', 'Acme Central')
             ->assertJsonPath('datos.empresa_activa.nombre', 'Acme Central')
             ->assertJsonPath('datos.empresas.0.slug', 'acme-central')
             ->assertJsonFragment([
                 'slug' => 'acme-central',
             ]);
+    }
+
+    public function test_user_can_authenticate_with_http_only_cookie_without_bearer_header(): void
+    {
+        $organizacion = Organizacion::query()->create([
+            'nombre' => 'Cookie Org',
+            'slug' => 'cookie-org',
+        ]);
+
+        $user = User::factory()->create([
+            'email' => 'cookie@stackbase.local',
+            'password' => 'Password123',
+            'organizacion_activa_id' => $organizacion->id,
+        ]);
+
+        $user->organizaciones()->attach($organizacion->id);
+
+        $loginResponse = $this->postJson('/api/v1/auth/login', [
+            'email' => 'cookie@stackbase.local',
+            'password' => 'Password123',
+            'device_name' => 'phpunit-cookie',
+        ])->assertOk();
+
+        $cookieName = config('security.auth_cookie.name', 'stackbase_access_token');
+        $plainTextToken = $loginResponse->json('datos.token');
+
+        $this->withCredentials()
+            ->withUnencryptedCookies([$cookieName => $plainTextToken])
+            ->get('/api/v1/auth/me', [
+                'Accept' => 'application/json',
+            ])
+            ->assertOk()
+            ->assertJsonPath('datos.email', 'cookie@stackbase.local');
     }
 
     public function test_user_can_login_with_alias_and_retrieve_profile(): void
@@ -300,7 +337,9 @@ class AuthFlowTest extends TestCase
                 'asignacion_laboral_id' => $assignmentB->id,
             ])
             ->assertOk()
+            ->assertJsonPath('datos.active_work_assignment_id', $assignmentB->id)
             ->assertJsonPath('datos.asignacion_laboral_activa.id', $assignmentB->id)
+            ->assertJsonPath('datos.asignacion_laboral_activa.empresa_id', $organizacion->id)
             ->assertJsonPath('datos.asignacion_laboral_activa.oficina.nombre', 'Sucursal Norte')
             ->assertJsonPath('datos.asignacion_laboral_activa.cargo.nombre', 'Gerente Comercial');
 
@@ -544,6 +583,10 @@ class AuthFlowTest extends TestCase
             'organizacion_activa_id' => $organizacion->id,
         ]);
         $user->organizaciones()->attach($organizacion->id);
+        $user->givePermissionTo(Permission::query()->firstOrCreate([
+            'name' => 'api-tokens.manage',
+            'guard_name' => 'web',
+        ]));
 
         $token = app(AccessTokenService::class)->createForUser($user, 'phpunit');
 

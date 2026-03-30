@@ -32,7 +32,7 @@ class FirebasePushService
         return CorePushSubscription::query()->updateOrCreate(
             ['token' => $payload['token']],
             [
-                'organizacion_id' => $user->organizacion_activa_id,
+                'organizacion_id' => $user->activeCompanyId(),
                 'user_id' => $user->id,
                 'device_name' => $payload['device_name'] ?? null,
                 'platform' => $payload['platform'] ?? null,

@@ -106,6 +106,21 @@ php artisan stackbase:make-data-resource leads lead-card "App\\Modules\\Leads\\M
                         </div>
                     </div>
                 </div>
+
+                <div class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+                    <div class="app-panel-header">
+                        <div class="app-panel-header-copy">
+                            <h2 class="text-xl font-semibold text-slate-900">Caso guiado recomendado</h2>
+                            <p class="text-sm text-slate-600">Para onboarding real, usa el tutorial del módulo `Noticias`, que mezcla roles, aprobación editorial, Data Engine, exports, notificaciones y archivos en Spaces.</p>
+                        </div>
+                        <div class="app-panel-actions">
+                            <router-link to="/demo/news-module-tutorial" class="app-button-standard inline-flex items-center gap-2">
+                                <i class="pi pi-arrow-right"></i>
+                                Ver tutorial Noticias
+                            </router-link>
+                        </div>
+                    </div>
+                </div>
             </div>
 
             <div class="col-span-12 xl:col-span-4 space-y-6">

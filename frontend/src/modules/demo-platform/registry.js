@@ -1,6 +1,7 @@
 export const demoPlatformRegistry = {
     views: {
         'demo.module-tutorial': () => import('@/views/pages/demo/DemoModuleTutorial.vue'),
+        'demo.news-module-tutorial': () => import('@/views/pages/demo/DemoNewsModuleTutorial.vue'),
         'platform.demo': () => import('@/views/pages/PlatformDemo.vue'),
         'demo.ui-showcase': () => import('@/views/pages/demo/DemoUiShowcase.vue'),
         'demo.ui-feedback': () => import('@/views/pages/demo/DemoUiFeedback.vue'),

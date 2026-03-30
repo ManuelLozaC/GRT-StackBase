@@ -16,7 +16,26 @@ class RolePermissionSeeder extends Seeder
 
         $permissions = collect(config('modules.installed', []))
             ->flatMap(fn (array $module): array => $module['permissions'] ?? [])
-            ->push('modules.manage', 'settings.manage', 'integrations.manage', 'users.manage_roles', 'users.impersonate', 'roles.manage', 'tenancy.manage', 'security.manage')
+            ->push(
+                'modules.view',
+                'modules.manage',
+                'settings.view',
+                'settings.manage',
+                'integrations.view',
+                'integrations.manage',
+                'integrations.test',
+                'users.view',
+                'users.create',
+                'users.update',
+                'users.reset-password',
+                'users.roles.manage',
+                'users.manage_roles',
+                'users.impersonate',
+                'roles.view',
+                'roles.manage',
+                'tenancy.manage',
+                'security.manage',
+            )
             ->unique()
             ->values()
             ->all();

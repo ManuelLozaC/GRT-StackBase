@@ -78,6 +78,34 @@ class RbacCoverageTest extends TestCase
         $this->withHeader('Authorization', 'Bearer '.$token)->getJson('/api/v1/auth/api-tokens')->assertOk();
     }
 
+    public function test_admin_surfaces_support_view_permissions_without_manage_permissions(): void
+    {
+        $this->seed(RolePermissionSeeder::class);
+
+        [$user, $token] = $this->issueToken();
+
+        $user->givePermissionTo([
+            'modules.view',
+            'integrations.view',
+            'settings.view',
+            'users.view',
+            'roles.view',
+        ]);
+
+        $this->withHeader('Authorization', 'Bearer '.$token)->getJson('/api/v1/modules')->assertOk();
+        $this->withHeader('Authorization', 'Bearer '.$token)->getJson('/api/v1/modules/core-platform/settings')->assertOk();
+        $this->withHeader('Authorization', 'Bearer '.$token)->getJson('/api/v1/webhooks/endpoints')->assertOk();
+        $this->withHeader('Authorization', 'Bearer '.$token)->getJson('/api/v1/settings/global')->assertOk();
+        $this->withHeader('Authorization', 'Bearer '.$token)->getJson('/api/v1/users')->assertOk();
+        $this->withHeader('Authorization', 'Bearer '.$token)->getJson('/api/v1/roles')->assertOk();
+
+        $this->withHeader('Authorization', 'Bearer '.$token)->patchJson('/api/v1/modules/demo-platform', ['enabled' => true])->assertForbidden();
+        $this->withHeader('Authorization', 'Bearer '.$token)->postJson('/api/v1/webhooks/endpoints', [])->assertForbidden();
+        $this->withHeader('Authorization', 'Bearer '.$token)->patchJson('/api/v1/settings/global', [])->assertForbidden();
+        $this->withHeader('Authorization', 'Bearer '.$token)->postJson('/api/v1/users', [])->assertForbidden();
+        $this->withHeader('Authorization', 'Bearer '.$token)->postJson('/api/v1/roles', [])->assertForbidden();
+    }
+
     protected function issueToken(): array
     {
         $organization = Organizacion::query()->create([

@@ -92,16 +92,25 @@ Nota:
 - funcionan como backlog vivo de endurecimiento y evolucion del stack
 
 - [ ] RBAC completo.
-  Ya existe cobertura mas fina para `demo.access`, `operations.view`, `metrics.view`, `security.logs.view` y `error-logs.view`, pero todavia queda espacio para profundizar permisos por modulo, recurso y accion.
-- [ ] Multi-tenant operativo completo en todo el dominio.
+  Ya existe cobertura fina de `view/manage/test` para superficies administrativas del core (`modules`, `settings`, `integrations`, `users`, `roles`) y permisos operativos especificos para `demo`, `operations`, `metrics`, `security logs` y `error logs`. Lo restante ahora es seguir ese mismo criterio en modulos futuros y acciones mas profundas de negocio.
+- [ ] Jobs avanzados.
+- [ ] Jobs avanzados.
+  La base ya expone diagnostico operativo de cola (`pending/failed` por queue), `worker_hint`, propagacion de actor/tenant y auto-poll en la demo local. Lo pendiente ahora es mas profundo: politicas avanzadas por tipo de job y estandares de retry para flujos reales de negocio.
+- [ ] Auditoria y logs avanzados.
+- [ ] Aplicar en codigo y migraciones la decision final `organizacion = empresa`.
+- [ ] Tenant/contexto activo por request en todos los servicios backend.
+- [ ] Scope consistente en modelos, jobs, archivos y auditoria.
+- [ ] Demo funcional de jobs con procesamiento realmente asincrono en entorno local dockerizado.
+- [x] Demo funcional de jobs con procesamiento realmente asincrono en entorno local dockerizado.
+  La demo ya expone estado real de cola, `worker_hint`, auto-poll mientras haya pendientes y mejor visibilidad de runtime local usando `database queue`.
+- [ ] Guardado de filtros.
+- [ ] Extender menus dinamicos segun permisos al resto del sistema.
 - [x] CRUD universal conectado a backend.
 - [x] Sistema real de archivos.
 - [x] Extender archivos hacia Spaces, versionado avanzado y descargas pesadas async.
-- [ ] Jobs avanzados.
 - [x] Notificaciones avanzadas y multicanal.
-- [ ] Auditoria y logs avanzados.
 - [x] Demos funcionales de las capacidades genericas pendientes.
-- [ ] Convertir `Demo Module` en catalogo vivo amplio y curado de UI y patrones reutilizables del stack.
+- [ ] Convertir `Demo Module` en catalogo vivo amplio y curado de UI y patrones reutilizables del stack. // futuro
 - [ ] Definir los catalogos universales reales que el core soportara de forma explicita.
 - [x] Crear un tutorial super completo, paso a paso, de como crear un modulo nuevo sobre StackBase.
   Ya existe dentro del `Demo Module` y se apoya ademas en `docs/guia_nuevo_modulo.md` y `docs/eventos_dominio.md` para onboarding tecnico y decisiones de arquitectura.
@@ -124,6 +133,10 @@ Nota:
 
 - [ ] Backups/restores automatizados. // fuera de alcance por ahora
 - [ ] Rotacion automatizada de secretos. // fuera de alcance por ahora
+- [ ] Multi-tenant SaaS completo entre clientes. // fuera de alcance por ahora
+- [ ] Base para traducciones si se decide multi-idioma. // no realizar hasta nuevo aviso
+- [ ] Offline basico. // no realizar
+- [ ] SMS / WhatsApp real. // no avanzar
 
 ## Regla transversal del proyecto
 - [x] Toda funcionalidad generica importante debe vivir en el core.
@@ -200,6 +213,7 @@ Estado: En progreso
 - [x] Cubrir con tests el aislamiento por tenant en el recurso demo del CRUD universal.
 - [x] Base fundacional de tenancy adelgazada para no mezclar catalogos de ubicacion o personas no usados por el core.
 - [x] `TenantContext` compartido para request autenticado y jobs base.
+- [x] `TenantContext` ya expone snapshot coherente de `organizacion/empresa` y `asignacion_laboral_activa`, y los exports async tambien propagan actor en cola.
 - [x] CRUD tenant-aware para estructuras `empresa/sucursal/equipo`.
 - [x] CRUD base tenant-aware para `oficinas`, `personas`, `divisiones`, `areas`, `cargos` y `asignaciones_laborales` via Data Engine.
 - [x] Sincronizacion runtime base `organizacion -> empresa` y `oficina -> sucursal` para reducir divergencia con el legado mientras se completa la convergencia final.
@@ -290,8 +304,10 @@ Estado: Parcial
 - [x] Skeleton loaders.
 - [x] Empty states reales.
 - [x] Manejo global de errores HTTP.
-- [ ] Feedback optimista/pesimista estandarizado.
+- [ ] Feedback optimista/pesimista estandarizado. // futuro
 - [x] Showcase UI inicial del `Demo Module` con ejemplos de toasts, modals, banners, forms, inputs, datepickers, tablas y estados visuales.
+- [ ] Fallbacks de UX. // futuro
+  Reintentos, estados vacios explicativos, bloqueos anti-doble-click, planes B visuales y recuperacion guiada cuando una accion falla o tarda demasiado.
 
 ## P8. Jobs y procesos en segundo plano
 Estado: En progreso
@@ -307,7 +323,9 @@ Estado: En progreso
 - [x] Cron jobs base mediante servicio `scheduler`.
 - [x] Propagacion de tenant y actor.
 - [x] Reintentos visibles por UI y observabilidad operativa.
-- [ ] Demo funcional de jobs con procesamiento realmente asincrono en entorno local dockerizado.
+- [x] Demo funcional de jobs con procesamiento realmente asincrono en entorno local dockerizado.
+- [x] Diagnostico operativo de cola en local para la demo de jobs.
+  Ya existe inspeccion simple de `pending/failed` por queue y guidance explicita para levantar `worker + scheduler` en Docker local.
 
 ## P9. Exportacion e importacion
 Estado: En progreso
@@ -367,14 +385,23 @@ Estado: Parcial
 Estado: En progreso
 
 - [x] Sanitizacion de inputs.
-- [ ] XSS / CSRF segun canal.
+- [x] XSS / CSRF segun canal en la superficie web principal.
+  La autenticacion web ya no depende de `localStorage`; usa cookie `HttpOnly` con soporte explicito para `SameSite`, `Secure`, CORS con credenciales y endurecimiento por entorno.
+- [ ] Revisar proteccion XSS en renderizado y componentes ricos.
+- [ ] Revisar CSRF si se amplian los flujos web basados en cookie.
+- [ ] Mantener politicas diferenciadas por canal.
+  API autenticada, web con cookie, webhooks, signed URLs y futuros canales deben endurecerse con reglas distintas, no con una sola politica generica.
 - [x] Headers de seguridad base en canal API.
 - [x] Rate limiting por auth/API/descargas.
-- [ ] Encriptacion de datos sensibles.
+- [x] Proteccion anti-replay para webhooks entrantes.
+  Los receipts entrantes ahora exigen firma HMAC sobre `timestamp + payload`, validan ventana temporal y deduplican `request_id`.
+- [ ] Encriptacion de datos sensibles. // futuro
 - [x] Cifrado de secretos sensibles de webhooks.
 - [x] Logs de seguridad.
 - [x] Politicas de contrasenas y sesiones.
 - [x] Restringir previews sensibles de recuperacion de password a entornos de desarrollo/prueba.
+- [x] Guia de despliegue seguro para Droplet, Cloudflare, firewall y secretos operativos.
+  La recomendacion operativa quedo formalizada en `DespliegueSeguro.md`.
 
 ## P14. Internacionalizacion
 Estado: En progreso
@@ -389,7 +416,7 @@ Estado: Parcial
 
 - [x] Menus dinamicos segun modulos habilitados.
 - [x] Menus dinamicos segun permisos reales en administracion de modulos.
-- [ ] Extender menus dinamicos segun permisos al resto del sistema.
+- [x] Extender menus dinamicos segun permisos al resto del sistema.
 - [x] Tema dark/light persistido.
 - [x] Preferencias de vistas.
 - [x] Columnas dinamicas.
@@ -408,6 +435,7 @@ Estado: En progreso
 - [x] Refrescar catalogo modular completo tras toggles para no dejar estados derivados desfasados en frontend.
 - [x] Reubicar accesos de cuenta/contexto de baja frecuencia para reducir ruido operativo en el header.
 - [ ] Reducir mas el shell core a rutas/utilidades estrictamente transversales.
+  Mantenerlo como regla de arquitectura para que el core no absorba pantallas o flujos que deberian vivir en modulos de negocio.
 
 ## P17. Higiene tecnica y operativa
 Estado: En progreso
@@ -437,8 +465,9 @@ Estado: Parcial
 - [x] Base responsive del template.
 - [x] Ajustes responsive en pantallas administrativas clave.
 - [ ] Revisar resto de pantallas reales del producto.
-- [ ] PWA si aplica.
-- [ ] Offline basico solo donde aporte valor.
+- [ ] PWA si aplica. // futuro opcional
+  La guia de implementacion adaptada a StackBase quedo documentada en `PWA.md`.
+- [ ] Offline basico solo donde aporte valor. // no realizar
 
 ## P19. Manejo de errores
 Estado: En progreso

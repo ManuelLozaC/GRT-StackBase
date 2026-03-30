@@ -11,11 +11,21 @@ $installed = [
             'provider' => App\Modules\CorePlatform\CorePlatformServiceProvider::class,
             'dependencies' => [],
             'permissions' => [
+                'modules.view',
                 'modules.manage',
+                'settings.view',
                 'settings.manage',
+                'integrations.view',
                 'integrations.manage',
+                'integrations.test',
+                'users.view',
+                'users.create',
+                'users.update',
+                'users.reset-password',
+                'users.roles.manage',
                 'users.manage_roles',
                 'users.impersonate',
+                'roles.view',
                 'roles.manage',
                 'tenancy.manage',
                 'security.manage',
@@ -146,6 +156,16 @@ $installed = [
                         'menu' => [
                             'label' => 'Build Module Tutorial',
                             'icon' => 'pi pi-fw pi-book',
+                        ],
+                    ],
+                    [
+                        'path' => '/demo/news-module-tutorial',
+                        'name' => 'demo-news-module-tutorial',
+                        'view' => 'demo.news-module-tutorial',
+                        'meta' => [],
+                        'menu' => [
+                            'label' => 'News Module Tutorial',
+                            'icon' => 'pi pi-fw pi-megaphone',
                         ],
                     ],
                     [

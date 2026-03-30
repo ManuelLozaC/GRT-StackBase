@@ -9,6 +9,7 @@ use App\Core\Webhooks\Models\CoreWebhookEndpoint;
 use App\Core\Webhooks\Models\CoreWebhookReceipt;
 use App\Core\Webhooks\Models\CoreWebhookReceiver;
 use App\Models\User;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Http;
@@ -210,11 +211,24 @@ class WebhookManager
         $rawBody = $this->request->getContent();
         $payload = $this->request->all();
         $signatureHeader = $this->request->header('X-StackBase-Signature', '');
-        $expectedSignature = hash_hmac('sha256', $rawBody, (string) $receiver->signing_secret);
+        $timestampHeader = trim((string) $this->request->header('X-StackBase-Timestamp', ''));
+        $requestId = trim((string) $this->request->header('X-StackBase-Request-Id', ''))
+            ?: ($this->request->attributes->get('request_id') ?: (string) Str::uuid());
+        $signedPayload = $timestampHeader !== '' ? $timestampHeader.'.'.$rawBody : $rawBody;
+        $expectedSignature = hash_hmac('sha256', $signedPayload, (string) $receiver->signing_secret);
         $providedSignature = $this->normalizeIncomingSignature($signatureHeader);
-        $signatureStatus = hash_equals($expectedSignature, $providedSignature)
-            ? 'valid'
-            : 'invalid';
+        $signatureStatus = hash_equals($expectedSignature, $providedSignature) ? 'valid' : 'invalid';
+        $processingStatus = $signatureStatus === 'valid' ? 'accepted' : 'rejected';
+
+        if ($signatureStatus === 'valid' && ! $this->isFreshWebhookTimestamp($timestampHeader)) {
+            $signatureStatus = 'expired';
+            $processingStatus = 'rejected';
+        }
+
+        if ($processingStatus === 'accepted' && ! $this->reserveIncomingWebhookRequest($receiver, $requestId)) {
+            $signatureStatus = 'replayed';
+            $processingStatus = 'rejected';
+        }
 
         $receipt = CoreWebhookReceipt::query()->create([
             'organizacion_id' => $receiver->organizacion_id,
@@ -223,15 +237,15 @@ class WebhookManager
             'event_key' => $receiver->event_key,
             'source_name' => $receiver->source_name,
             'signature_status' => $signatureStatus,
-            'processing_status' => $signatureStatus === 'valid' ? 'accepted' : 'rejected',
-            'request_id' => $this->request->attributes->get('request_id') ?: (string) Str::uuid(),
+            'processing_status' => $processingStatus,
+            'request_id' => $requestId,
             'ip_address' => $this->request->ip(),
             'request_headers' => $this->request->headers->all(),
             'request_body' => is_array($payload) && $payload !== [] ? $payload : ['raw' => $rawBody],
             'received_at' => now(),
         ]);
 
-        if ($signatureStatus === 'valid') {
+        if ($processingStatus === 'accepted') {
             $receiver->forceFill([
                 'last_received_at' => now(),
             ])->save();
@@ -267,11 +281,14 @@ class WebhookManager
     protected function dispatchToEndpoint(CoreWebhookEndpoint $endpoint, array $payload, ?User $actor = null): CoreWebhookDelivery
     {
         $requestId = $this->request->attributes->get('request_id') ?: (string) Str::uuid();
-        $signature = hash_hmac('sha256', json_encode($payload), (string) $endpoint->signing_secret);
+        $timestamp = (string) now()->timestamp;
+        $rawPayload = json_encode($payload, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) ?: '{}';
+        $signature = hash_hmac('sha256', $timestamp.'.'.$rawPayload, (string) $endpoint->signing_secret);
         $headers = array_merge($endpoint->custom_headers ?? [], [
             'X-StackBase-Event' => $endpoint->event_key,
             'X-StackBase-Module' => $endpoint->module_key,
             'X-StackBase-Request-Id' => $requestId,
+            'X-StackBase-Timestamp' => $timestamp,
             'X-StackBase-Signature' => $signature,
         ]);
 
@@ -326,5 +343,29 @@ class WebhookManager
         );
 
         return $delivery->fresh('actor:id,name,email');
+    }
+
+    protected function isFreshWebhookTimestamp(string $timestampHeader): bool
+    {
+        if (! (bool) config('security.webhooks.require_timestamp', true)) {
+            return true;
+        }
+
+        if (! ctype_digit($timestampHeader)) {
+            return false;
+        }
+
+        $timestamp = (int) $timestampHeader;
+        $window = max(30, (int) config('security.webhooks.replay_window_seconds', 300));
+
+        return abs(now()->timestamp - $timestamp) <= $window;
+    }
+
+    protected function reserveIncomingWebhookRequest(CoreWebhookReceiver $receiver, string $requestId): bool
+    {
+        $window = max(30, (int) config('security.webhooks.replay_window_seconds', 300));
+        $cacheKey = sprintf('webhook-replay:%s:%s', $receiver->id, sha1($requestId));
+
+        return Cache::add($cacheKey, true, now()->addSeconds($window));
     }
 }

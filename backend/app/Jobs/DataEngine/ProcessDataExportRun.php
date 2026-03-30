@@ -41,6 +41,7 @@ class ProcessDataExportRun implements ShouldQueue
         }
 
         $tenantContext->setOrganizationId($run->organizacion_id);
+        $tenantContext->setActorId($run->requested_by);
 
         try {
             $transfers->processQueuedExport($run, $resource);

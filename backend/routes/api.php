@@ -106,17 +106,32 @@ use Illuminate\Support\Facades\Route;
         Route::middleware('permission:users.impersonate')->post('/auth/impersonate/{user}', [UserManagementController::class, 'impersonate']);
         Route::post('/auth/impersonation/leave', [UserManagementController::class, 'leaveImpersonation']);
 
-        Route::middleware('permission:users.manage_roles')->group(function (): void {
+        Route::middleware('permission:users.view')->group(function (): void {
             Route::get('/users', [UserManagementController::class, 'index']);
+        });
+
+        Route::middleware('permission:users.create')->group(function (): void {
             Route::post('/users', [UserManagementController::class, 'store'])->middleware('throttle:data-writes');
+        });
+
+        Route::middleware('permission:users.update')->group(function (): void {
             Route::patch('/users/{user}', [UserManagementController::class, 'update'])->middleware('throttle:data-writes');
             Route::patch('/users/{user}/status', [UserManagementController::class, 'updateStatus'])->middleware('throttle:data-writes');
+        });
+
+        Route::middleware('permission:users.reset-password')->group(function (): void {
             Route::post('/users/{user}/reset-password', [UserManagementController::class, 'resetPassword'])->middleware('throttle:data-writes');
+        });
+
+        Route::middleware('permission:users.roles.manage')->group(function (): void {
             Route::patch('/users/{user}/roles', [UserManagementController::class, 'updateRoles']);
         });
 
-        Route::middleware('permission:roles.manage')->group(function (): void {
+        Route::middleware('permission:roles.view')->group(function (): void {
             Route::get('/roles', [RoleManagementController::class, 'index']);
+        });
+
+        Route::middleware('permission:roles.manage')->group(function (): void {
             Route::post('/roles', [RoleManagementController::class, 'store'])->middleware('throttle:data-writes');
             Route::patch('/roles/{role}', [RoleManagementController::class, 'update'])->middleware('throttle:data-writes');
         });
@@ -126,29 +141,41 @@ use Illuminate\Support\Facades\Route;
         Route::middleware('permission:operations.view')->get('/operations/overview', OperationsOverviewController::class);
         Route::middleware('permission:metrics.view')->get('/metrics/overview', MetricsOverviewController::class);
 
-        Route::middleware('permission:integrations.manage')->group(function (): void {
+        Route::middleware('permission:integrations.view')->group(function (): void {
             Route::get('/webhooks/endpoints', [WebhookController::class, 'endpoints']);
-            Route::post('/webhooks/endpoints', [WebhookController::class, 'store'])->middleware('throttle:data-writes');
-            Route::patch('/webhooks/endpoints/{endpoint}', [WebhookController::class, 'update'])->middleware('throttle:data-writes');
-            Route::post('/webhooks/endpoints/{endpoint}/test', [WebhookController::class, 'test'])->middleware('throttle:data-writes');
             Route::get('/webhooks/deliveries', [WebhookController::class, 'deliveries']);
             Route::get('/webhooks/receivers', [WebhookReceiverController::class, 'index']);
+            Route::get('/webhooks/receipts', [WebhookReceiverController::class, 'receipts']);
+        });
+
+        Route::middleware('permission:integrations.manage')->group(function (): void {
+            Route::post('/webhooks/endpoints', [WebhookController::class, 'store'])->middleware('throttle:data-writes');
+            Route::patch('/webhooks/endpoints/{endpoint}', [WebhookController::class, 'update'])->middleware('throttle:data-writes');
             Route::post('/webhooks/receivers', [WebhookReceiverController::class, 'store'])->middleware('throttle:data-writes');
             Route::patch('/webhooks/receivers/{receiver}', [WebhookReceiverController::class, 'update'])->middleware('throttle:data-writes');
-            Route::get('/webhooks/receipts', [WebhookReceiverController::class, 'receipts']);
+        });
+
+        Route::middleware('permission:integrations.test')->group(function (): void {
+            Route::post('/webhooks/endpoints/{endpoint}/test', [WebhookController::class, 'test'])->middleware('throttle:data-writes');
+        });
+
+        Route::middleware('permission:modules.view')->group(function (): void {
+            Route::get('/modules/{moduleKey}/settings', [ModuleSettingController::class, 'show']);
         });
 
         Route::middleware('permission:modules.manage')->group(function (): void {
             Route::patch('/modules/{moduleKey}', [ModuleController::class, 'updateStatus']);
-            Route::get('/modules/{moduleKey}/settings', [ModuleSettingController::class, 'show']);
             Route::patch('/modules/{moduleKey}/settings', [ModuleSettingController::class, 'update']);
         });
 
-        Route::middleware('permission:settings.manage')->group(function (): void {
+        Route::middleware('permission:settings.view')->group(function (): void {
             Route::get('/settings/global', [SettingController::class, 'global']);
-            Route::patch('/settings/global', [SettingController::class, 'updateGlobal']);
             Route::get('/settings/organization', [SettingController::class, 'organization']);
             Route::get('/settings/company', [SettingController::class, 'organization']);
+        });
+
+        Route::middleware('permission:settings.manage')->group(function (): void {
+            Route::patch('/settings/global', [SettingController::class, 'updateGlobal']);
             Route::patch('/settings/organization', [SettingController::class, 'updateOrganization']);
             Route::patch('/settings/company', [SettingController::class, 'updateOrganization']);
         });

@@ -7,6 +7,7 @@ use App\Core\DataEngine\Models\CoreDataTransferRun;
 use App\Core\Files\Models\FileDownload;
 use App\Core\Files\Models\ManagedFile;
 use App\Core\Http\Concerns\ApiResponse;
+use App\Core\Jobs\Services\QueueRuntimeInspector;
 use App\Core\Jobs\Models\CoreJobRun;
 use App\Core\Notifications\Models\CoreNotification;
 use App\Core\Security\Models\CoreSecurityLog;
@@ -17,7 +18,7 @@ class OperationsOverviewController extends Controller
 {
     use ApiResponse;
 
-    public function __invoke(): JsonResponse
+    public function __invoke(QueueRuntimeInspector $queueRuntime): JsonResponse
     {
         $windowStart = now()->subDay();
 
@@ -64,6 +65,7 @@ class OperationsOverviewController extends Controller
                             ->where('status', 'completed')
                             ->where('finished_at', '>=', $windowStart)
                             ->count(),
+                        'runtime' => $queueRuntime->inspect(['demo', 'files', 'notifications', 'data-exports']),
                     ],
                     'transfers' => [
                         'processing' => CoreDataTransferRun::query()

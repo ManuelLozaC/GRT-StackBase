@@ -62,6 +62,11 @@ class User extends Authenticatable
         return $this->belongsTo(Organizacion::class, 'organizacion_activa_id');
     }
 
+    public function empresaActiva(): BelongsTo
+    {
+        return $this->organizacionActiva();
+    }
+
     public function persona(): BelongsTo
     {
         return $this->belongsTo(Persona::class);
@@ -81,6 +86,21 @@ class User extends Authenticatable
     public function asignacionLaboralActiva(): BelongsTo
     {
         return $this->belongsTo(AsignacionLaboral::class, 'active_work_assignment_id');
+    }
+
+    public function activeOrganizationId(): ?int
+    {
+        return $this->organizacion_activa_id;
+    }
+
+    public function activeCompanyId(): ?int
+    {
+        return $this->activeOrganizationId();
+    }
+
+    public function activeWorkAssignmentId(): ?int
+    {
+        return $this->active_work_assignment_id;
     }
 
     public function pushSubscriptions(): HasMany

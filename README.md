@@ -31,6 +31,7 @@ Resolver una sola vez las capacidades transversales del producto y reutilizarlas
 - observabilidad base: request IDs, security logs, error logs y metrics
 - webhooks salientes y entrantes, API tokens y OpenAPI JSON
 - push web real con FCM y email real con Resend
+- autenticacion web endurecida con cookie `HttpOnly`, rate limiting mas estricto y webhook anti-replay
 - bootstrap oficial inicial con `GRT SRL`, `TalentHub` y `Manuel Loza`
 - pipeline CI operativo con backend `PHP 8.3 + MySQL + Redis` y frontend `Node 20`
 - smoke tests de release para auth, Data Engine, healthchecks y canales base
@@ -47,6 +48,7 @@ Resolver una sola vez las capacidades transversales del producto y reutilizarlas
 - dominio vigente: [docs/modelo_dominio.md](./docs/modelo_dominio.md)
 - contrato modular: [docs/contrato_modulos.md](./docs/contrato_modulos.md)
 - guia de nuevo modulo: [docs/guia_nuevo_modulo.md](./docs/guia_nuevo_modulo.md)
+- tutorial guiado modulo noticias: [docs/tutorial_modulo_noticias.md](./docs/tutorial_modulo_noticias.md)
 - eventos de dominio: [docs/eventos_dominio.md](./docs/eventos_dominio.md)
 - patrones de notificaciones: [docs/patrones_notificaciones.md](./docs/patrones_notificaciones.md)
 - demo module: [docs/demo_module.md](./docs/demo_module.md)
@@ -54,6 +56,8 @@ Resolver una sola vez las capacidades transversales del producto y reutilizarlas
 - operacion base: [docs/operacion_base.md](./docs/operacion_base.md)
 - release checklist: [docs/release_checklist.md](./docs/release_checklist.md)
 - despliegue Droplet: [docs/deploy_droplet.md](./docs/deploy_droplet.md)
+- despliegue seguro e infraestructura recomendada: [DespliegueSeguro.md](./DespliegueSeguro.md)
+- opcion futura de PWA adaptada a StackBase: [PWA.md](./PWA.md)
 - secrets y variables GitHub para deploy: [docs/github_deploy_secrets.md](./docs/github_deploy_secrets.md)
 - sugerencias de evolucion no bloqueante: [sugerencias.md](./sugerencias.md)
 - decisiones cerradas: [preguntas.md](./preguntas.md)

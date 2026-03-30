@@ -4,8 +4,6 @@ import { notificationStore } from '@/core/notifications/notificationStore';
 import { settingsStore } from '@/core/settings/settingsStore';
 import { computed, reactive } from 'vue';
 
-const STORAGE_KEY = 'stackbase.auth';
-
 const state = reactive({
     token: null,
     user: null,
@@ -13,49 +11,14 @@ const state = reactive({
     initialized: false
 });
 
-function persistSession() {
-    if (state.token && state.user) {
-        localStorage.setItem(
-            STORAGE_KEY,
-            JSON.stringify({
-                token: state.token,
-                user: state.user
-            })
-        );
-
-        return;
-    }
-
-    localStorage.removeItem(STORAGE_KEY);
-}
-
-function restoreSession() {
-    const raw = localStorage.getItem(STORAGE_KEY);
-
-    if (!raw) {
-        return;
-    }
-
-    try {
-        const payload = JSON.parse(raw);
-        state.token = payload.token ?? null;
-        state.user = payload.user ?? null;
-        setApiAccessToken(state.token);
-    } catch {
-        clearSession();
-    }
-}
-
 function setSession(token, user) {
-    state.token = token;
+    state.token = null;
     state.user = user;
-    setApiAccessToken(token);
-    persistSession();
+    setApiAccessToken(null);
 }
 
 function setUser(user) {
     state.user = user;
-    persistSession();
 }
 
 function clearSession() {
@@ -65,15 +28,12 @@ function clearSession() {
     moduleCatalog.reset();
     notificationStore.reset();
     settingsStore.reset();
-    persistSession();
 }
 
 async function fetchMe() {
-    if (!state.token) {
-        return null;
-    }
-
-    const response = await api.get('/v1/auth/me');
+    const response = await api.get('/v1/auth/me', {
+        suppressUiError: true
+    });
     setUser(response.data.datos);
 
     return state.user;
@@ -87,14 +47,10 @@ async function initialize() {
     state.initializing = true;
 
     try {
-        restoreSession();
-
-        if (state.token) {
-            try {
-                await fetchMe();
-            } catch {
-                clearSession();
-            }
+        try {
+            await fetchMe();
+        } catch {
+            clearSession();
         }
     } finally {
         state.initialized = true;
@@ -119,7 +75,7 @@ async function register(payload) {
 
 async function logout() {
     try {
-        if (state.token) {
+        if (state.user) {
             await api.post('/v1/auth/logout');
         }
     } finally {
@@ -147,7 +103,7 @@ export const sessionStore = {
     state,
     user: computed(() => state.user),
     token: computed(() => state.token),
-    isAuthenticated: computed(() => Boolean(state.token && state.user)),
+    isAuthenticated: computed(() => Boolean(state.user)),
     initialize,
     fetchMe,
     login,

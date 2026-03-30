@@ -30,7 +30,7 @@ class DemoJobFlowTest extends TestCase
             ->assertOk()
             ->assertJsonPath('datos.status', 'pending')
             ->assertJsonPath('datos.requested_payload.mode', 'queued')
-            ->assertJsonPath('meta.worker_hint', 'Ejecuta php artisan queue:work --queue=demo para procesar jobs pendientes.');
+            ->assertJsonPath('meta.queue_runtime.connection', config('queue.default'));
 
         Queue::assertPushed(ProcessDemoJobRun::class, 1);
 
@@ -103,7 +103,10 @@ class DemoJobFlowTest extends TestCase
 
         $this->assertSame('completed', $jobRun->status);
         $this->assertSame($user->organizacion_activa_id, data_get($jobRun->result_payload, 'runtime_context.organizacion_id'));
+        $this->assertSame($user->organizacion_activa_id, data_get($jobRun->result_payload, 'runtime_context.empresa_id'));
+        $this->assertSame($user->organizacion_activa_id, data_get($jobRun->result_payload, 'runtime_context.company_id'));
         $this->assertSame($user->id, data_get($jobRun->result_payload, 'runtime_context.actor_id'));
+        $this->assertNull(data_get($jobRun->result_payload, 'runtime_context.active_work_assignment_id'));
     }
 
     public function test_failed_demo_job_can_be_retried_from_api(): void
@@ -127,7 +130,7 @@ class DemoJobFlowTest extends TestCase
             ->assertOk()
             ->assertJsonPath('datos.status', 'pending')
             ->assertJsonPath('datos.can_retry', true)
-            ->assertJsonPath('meta.worker_hint', 'Ejecuta php artisan queue:work --queue=demo para procesar jobs pendientes.');
+            ->assertJsonPath('meta.queue_runtime.connection', config('queue.default'));
 
         Queue::assertPushed(ProcessDemoJobRun::class, 1);
 

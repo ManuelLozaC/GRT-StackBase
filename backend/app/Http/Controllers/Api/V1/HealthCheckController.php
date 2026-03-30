@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api\V1;
 
 use App\Core\Http\Concerns\ApiResponse;
+use App\Core\Jobs\Services\QueueRuntimeInspector;
 use App\Core\Modules\ModuleRegistry;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\JsonResponse;
@@ -14,13 +15,13 @@ class HealthCheckController extends Controller
 {
     use ApiResponse;
 
-    public function __invoke(ModuleRegistry $modules): JsonResponse
+    public function __invoke(ModuleRegistry $modules, QueueRuntimeInspector $queueRuntime): JsonResponse
     {
         $checks = [
             'database' => $this->checkDatabase(),
             'redis' => $this->checkRedis(),
             'mail' => $this->checkMail(),
-            'queue' => $this->checkQueue(),
+            'queue' => $this->checkQueue($queueRuntime),
             'storage' => $this->checkStorage(),
         ];
 
@@ -80,12 +81,9 @@ class HealthCheckController extends Controller
         ];
     }
 
-    protected function checkQueue(): array
+    protected function checkQueue(QueueRuntimeInspector $queueRuntime): array
     {
-        return [
-            'status' => 'ok',
-            'connection' => config('queue.default'),
-        ];
+        return $queueRuntime->inspect();
     }
 
     protected function checkStorage(): array

@@ -34,26 +34,14 @@ class RoleManagementTest extends TestCase
         $this->withHeader('Authorization', 'Bearer '.$token)
             ->getJson('/api/v1/roles')
             ->assertOk()
-            ->assertJsonFragment([
-                'available_permissions' => [
-                    'api-tokens.manage',
-                    'data-engine.access',
-                    'demo.access',
-                    'error-logs.view',
-                    'integrations.manage',
-                    'metrics.view',
-                    'modules.manage',
-                    'operations.view',
-                    'roles.manage',
-                    'security.manage',
-                    'security.logs.view',
-                    'settings.manage',
-                    'tenancy.manage',
-                    'technical.docs.view',
-                    'users.impersonate',
-                    'users.manage_roles',
-                ],
-            ]);
+            ->assertJsonPath('meta.available_permissions.0', 'api-tokens.manage')
+            ->assertJsonFragment(['integrations.view'])
+            ->assertJsonFragment(['integrations.test'])
+            ->assertJsonFragment(['modules.view'])
+            ->assertJsonFragment(['roles.view'])
+            ->assertJsonFragment(['settings.view'])
+            ->assertJsonFragment(['users.view'])
+            ->assertJsonFragment(['users.roles.manage']);
 
         $createResponse = $this->withHeader('Authorization', 'Bearer '.$token)
             ->postJson('/api/v1/roles', [

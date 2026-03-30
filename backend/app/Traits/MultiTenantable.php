@@ -30,7 +30,7 @@ trait MultiTenantable
 
     protected static function resolveCurrentOrganizationId(): ?int
     {
-        return app(TenantContext::class)->organizationId(auth()->user());
+        return app(TenantContext::class)->companyId(auth()->user());
     }
 
     protected static function supportsOrganizationColumn(): bool

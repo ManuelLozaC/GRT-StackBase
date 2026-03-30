@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api\V1\Auth;
 
 use App\Core\Auth\Models\PersonalAccessToken;
+use App\Core\Auth\Services\AuthCookieService;
 use App\Core\Auth\Services\AccessTokenService;
 use App\Core\Auth\Services\ContextPermissionResolver;
 use App\Core\Http\Concerns\ApiResponse;
@@ -31,6 +32,7 @@ class AuthController extends Controller
 
     public function __construct(
         protected AccessTokenService $tokens,
+        protected AuthCookieService $authCookies,
         protected ContextPermissionResolver $contextPermissions,
         protected SecurityLogger $securityLogger,
         protected MetricsRecorder $metrics,
@@ -120,7 +122,7 @@ class AuthController extends Controller
                 'user' => $this->transformUser($this->ensureActiveOrganization($user)),
             ],
             message: 'Sesion iniciada',
-        );
+        )->withCookie($this->authCookies->make($token));
     }
 
     public function register(RegisterRequest $request): JsonResponse
@@ -173,7 +175,7 @@ class AuthController extends Controller
                 'user' => $this->transformUser($user->fresh()),
             ],
             message: 'Usuario registrado correctamente',
-        );
+        )->withCookie($this->authCookies->make($token));
     }
 
     public function forgotPassword(ForgotPasswordRequest $request): JsonResponse
@@ -288,7 +290,7 @@ class AuthController extends Controller
         return $this->successResponse(
             data: null,
             message: 'Sesion cerrada',
-        );
+        )->withCookie($this->authCookies->expire());
     }
 
     public function switchActiveOrganization(SwitchActiveOrganizationRequest $request): JsonResponse
@@ -415,6 +417,9 @@ class AuthController extends Controller
             'name' => $user->name,
             'alias' => $user->alias,
             'email' => $user->email,
+            'organizacion_activa_id' => $user->activeOrganizationId(),
+            'empresa_activa_id' => $user->activeCompanyId(),
+            'active_work_assignment_id' => $user->activeWorkAssignmentId(),
             'organizacion_activa' => $this->transformOrganization($user->organizacionActiva),
             'empresa_activa' => $this->transformOrganization($user->organizacionActiva),
             'organizaciones' => $user->organizaciones
@@ -572,6 +577,7 @@ class AuthController extends Controller
         return [
             'id' => $assignment->id,
             'organizacion_id' => $assignment->organizacion_id,
+            'empresa_id' => $assignment->organizacion_id,
             'oficina' => $assignment->oficina ? [
                 'id' => $assignment->oficina->id,
                 'nombre' => $assignment->oficina->nombre,

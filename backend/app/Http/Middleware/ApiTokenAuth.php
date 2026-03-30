@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Core\Auth\Services\AuthCookieService;
 use App\Core\Auth\Services\AccessTokenService;
 use Closure;
 use Illuminate\Http\JsonResponse;
@@ -13,12 +14,16 @@ class ApiTokenAuth
 {
     public function __construct(
         protected AccessTokenService $tokens,
+        protected AuthCookieService $authCookies,
     ) {
     }
 
     public function handle(Request $request, Closure $next): Response
     {
-        $plainTextToken = $request->bearerToken();
+        $plainTextToken = $request->bearerToken()
+            ?: $this->authCookies->resolveFromRequestCookie(
+                $request->cookie((string) config('security.auth_cookie.name', 'stackbase_access_token'))
+            );
 
         if (! is_string($plainTextToken) || $plainTextToken === '') {
             return $this->unauthorizedResponse();

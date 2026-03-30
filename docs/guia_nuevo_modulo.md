@@ -6,6 +6,11 @@ Esta guia define el camino recomendado para crear un modulo de negocio nuevo sob
 Complemento visual dentro del `Demo Module`:
 
 - [`D:\Desarrollo\GRT-StackBase\frontend\src\views\pages\demo\DemoModuleTutorial.vue`](D:\Desarrollo\GRT-StackBase\frontend\src\views\pages\demo\DemoModuleTutorial.vue)
+- [`D:\Desarrollo\GRT-StackBase\frontend\src\views\pages\demo\DemoNewsModuleTutorial.vue`](D:\Desarrollo\GRT-StackBase\frontend\src\views\pages\demo\DemoNewsModuleTutorial.vue)
+
+Caso guiado detallado:
+
+- [`D:\Desarrollo\GRT-StackBase\docs\tutorial_modulo_noticias.md`](D:\Desarrollo\GRT-StackBase\docs\tutorial_modulo_noticias.md)
 
 ## Regla principal
 - el modulo resuelve negocio

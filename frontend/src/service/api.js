@@ -21,6 +21,7 @@ function normalizeApiBaseUrl(rawBaseUrl) {
 
 const api = axios.create({
     baseURL: normalizeApiBaseUrl(import.meta.env.VITE_API_URL),
+    withCredentials: true,
     headers: {
         'Content-Type': 'application/json',
         Accept: 'application/json'
@@ -42,7 +43,9 @@ export function setApiAccessToken(token) {
 api.interceptors.response.use(
     (response) => response,
     (error) => {
-        uiFeedbackStore.reportHttpError(error);
+        if (!error?.config?.suppressUiError) {
+            uiFeedbackStore.reportHttpError(error);
+        }
 
         return Promise.reject(error);
     }

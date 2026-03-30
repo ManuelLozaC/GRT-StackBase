@@ -6,6 +6,7 @@ use App\Core\Audit\Services\AuditLogger;
 use App\Core\Http\Concerns\ApiResponse;
 use App\Core\Jobs\Models\CoreJobRun;
 use App\Core\Jobs\Services\CoreJobRunner;
+use App\Core\Jobs\Services\QueueRuntimeInspector;
 use App\Core\Metrics\MetricsRecorder;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\V1\Demo\DispatchDemoJobRequest;
@@ -21,6 +22,7 @@ class DemoJobController extends Controller
 
     public function __construct(
         protected CoreJobRunner $jobRunner,
+        protected QueueRuntimeInspector $queueRuntime,
         protected AuditLogger $auditLogger,
         protected MetricsRecorder $metrics,
     ) {
@@ -38,6 +40,7 @@ class DemoJobController extends Controller
             message: 'Jobs demo listados',
             meta: [
                 'total' => $runs->count(),
+                'queue_runtime' => $this->queueRuntime->inspect(['demo']),
             ],
         );
     }
@@ -114,6 +117,9 @@ class DemoJobController extends Controller
                 message: $run->status === 'failed'
                     ? 'Job demo ejecutado con fallo controlado'
                     : 'Job demo ejecutado inmediatamente',
+                meta: [
+                    'queue_runtime' => $this->queueRuntime->inspect(['demo']),
+                ],
             );
         }
 
@@ -123,7 +129,8 @@ class DemoJobController extends Controller
             data: $this->transformRun($run->load('requester:id,name')),
             message: 'Job demo enviado a cola',
             meta: [
-                'worker_hint' => 'Ejecuta php artisan queue:work --queue=demo para procesar jobs pendientes.',
+                'worker_hint' => $this->queueRuntime->inspect(['demo'])['worker_hint'],
+                'queue_runtime' => $this->queueRuntime->inspect(['demo']),
             ],
         );
     }
@@ -178,7 +185,8 @@ class DemoJobController extends Controller
             data: $this->transformRun($jobRun->fresh()->load('requester:id,name')),
             message: 'Job demo reenviado a cola',
             meta: [
-                'worker_hint' => 'Ejecuta php artisan queue:work --queue=demo para procesar jobs pendientes.',
+                'worker_hint' => $this->queueRuntime->inspect(['demo'])['worker_hint'],
+                'queue_runtime' => $this->queueRuntime->inspect(['demo']),
             ],
         );
     }
@@ -197,6 +205,8 @@ class DemoJobController extends Controller
             'requested_by' => $run->requester?->name,
             'requested_by_id' => $run->requested_by,
             'organizacion_id' => $run->organizacion_id,
+            'empresa_id' => $run->organizacion_id,
+            'company_id' => $run->organizacion_id,
             'max_tries' => 3,
             'backoff_schedule' => [5, 15],
             'can_retry' => in_array($run->status, ['failed', 'pending'], true),
