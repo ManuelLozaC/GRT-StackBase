@@ -83,7 +83,7 @@ Debe cubrir dos frentes:
 - login, logout, `me`, registro y reset de password
 - organizaciones y organizacion activa
 - metadata modular por API
-- Data Engine con CRUD e import/export
+- Data Engine con CRUD, relaciones profundas, `custom_fields`, duplicado, busqueda real con Meilisearch y reindexacion operativa
 - settings globales, por organizacion y por usuario
 - multi-rol, impersonacion y administracion base de usuarios
 - request IDs, rate limiting, logs de seguridad y metricas

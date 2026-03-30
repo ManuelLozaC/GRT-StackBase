@@ -1,0 +1,45 @@
+name: External Health Monitor
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '*/15 * * * *'
+
+permissions:
+  contents: read
+
+jobs:
+  monitor:
+    name: Check Public Health Endpoint
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Validate configured healthcheck URL
+        run: |
+          if [ -z "${HEALTHCHECK_URL}" ]; then
+            echo "HEALTHCHECK_URL no esta configurado en GitHub Variables." >&2
+            exit 1
+          fi
+        env:
+          HEALTHCHECK_URL: ${{ vars.HEALTHCHECK_URL }}
+
+      - name: Check public health JSON
+        run: |
+          python - <<'PY'
+          import json
+          import os
+          import urllib.request
+
+          url = os.environ["HEALTHCHECK_URL"]
+          with urllib.request.urlopen(url, timeout=20) as response:
+              payload = json.loads(response.read().decode("utf-8"))
+
+          checks = payload.get("datos", {}).get("checks", {})
+          failed = {key: value for key, value in checks.items() if value.get("status") != "ok"}
+          if failed:
+              raise SystemExit(f"Checks fallidos: {failed}")
+          print("Healthcheck externo OK")
+          PY
+        env:
+          HEALTHCHECK_URL: ${{ vars.HEALTHCHECK_URL }}

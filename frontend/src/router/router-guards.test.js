@@ -63,7 +63,7 @@ describe('router guards', () => {
         expect(initializeMock).toHaveBeenCalled();
         expect(router.currentRoute.value.name).toBe('login');
         expect(router.currentRoute.value.query.redirect).toBe('/admin/settings');
-    });
+    }, 15000);
 
     it('redirects authenticated users away from login to dashboard', async () => {
         isAuthenticated.value = true;

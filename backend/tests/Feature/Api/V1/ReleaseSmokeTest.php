@@ -6,6 +6,7 @@ use App\Core\Notifications\Models\CorePushSubscription;
 use App\Core\Settings\CoreSettingsManager;
 use App\Models\Organizacion;
 use App\Models\User;
+use Database\Seeders\RolePermissionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Queue;
@@ -103,6 +104,8 @@ class ReleaseSmokeTest extends TestCase
 
     protected function authenticateUser(): array
     {
+        $this->seed(RolePermissionSeeder::class);
+
         $organizacion = Organizacion::query()->create([
             'nombre' => 'Smoke Org',
             'slug' => 'smoke-org',
@@ -113,6 +116,7 @@ class ReleaseSmokeTest extends TestCase
         ]);
 
         $user->organizaciones()->attach($organizacion->id);
+        $user->assignRole('admin');
 
         $loginResponse = $this->postJson('/api/v1/auth/login', [
             'email' => $user->email,

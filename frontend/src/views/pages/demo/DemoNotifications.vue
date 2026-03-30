@@ -124,6 +124,7 @@ function resolveDeliveryHistorySeverity(status) {
     return (
         {
             delivered: 'success',
+            partial: 'warning',
             queued: 'info',
             failed: 'danger',
             skipped_disabled: 'warning',
@@ -409,15 +410,20 @@ onUnmounted(() => {
                             <div><strong>Destino:</strong> {{ delivery.destination || '-' }}</div>
                             <div><strong>Procesado:</strong> {{ formatDate(delivery.processed_at) }}</div>
                             <div><strong>Mailer:</strong> {{ delivery.mailer || '-' }}</div>
+                            <div><strong>Proveedor:</strong> {{ delivery.provider || '-' }}</div>
+                            <div><strong>Estado proveedor:</strong> {{ delivery.provider_status || '-' }}</div>
                             <div><strong>Origen:</strong> {{ delivery.source || '-' }}</div>
                             <div><strong>Intentos:</strong> {{ delivery.attempts }} / {{ delivery.max_attempts || '-' }}</div>
                             <div><strong>Backoff:</strong> {{ delivery.backoff_schedule?.length ? `${delivery.backoff_schedule.join(', ')} s` : '-' }}</div>
+                            <div><strong>Proximo retry:</strong> {{ delivery.next_retry_in_seconds ? `${delivery.next_retry_in_seconds} s` : '-' }}</div>
+                            <div><strong>Error code:</strong> {{ delivery.error_code || '-' }}</div>
                         </div>
 
                         <div class="demo-card-footer">
                             <span class="text-sm text-color-secondary">{{ delivery.status_detail }}</span>
                             <div class="demo-actions">
                                 <router-link v-if="delivery.action_url" :to="delivery.action_url" class="demo-link">Abrir accion</router-link>
+                                <Tag v-if="delivery.retry_exhausted" severity="danger" value="Retries agotados" />
                                 <button v-if="delivery.can_retry" class="demo-secondary-button" :disabled="deliveryHistory.retryingId === delivery.id" @click="retryDelivery(delivery)">
                                     {{ deliveryHistory.retryingId === delivery.id ? 'Reintentando...' : 'Reintentar entrega' }}
                                 </button>

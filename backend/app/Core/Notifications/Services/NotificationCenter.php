@@ -165,6 +165,20 @@ class NotificationCenter
             'notification',
         ]);
 
+        if (! $this->canRetry($delivery)) {
+            $delivery->forceFill([
+                'status_detail' => 'La entrega ya no admite mas reintentos manuales.',
+                'processed_at' => now(),
+                'metadata' => $this->mergeDeliveryMetadata($delivery, [
+                    'retriable' => false,
+                    'retry_exhausted' => true,
+                    'next_retry_in_seconds' => null,
+                ], incrementAttempts: false),
+            ])->save();
+
+            return $delivery->fresh();
+        }
+
         $recipient = $delivery->recipient;
 
         if ($recipient === null) {
@@ -291,6 +305,9 @@ class NotificationCenter
 
                 if (! $this->emailService->isConfigured()) {
                 return ['simulated', 'Canal email listo para integracion, pero sin credenciales completas.', $recipient->email, [
+                    'provider' => $this->emailService->providerName(),
+                    'provider_status' => 'configuration_missing',
+                    'error_code' => 'configuration_missing',
                     'retriable' => true,
                     'queued' => false,
                     'mailer' => config('mail.default'),
@@ -302,6 +319,8 @@ class NotificationCenter
                     'Entrega de correo encolada para procesamiento asincrono.',
                     $recipient->email,
                     [
+                        'provider' => $this->emailService->providerName(),
+                        'provider_status' => 'queued',
                         'mailer' => config('mail.default'),
                         'queued' => true,
                         'retriable' => true,
@@ -367,11 +386,13 @@ class NotificationCenter
         if ($channel === 'email') {
             $defaults['max_attempts'] = 3;
             $defaults['backoff_schedule'] = [10, 30, 60];
+            $defaults['provider'] = $this->emailService->providerName();
         }
 
         if ($channel === 'push') {
             $defaults['max_attempts'] = 3;
             $defaults['backoff_schedule'] = [5, 15, 30];
+            $defaults['provider'] = 'fcm';
         }
 
         return array_merge($defaults, $metadata);
@@ -390,5 +411,23 @@ class NotificationCenter
             'attempts' => $attempts,
             'last_attempt_at' => now()->toIso8601String(),
         ]);
+    }
+
+    public function canRetry(CoreNotificationDelivery $delivery): bool
+    {
+        $metadata = $delivery->metadata ?? [];
+        $attempts = (int) ($metadata['attempts'] ?? 0);
+        $maxAttempts = (int) ($metadata['max_attempts'] ?? 0);
+        $retriable = (bool) ($metadata['retriable'] ?? false);
+
+        if (! $retriable) {
+            return false;
+        }
+
+        if ($maxAttempts <= 0) {
+            return true;
+        }
+
+        return $attempts < $maxAttempts;
     }
 }

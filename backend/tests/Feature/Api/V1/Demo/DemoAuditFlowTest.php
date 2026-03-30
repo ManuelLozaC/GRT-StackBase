@@ -6,6 +6,7 @@ use App\Core\Audit\Services\AuditLogger;
 use App\Core\Tenancy\TenantContext;
 use App\Models\Organizacion;
 use App\Models\User;
+use Database\Seeders\RolePermissionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Queue;
@@ -172,6 +173,8 @@ class DemoAuditFlowTest extends TestCase
 
     protected function authenticateUser(): array
     {
+        $this->seed(RolePermissionSeeder::class);
+
         $organizacion = Organizacion::query()->create([
             'nombre' => 'Acme Audit',
             'slug' => 'acme-audit',
@@ -182,6 +185,7 @@ class DemoAuditFlowTest extends TestCase
         ]);
 
         $user->organizaciones()->attach($organizacion->id);
+        $user->givePermissionTo('demo.access');
 
         $loginResponse = $this->postJson('/api/v1/auth/login', [
             'email' => $user->email,
@@ -197,6 +201,8 @@ class DemoAuditFlowTest extends TestCase
 
     protected function authenticateUserWithTwoOrganizations(): array
     {
+        $this->seed(RolePermissionSeeder::class);
+
         $primaryOrganization = Organizacion::query()->create([
             'nombre' => 'Acme Audit Primary',
             'slug' => 'acme-audit-primary',
@@ -215,6 +221,7 @@ class DemoAuditFlowTest extends TestCase
             $primaryOrganization->id,
             $secondaryOrganization->id,
         ]);
+        $user->givePermissionTo('demo.access');
 
         $loginResponse = $this->postJson('/api/v1/auth/login', [
             'email' => $user->email,

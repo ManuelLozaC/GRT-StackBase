@@ -1,0 +1,64 @@
+name: Deploy Droplet
+
+on:
+  workflow_dispatch:
+    inputs:
+      deploy_ref:
+        description: Ref o branch a desplegar en el Droplet
+        required: true
+        default: main
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    name: Deploy To Droplet
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    environment: production
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Run remote deploy script
+        uses: appleboy/ssh-action@v1.2.0
+        env:
+          DEPLOY_APP_PATH: ${{ secrets.DEPLOY_APP_PATH }}
+          DEPLOY_REF: ${{ github.event.inputs.deploy_ref || 'main' }}
+          ROOT_ENV_FILE: ${{ secrets.ROOT_ENV_FILE }}
+          BACKEND_ENV_FILE: ${{ secrets.BACKEND_ENV_FILE }}
+          FRONTEND_ENV_FILE: ${{ secrets.FRONTEND_ENV_FILE }}
+          HEALTHCHECK_URL: ${{ vars.HEALTHCHECK_URL }}
+        with:
+          host: ${{ secrets.DEPLOY_HOST }}
+          port: ${{ secrets.DEPLOY_PORT }}
+          username: ${{ secrets.DEPLOY_USER }}
+          key: ${{ secrets.DEPLOY_SSH_PRIVATE_KEY }}
+          envs: DEPLOY_APP_PATH,DEPLOY_REF,ROOT_ENV_FILE,BACKEND_ENV_FILE,FRONTEND_ENV_FILE,HEALTHCHECK_URL
+          script_stop: true
+          script: |
+            chmod +x "${DEPLOY_APP_PATH}/scripts/ops/deploy-droplet.sh"
+            "${DEPLOY_APP_PATH}/scripts/ops/deploy-droplet.sh"
+
+      - name: Verify public healthcheck
+        if: ${{ vars.HEALTHCHECK_URL != '' }}
+        run: |
+          python - <<'PY'
+          import json
+          import os
+          import urllib.request
+
+          url = os.environ["HEALTHCHECK_URL"]
+          with urllib.request.urlopen(url, timeout=20) as response:
+              payload = json.loads(response.read().decode("utf-8"))
+
+          checks = payload.get("datos", {}).get("checks", {})
+          failed = {key: value for key, value in checks.items() if value.get("status") != "ok"}
+          if failed:
+              raise SystemExit(f"Healthcheck con fallos: {failed}")
+          print("Healthcheck publico OK")
+          PY
+        env:
+          HEALTHCHECK_URL: ${{ vars.HEALTHCHECK_URL }}

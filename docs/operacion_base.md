@@ -15,11 +15,16 @@ Actualmente expone checks de:
 Servicios esperados en Docker:
 - `app`
 - `web`
-- `frontend`
 - `db`
 - `redis`
 - `worker`
 - `scheduler`
+- `search`
+
+Nota:
+
+- en produccion el servicio `frontend` no se expone como Vite dev server
+- se usa solo para compilar `dist` durante el deploy y Nginx sirve el resultado final
 
 ## Cola
 La cola se usa para:
@@ -57,6 +62,12 @@ Superficies clave:
 - historial de entregas de notificaciones
 - historial de webhooks salientes y entrantes
 
+Observabilidad externa base:
+
+- workflow programado de GitHub Actions contra `HEALTHCHECK_URL`
+- validacion del JSON publico de `/api/v1/health`
+- falla visible en GitHub si algun check deja de responder en `ok`
+
 ## Limpieza operativa
 Comando recomendado para settings duplicados:
 
@@ -65,3 +76,23 @@ php artisan settings:deduplicate
 ```
 
 Usarlo despues de pruebas manuales o bootstrap repetido si hubo cambios de settings.
+
+## Deploy semiautomatizado
+
+El flujo recomendado vive en:
+
+- [`D:\Desarrollo\GRT-StackBase\.github\workflows\deploy-droplet.yml`](D:\Desarrollo\GRT-StackBase\.github\workflows\deploy-droplet.yml)
+
+Y usa:
+
+- [`D:\Desarrollo\GRT-StackBase\scripts\ops\deploy-droplet.sh`](D:\Desarrollo\GRT-StackBase\scripts\ops\deploy-droplet.sh)
+- [`D:\Desarrollo\GRT-StackBase\docs\github_deploy_secrets.md`](D:\Desarrollo\GRT-StackBase\docs\github_deploy_secrets.md)
+
+Reglas del flujo actual:
+
+- preserva `APP_KEY` existente
+- corre `migrate --force`, no `migrate:fresh`
+- evita `db:seed --force` en cada release
+- usa `platform:ensure-bootstrap` para garantizar bootstrap sin resetear credenciales
+- compila frontend con `docker-compose.prod.yml`
+- reindexa todos los recursos con busqueda activa mediante `data:reindex-search`

@@ -39,6 +39,8 @@ class ProcessEmailNotificationDelivery implements ShouldQueue
             ->findOrFail($this->deliveryId);
         $attempts = $this->job?->attempts() ?? 1;
         $metadata = $delivery->metadata ?? [];
+        $maxAttempts = (int) ($metadata['max_attempts'] ?? $this->tries);
+        $nextRetryInSeconds = $this->backoff[$attempts - 1] ?? null;
 
         if ($delivery->recipient === null) {
             $delivery->forceFill([
@@ -47,11 +49,16 @@ class ProcessEmailNotificationDelivery implements ShouldQueue
                 'processed_at' => now(),
                 'metadata' => array_merge($metadata, [
                     'attempts' => $attempts,
-                    'max_attempts' => $this->tries,
+                    'max_attempts' => $maxAttempts,
                     'backoff_schedule' => $this->backoff,
                     'last_attempt_at' => now()->toIso8601String(),
                     'queued' => true,
                     'error' => 'missing_recipient',
+                    'provider_status' => 'missing_target',
+                    'error_code' => 'missing_target',
+                    'retry_exhausted' => true,
+                    'next_retry_in_seconds' => null,
+                    'retriable' => false,
                 ]),
             ])->save();
 
@@ -76,11 +83,13 @@ class ProcessEmailNotificationDelivery implements ShouldQueue
                 'processed_at' => now(),
                 'metadata' => array_merge($metadata, $result['metadata'] ?? [], [
                     'attempts' => $attempts,
-                    'max_attempts' => $this->tries,
+                    'max_attempts' => $maxAttempts,
                     'backoff_schedule' => $this->backoff,
                     'last_attempt_at' => now()->toIso8601String(),
                     'queued' => false,
-                    'retriable' => $result['status'] !== 'delivered',
+                    'retry_exhausted' => $result['status'] === 'delivered' ? false : $attempts >= $maxAttempts,
+                    'next_retry_in_seconds' => $result['status'] === 'delivered' || $attempts >= $maxAttempts ? null : $nextRetryInSeconds,
+                    'retriable' => $result['status'] !== 'delivered' && $attempts < $maxAttempts,
                 ]),
             ])->save();
         } finally {

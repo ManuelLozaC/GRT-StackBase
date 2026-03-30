@@ -92,22 +92,26 @@ Nota:
 - funcionan como backlog vivo de endurecimiento y evolucion del stack
 
 - [ ] RBAC completo.
+  Ya existe cobertura mas fina para `demo.access`, `operations.view`, `metrics.view`, `security.logs.view` y `error-logs.view`, pero todavia queda espacio para profundizar permisos por modulo, recurso y accion.
 - [ ] Multi-tenant operativo completo en todo el dominio.
 - [x] CRUD universal conectado a backend.
-- [ ] Sistema real de archivos.
+- [x] Sistema real de archivos.
 - [x] Extender archivos hacia Spaces, versionado avanzado y descargas pesadas async.
 - [ ] Jobs avanzados.
-- [ ] Notificaciones avanzadas y multicanal.
+- [x] Notificaciones avanzadas y multicanal.
 - [ ] Auditoria y logs avanzados.
-- [ ] Demos funcionales de las capacidades genericas pendientes.
+- [x] Demos funcionales de las capacidades genericas pendientes.
 - [ ] Convertir `Demo Module` en catalogo vivo amplio y curado de UI y patrones reutilizables del stack.
 - [ ] Definir los catalogos universales reales que el core soportara de forma explicita.
 - [x] Unificar metadata modular backend/frontend para que rutas y menu se consuman por API.
 - [x] Pipeline CI base para backend y frontend.
 - [x] Arquitectura operativa base alineada entre Docker local y Droplets.
-- [ ] Pruebas frontend mas profundas sobre stores, guards, topbar, auth y pantallas administrativas criticas.
-- [ ] Tenancy transversal mas estricto en jobs, auditoria y servicios secundarios.
-- [ ] Automatizacion operativa de despliegue y observabilidad externa.
+- [x] Pruebas frontend mas profundas sobre stores, guards, topbar, auth y pantallas administrativas criticas.
+- [x] Tenancy transversal mas estricto en jobs, auditoria y servicios secundarios.
+- [x] Automatizacion operativa de despliegue y observabilidad externa.
+  Ya existen workflow de deploy por SSH al Droplet, monitor externo del healthcheck y manual explicito de `GitHub Secrets/Variables` para ejecutar el flujo directo.
+- [x] Endurecer el deploy productivo actual.
+  El flujo ya preserva `APP_KEY`, evita `db:seed --force` por release, usa `platform:ensure-bootstrap`, compila frontend productivo fuera de `npm run dev` y reindexa todos los recursos buscables.
 
 ### Fuera de alcance actual
 
@@ -161,7 +165,7 @@ Estado: En progreso
 - [x] Login por alias.
 - [x] Recuperacion y reseteo de password.
 - [x] Token auth inicial.
-- [ ] Ampliar RBAC por endpoint y accion para mas areas del sistema.
+- [x] Ampliar RBAC por endpoint y accion para mas areas del sistema.
 - [x] Multi-rol por usuario.
 - [x] Impersonacion con auditoria.
 - [x] Guardas frontend conectadas a auth real.
@@ -235,7 +239,8 @@ Estado: En progreso
 - [x] Retirar el CRUD historico del template de la navegacion principal.
 - [x] Implementar el nuevo motor CRUD del core con contrato reutilizable para modulos.
 - [x] Extender el Data Engine a relaciones y custom fields.
-- [ ] Extender el Data Engine a acciones avanzadas, relaciones mas profundas y custom fields realmente universales.
+- [x] Extender el Data Engine a acciones avanzadas, relaciones mas profundas y custom fields realmente universales.
+  Ya existe duplicado de registros, busqueda por relaciones, filtros/search/export/import sobre `custom_fields` y mejor cobertura visual en la pantalla operativa del Data Engine.
 
 ## P5. Gestion de archivos
 Estado: En progreso
@@ -271,7 +276,8 @@ Estado: En progreso
 - [x] Preferencias por usuario.
 - [x] Historial base de entregas por canal.
 - [x] Reintentos reales por canal visibles desde historial operativo para `email` y `push`.
-- [ ] Integraciones externas adicionales y politica mas profunda de retry por proveedor.
+- [x] Integraciones externas adicionales y politica mas profunda de retry por proveedor.
+  Ya existe metadata operativa mas profunda por proveedor para `email` y `push`, con `provider`, `provider_status`, `error_code`, `partial delivery`, `retry_exhausted` y `next_retry_in_seconds`.
 
 ## P7. UX transversal
 Estado: Parcial
@@ -316,13 +322,14 @@ Estado: En progreso
 - [x] Demo funcional de export/import dentro del `Demo Module`.
 
 ## P10. Busqueda y filtros avanzados
-Estado: Pendiente
+Estado: En progreso
 
-- [ ] Busqueda global real.
-- [ ] Filtros combinables.
+- [x] Busqueda global real.
+- [x] Filtros combinables.
 - [ ] Guardado de filtros.
-- [ ] Integracion real con Meilisearch.
-- [ ] Reindexacion.
+- [x] Integracion real con Meilisearch.
+- [x] Reindexacion.
+  Ya existe estado de busqueda por recurso, reindex manual por API/UI y comando `php artisan data:reindex-search`.
 
 ## P11. Logs, auditoria y trazabilidad
 Estado: En progreso
@@ -417,8 +424,10 @@ Estado: En progreso
 - [x] Smoke tests minimos de release para `auth`, `health`, `Data Engine`, `push` y `email`.
 - [x] Guia formal de extension para nuevos modulos, notificaciones, operacion y release.
 - [x] Base inicial de tests frontend con Vitest para stores de sesion, contexto, settings, permisos y guards del router.
-- [ ] Despliegue continuo o semiautomatizado sobre Droplets.
-- [ ] Observabilidad externa y alertas operativas fuera del panel interno.
+- [x] Cobertura de componentes clave frontend para topbar, login, settings y administracion de usuarios mediante `@vue/test-utils`.
+- [x] Despliegue continuo o semiautomatizado sobre Droplets.
+- [x] Observabilidad externa y alertas operativas fuera del panel interno.
+- [x] Endurecer el workflow de deploy para produccion real sin efectos colaterales sobre claves, bootstrap y frontend.
 
 ## P18. Responsive y soporte movil
 Estado: Parcial
@@ -447,18 +456,16 @@ Estado: En progreso
 - [x] Eventos clave de usuario.
 
 ## Siguiente desarrollo recomendado
-1. Ampliar pruebas frontend desde la base actual de Vitest hacia topbar, auth visual, formularios y pantallas criticas.
-2. Seguir endureciendo tenancy transversal restante en modelos, jobs, servicios secundarios y auditoria.
-3. Profundizar notificaciones avanzadas, Data Engine y otras integraciones transversales restantes del core.
-4. Automatizar despliegue continuo o semiautomatizado sobre Droplets y observabilidad externa.
-5. Mantener el `Demo Module` como biblioteca viva de referencia y onboarding tecnico.
+1. Mantener el `Demo Module` como biblioteca viva de referencia y onboarding tecnico.
+2. Seguir puliendo backlog de evolucion sin reabrir deuda estructural del core.
+3. Evaluar guardado de filtros y mejoras no criticas del Data Engine.
+4. Seguir endureciendo el stack solo donde agregue valor directo a los proximos modulos.
 
 ## Objetivos inmediatos desde aqui en adelante
 1. Mantener la version base estable mientras el `Demo Module` sigue creciendo como referencia de implementacion.
-2. Endurecer tenancy transversal en modelos, jobs, archivos y auditoria.
-3. Mantener guias de extension, release checklist y operacion como fuente viva para nuevos modulos.
-4. Ampliar pruebas frontend y checks de release sin inflar el core.
-5. Seguir limpiando residuales tecnicos, microcopy y consistencia visual sin reabrir deuda estructural de la base.
+2. Mantener guias de extension, release checklist y operacion como fuente viva para nuevos modulos.
+3. Seguir refinando backlog de evolucion sin reabrir deuda estructural del core.
+4. Mantener el deploy y monitoreo documentados y sincronizados con el codigo.
 
 ## Indicador de avance global
 

@@ -13,8 +13,13 @@ La base actual ya cumple con lo principal que se definio durante el proyecto:
 - arquitectura local con Docker alineada a Droplets
 - storage real en DigitalOcean Spaces
 - push web real mediante FCM y email real mediante Resend
-- historial operativo de entregas con retry manual para `email` y `push`
+- historial operativo de entregas con retry manual para `email` y `push`, politica por proveedor y diagnostico operativo mas rico
 - versionado real de archivos con historial por grupo, nueva version desde la demo y paquetes async para descargas pesadas
+- cobertura RBAC mas fina sobre demo, operaciones, metricas y logs tecnicos
+- Data Engine mas profundo con duplicado de registros, busqueda por relaciones y `custom_fields` filtrables/exportables/importables
+- busqueda real con Meilisearch y reindex manual por recurso desde API/UI/Artisan
+- deploy productivo endurecido: preserva `APP_KEY`, evita reseed destructivo, compila frontend a `dist` y reindexa todos los recursos buscables
+- suite frontend ya cubre stores, guards y componentes criticos como topbar, login, settings y administracion de usuarios
 - bootstrap oficial inicial
 - tenancy base
 - RBAC base y permisos contextuales iniciales
@@ -59,7 +64,7 @@ La base actual ya cumple con lo principal que se definio durante el proyecto:
 
 - API versionada y amplia
 - auth real con alias, impersonacion y tokens
-- Data Engine con import/export y transfers
+- Data Engine con import/export, transfers, relaciones mas profundas, duplicado y `custom_fields` reutilizables
 - settings por ambito
 - webhooks, audit, logs, metrics y operaciones
 - base de archivos y jobs reusable
@@ -109,9 +114,9 @@ El siguiente nivel ya no es "tener demos", sino:
 
 La decision ya esta clara y mayormente aplicada, pero conviene seguir reduciendo naming legacy residual en capas internas.
 
-### P1. El frontend necesita una red de pruebas propia mas fuerte
+### P1. La red de pruebas frontend ya cubre el shell critico, pero todavia puede seguir creciendo
 
-La base ya esta usable, pero la siguiente inversion de calidad debe ir a stores, guards y pantallas administrativas criticas.
+La base ya tiene cobertura sobre stores, guards, topbar, login, settings y administracion de usuarios. La siguiente inversion de calidad puede ir a vistas secundarias y flujos visuales mas ricos, ya no al nucleo minimo del shell.
 
 ## Consistencia general
 
@@ -130,7 +135,7 @@ La base ya esta usable, pero la siguiente inversion de calidad debe ir a stores,
 - refinamiento continuo del Demo Module como biblioteca unificada
 - observabilidad mas profunda
 - automatizacion de despliegues
-- mas pruebas frontend sobre stores, guards y formularios criticos
+- mas pruebas frontend sobre vistas secundarias y flujos visuales enriquecidos
 
 ## Conclusion
 

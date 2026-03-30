@@ -37,9 +37,11 @@ const state = reactive({
     exporting: false,
     loadingTransfers: false,
     transferRuns: [],
+    searchStatus: null,
     importFile: null,
     relationOptions: {},
-    visibleColumnKeys: []
+    visibleColumnKeys: [],
+    reindexingSearch: false
 });
 const importInput = ref(null);
 
@@ -50,10 +52,28 @@ const quickAccessResources = computed(() => {
 
     return preferredOrder.map((key) => state.resources.find((resource) => resource.key === key)).filter(Boolean);
 });
-const tableFields = computed(() => currentResource.value?.table_fields ?? []);
+const tableFields = computed(() => [
+    ...(currentResource.value?.table_fields ?? []),
+    ...(currentResource.value?.custom_fields ?? [])
+        .filter((field) => field.table)
+        .map((field) => ({
+            ...field,
+            key: `custom_fields.${field.key}`,
+            custom_field: true
+        }))
+]);
 const visibleTableFields = computed(() => tableFields.value.filter((field) => state.visibleColumnKeys.includes(field.key)));
 const formFields = computed(() => currentResource.value?.form_fields ?? []);
-const filterFields = computed(() => currentResource.value?.filter_fields ?? []);
+const filterFields = computed(() => [
+    ...(currentResource.value?.filter_fields ?? []),
+    ...(currentResource.value?.custom_fields ?? [])
+        .filter((field) => field.filterable)
+        .map((field) => ({
+            ...field,
+            key: `custom_fields.${field.key}`,
+            custom_field: true
+        }))
+]);
 const customFields = computed(() => currentResource.value?.custom_fields ?? []);
 const perPageOptions = computed(() => currentResource.value?.per_page_options ?? [10, 25, 50]);
 const hasResources = computed(() => state.resources.length > 0);
@@ -69,6 +89,7 @@ const resourceCapabilities = computed(
         }
 );
 const tableSize = computed(() => (settingsStore.getSettingValue('user', 'dense_tables', false) ? 'small' : null));
+const searchSummary = computed(() => (state.searchStatus?.engine === 'meilisearch' ? `Meilisearch${state.searchStatus?.stats?.number_of_documents !== undefined ? ` · ${state.searchStatus.stats.number_of_documents} docs` : ''}` : 'Busqueda DB'));
 
 function currentDataEnginePreferences() {
     return settingsStore.getSettingValue('user', 'data_engine_preferences', {}) ?? {};
@@ -130,6 +151,10 @@ function humanizeValue(field, value, displayValue = null) {
     }
 
     return value;
+}
+
+function recordValue(record, field) {
+    return field.custom_field ? record.custom_fields?.[field.key.replace('custom_fields.', '')] : field.key.split('.').reduce((carry, segment) => carry?.[segment], record);
 }
 
 function tagSeverity(fieldKey, value) {
@@ -235,6 +260,20 @@ async function loadTransfers() {
     }
 }
 
+async function loadSearchStatus() {
+    if (!state.selectedResourceKey) {
+        state.searchStatus = null;
+        return;
+    }
+
+    try {
+        const response = await api.get(`/v1/data/${state.selectedResourceKey}/search/status`);
+        state.searchStatus = response.data.datos ?? null;
+    } catch {
+        state.searchStatus = null;
+    }
+}
+
 async function loadRelationOptions() {
     const fields = formFields.value.filter((field) => field.type === 'relation' && field.relation?.resource_key);
 
@@ -277,6 +316,7 @@ function prepareResourceState() {
     resetFilters();
     resetForm();
     state.transferRuns = [];
+    state.searchStatus = null;
     state.relationOptions = {};
     state.visibleColumnKeys = [];
 }
@@ -331,6 +371,34 @@ async function saveRecord() {
             severity: 'error',
             summary: 'No se pudo guardar',
             detail: error?.response?.data?.mensaje ?? 'Revisa los datos enviados al recurso.',
+            life: 4000
+        });
+    } finally {
+        state.saving = false;
+    }
+}
+
+async function duplicateRecord(record) {
+    if (!state.selectedResourceKey) {
+        return;
+    }
+
+    state.saving = true;
+
+    try {
+        await api.post(`/v1/data/${state.selectedResourceKey}/${record.id}/duplicate`);
+        await loadRecords();
+        toast.add({
+            severity: 'success',
+            summary: 'Registro duplicado',
+            detail: 'Se creo una copia del registro actual.',
+            life: 3000
+        });
+    } catch (error) {
+        toast.add({
+            severity: 'error',
+            summary: 'No se pudo duplicar',
+            detail: error?.response?.data?.mensaje ?? 'No se pudo crear una copia del registro seleccionado.',
             life: 4000
         });
     } finally {
@@ -396,6 +464,34 @@ async function exportResource() {
         });
     } finally {
         state.exporting = false;
+    }
+}
+
+async function reindexSearch() {
+    if (!state.selectedResourceKey) {
+        return;
+    }
+
+    state.reindexingSearch = true;
+
+    try {
+        await api.post(`/v1/data/${state.selectedResourceKey}/search/reindex`);
+        await loadSearchStatus();
+        toast.add({
+            severity: 'success',
+            summary: 'Busqueda reindexada',
+            detail: 'El indice del recurso actual quedo actualizado.',
+            life: 3000
+        });
+    } catch (error) {
+        toast.add({
+            severity: 'error',
+            summary: 'No se pudo reindexar',
+            detail: error?.response?.data?.mensaje ?? 'No se pudo completar la reindexacion del recurso actual.',
+            life: 4000
+        });
+    } finally {
+        state.reindexingSearch = false;
     }
 }
 
@@ -540,7 +636,7 @@ watch(
         });
         prepareResourceState();
         syncVisibleColumnsFromPreferences();
-        await Promise.all([loadRelationOptions(), loadRecords(), loadTransfers()]);
+        await Promise.all([loadRelationOptions(), loadRecords(), loadTransfers(), loadSearchStatus()]);
     }
 );
 
@@ -586,6 +682,17 @@ onMounted(async () => {
                             <p class="text-sm text-slate-500 m-0">Importar, exportar o crear registros sin mezclar esas acciones con los filtros de busqueda.</p>
                         </div>
                         <div class="data-engine-toolbar-actions">
+                            <Tag v-if="state.searchStatus" severity="contrast" :value="searchSummary" />
+                            <Button
+                                v-if="state.searchStatus?.engine === 'meilisearch'"
+                                label="Reindexar busqueda"
+                                icon="pi pi-sync"
+                                severity="secondary"
+                                outlined
+                                class="data-engine-toolbar-button app-button-standard"
+                                :loading="state.reindexingSearch"
+                                @click="reindexSearch"
+                            />
                             <Button v-if="resourceCapabilities.import" label="Importar CSV" icon="pi pi-upload" severity="secondary" outlined class="data-engine-toolbar-button app-button-standard" @click="openImportDialog" />
                             <Button v-if="resourceCapabilities.export" label="Exportar CSV" icon="pi pi-download" severity="secondary" class="data-engine-toolbar-button app-button-standard" :loading="state.exporting" @click="exportResource" />
                             <Button v-if="resourceCapabilities.create" label="Nuevo registro" icon="pi pi-plus" class="data-engine-toolbar-button app-button-standard" @click="openCreateDialog" />
@@ -651,6 +758,7 @@ onMounted(async () => {
                     <div class="flex-1 min-w-56 rounded-2xl bg-slate-50 border border-slate-200 px-4 py-3">
                         <div class="text-sm font-semibold text-slate-700 mb-1">{{ currentResource.name }}</div>
                         <p class="text-sm text-slate-600 m-0">{{ currentResource.description }}</p>
+                        <div v-if="state.searchStatus?.last_reindex?.reindexed_at" class="mt-2 text-xs text-slate-500">Ultima reindexacion: {{ formatDateTime(state.searchStatus.last_reindex.reindexed_at) }}</div>
                     </div>
                 </div>
             </div>
@@ -674,13 +782,19 @@ onMounted(async () => {
                 >
                     <Column v-for="field in visibleTableFields" :key="field.key" :field="field.key" :header="field.label" :sortable="field.sortable" style="min-width: 12rem">
                         <template #body="slotProps">
-                            <Tag v-if="field.type === 'select'" :severity="tagSeverity(field.key, slotProps.data[field.key])" :value="humanizeValue(field, slotProps.data[field.key], slotProps.data[field.relation?.display_key])" />
-                            <span v-else>{{ humanizeValue(field, slotProps.data[field.key], slotProps.data[field.relation?.display_key]) }}</span>
+                            <Tag v-if="field.type === 'select'" :severity="tagSeverity(field.key, recordValue(slotProps.data, field))" :value="humanizeValue(field, recordValue(slotProps.data, field), slotProps.data[field.relation?.display_key])" />
+                            <Tag
+                                v-else-if="field.type === 'boolean'"
+                                :severity="recordValue(slotProps.data, field) ? 'success' : 'secondary'"
+                                :value="humanizeValue(field, recordValue(slotProps.data, field), slotProps.data[field.relation?.display_key])"
+                            />
+                            <span v-else>{{ humanizeValue(field, recordValue(slotProps.data, field), slotProps.data[field.relation?.display_key]) }}</span>
                         </template>
                     </Column>
                     <Column header="Acciones" style="width: 10rem">
                         <template #body="slotProps">
                             <div class="flex gap-2">
+                                <Button v-if="currentResource?.record_actions?.duplicate" icon="pi pi-copy" severity="secondary" text rounded @click="duplicateRecord(slotProps.data)" />
                                 <Button icon="pi pi-pencil" severity="secondary" text rounded @click="openEditDialog(slotProps.data)" />
                                 <Button icon="pi pi-trash" severity="danger" text rounded @click="confirmDelete(slotProps.data)" />
                             </div>
@@ -764,6 +878,9 @@ onMounted(async () => {
                     <div v-for="field in customFields" :key="field.key" class="col-span-12 md:col-span-6">
                         <label class="block text-sm font-semibold text-slate-600 mb-2">{{ field.label }}</label>
                         <Select v-if="field.type === 'select'" v-model="state.form.custom_fields[field.key]" :options="field.options" optionLabel="label" optionValue="value" showClear class="w-full" />
+                        <ToggleSwitch v-else-if="field.type === 'boolean'" v-model="state.form.custom_fields[field.key]" />
+                        <InputText v-else-if="field.type === 'date'" v-model="state.form.custom_fields[field.key]" class="w-full" type="date" />
+                        <Textarea v-else-if="field.type === 'textarea'" v-model="state.form.custom_fields[field.key]" rows="4" class="w-full" autoResize />
                         <InputText v-else v-model="state.form.custom_fields[field.key]" class="w-full" />
                     </div>
                 </div>

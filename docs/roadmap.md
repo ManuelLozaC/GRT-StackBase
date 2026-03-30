@@ -35,9 +35,9 @@ Fecha de referencia: `2026-03-26`
 ### Siguiente evolucion clave
 
 - seguir refinando `Demo Module` como biblioteca viva, didactica y consistente del stack
-- agregar pruebas frontend mas profundas
-- endurecer tenancy, auditoria y seguridad en las superficies restantes
-- automatizar observabilidad, backups y despliegue continuo sobre la topologia de Droplet
+- automatizar observabilidad y despliegue continuo sobre la topologia de Droplet
+- seguir endureciendo tenancy, auditoria y seguridad en las superficies restantes
+- evaluar guardado de filtros y otras mejoras no criticas del Data Engine
 - evolucionar el core sin reabrir deuda estructural de la version base
 
 ### Reciente
@@ -49,10 +49,12 @@ Fecha de referencia: `2026-03-26`
 - la pantalla administrativa de usuarios ya permite alta, edicion, activacion y reset de contrasena
 - el frontend ya puede gestionar los recursos base del dominio desde Data Engine con acceso rapido y soporte correcto de booleanos y fechas
 - pipeline CI operativo ya valida backend Laravel y frontend en GitHub Actions
+- la suite frontend ya cubre stores, guards y componentes criticos del shell
 - DigitalOcean Spaces ya esta integrado y validado con escritura, lectura y borrado reales
 - Docker Compose ya incluye `worker`, `scheduler` y healthchecks base alineados con Droplet
 - `demo-platform` ya evoluciono a showcase tecnico + UI con recipes y guia didactica en varias demos
 - el `Demo Module` ya tiene una capa didactica y una presentacion visual mas consistente en demos UI y tecnicas clave
+- el Data Engine ya usa Meilisearch con reindex manual por recurso en API, UI y Artisan
 
 ## Fases vigentes
 
@@ -94,8 +96,8 @@ Fecha de referencia: `2026-03-26`
 ### Fase 6. Evolucion guiada
 
 - convertir el `Demo Module` en referencia de implementacion para nuevos proyectos
-- ampliar pruebas frontend y checks de release
-- automatizar despliegue, backups y observabilidad
+- automatizar despliegue y observabilidad
+- seguir ampliando checks de release sin inflar la base
 - seguir endureciendo tenancy y seguridad sin romper la simplicidad del core
 
 ## Criterio de exito

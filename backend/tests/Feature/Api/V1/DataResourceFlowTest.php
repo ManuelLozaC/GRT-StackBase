@@ -13,6 +13,7 @@ use App\Models\User;
 use Database\Seeders\RolePermissionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
@@ -422,6 +423,8 @@ CSV);
                     'segmento' => 'Enterprise',
                     'canal_origen' => 'web',
                     'presupuesto_estimado' => '25000',
+                    'ultima_interaccion' => '2026-03-29',
+                    'cliente_recurrente' => true,
                 ],
             ])
             ->assertOk();
@@ -436,7 +439,64 @@ CSV);
             ->assertJsonPath('datos.sucursal_id_label', 'Casa Matriz')
             ->assertJsonPath('datos.equipo_id_label', 'Ventas B2B')
             ->assertJsonPath('datos.custom_fields.segmento', 'Enterprise')
-            ->assertJsonPath('datos.custom_fields.canal_origen', 'web');
+            ->assertJsonPath('datos.custom_fields.canal_origen', 'web')
+            ->assertJsonPath('datos.custom_fields.ultima_interaccion', '2026-03-29')
+            ->assertJsonPath('datos.custom_fields.cliente_recurrente', true);
+
+        $this->withHeader('Authorization', 'Bearer '.$token)
+            ->getJson('/api/v1/data/demo-contacts?q=Acme')
+            ->assertOk()
+            ->assertJsonPath('meta.pagination.total', 1)
+            ->assertJsonPath('datos.0.nombre', 'Relacion Demo');
+
+        $this->withHeader('Authorization', 'Bearer '.$token)
+            ->getJson('/api/v1/data/demo-contacts?q=Enterprise')
+            ->assertOk()
+            ->assertJsonPath('meta.pagination.total', 1)
+            ->assertJsonPath('datos.0.custom_fields.segmento', 'Enterprise');
+
+        $this->withHeader('Authorization', 'Bearer '.$token)
+            ->getJson('/api/v1/data/demo-contacts?filters[custom_fields.segmento]=Enterprise&filters[custom_fields.canal_origen]=web')
+            ->assertOk()
+            ->assertJsonPath('meta.pagination.total', 1)
+            ->assertJsonPath('datos.0.custom_fields.canal_origen', 'web');
+
+        $duplicateResponse = $this->withHeader('Authorization', 'Bearer '.$token)
+            ->postJson('/api/v1/data/demo-contacts/'.$recordId.'/duplicate')
+            ->assertOk()
+            ->assertJsonPath('datos.nombre', 'Relacion Demo (copia)')
+            ->assertJsonPath('datos.custom_fields.segmento', 'Enterprise');
+
+        $this->assertNotSame($recordId, $duplicateResponse->json('datos.id'));
+
+        $exportResponse = $this->withHeader('Authorization', 'Bearer '.$token)
+            ->get('/api/v1/data/demo-contacts/export');
+
+        $exportResponse->assertOk();
+        $exportContent = (string) $exportResponse->getContent();
+        $this->assertStringContainsString('custom_fields.segmento', $exportContent);
+        $this->assertStringContainsString('custom_fields.cliente_recurrente', $exportContent);
+        $this->assertStringContainsString('Enterprise', $exportContent);
+        $this->assertStringContainsString('1', $exportContent);
+
+        $importFile = UploadedFile::fake()->createWithContent('demo-contacts-advanced.csv', <<<CSV
+nombre,email,telefono,empresa,estado,prioridad,notas,custom_fields.segmento,custom_fields.canal_origen,custom_fields.ultima_interaccion,custom_fields.cliente_recurrente
+Import Advanced,advanced@test.dev,70000012,,active,medium,Con custom fields,Mid Market,referido,2026-03-28,1
+CSV);
+
+        $this->withHeader('Authorization', 'Bearer '.$token)
+            ->post('/api/v1/data/demo-contacts/import', [
+                'file' => $importFile,
+            ])
+            ->assertOk()
+            ->assertJsonPath('datos.records_processed', 1);
+
+        $this->withHeader('Authorization', 'Bearer '.$token)
+            ->getJson('/api/v1/data/demo-contacts?q=Mid Market')
+            ->assertOk()
+            ->assertJsonPath('meta.pagination.total', 1)
+            ->assertJsonPath('datos.0.custom_fields.canal_origen', 'referido')
+            ->assertJsonPath('datos.0.custom_fields.cliente_recurrente', '1');
     }
 
     public function test_admin_can_manage_base_domain_resources_with_data_engine(): void
@@ -640,6 +700,68 @@ CSV);
             ])
             ->assertOk()
             ->assertJsonPath('datos.nombre', 'Legacy Company');
+    }
+
+    public function test_admin_can_reindex_demo_contacts_and_use_meilisearch_search(): void
+    {
+        $this->seed(RolePermissionSeeder::class);
+        config([
+            'search.meilisearch.host' => 'http://search:7700',
+            'search.meilisearch.master_key' => 'grt-meili-local',
+        ]);
+
+        Http::fake([
+            'http://search:7700/indexes' => Http::response(['taskUid' => 1], 202),
+            'http://search:7700/indexes/*/settings/filterable-attributes' => Http::response(['taskUid' => 2], 202),
+            'http://search:7700/indexes/*/settings/searchable-attributes' => Http::response(['taskUid' => 3], 202),
+            'http://search:7700/indexes/*/documents' => Http::response(['taskUid' => 4], 202),
+            'http://search:7700/indexes/*/stats' => Http::response([
+                'numberOfDocuments' => 1,
+                'isIndexing' => false,
+            ], 200),
+            'http://search:7700/indexes/*/search' => Http::response([
+                'hits' => [
+                    ['id' => 1],
+                ],
+                'estimatedTotalHits' => 1,
+            ], 200),
+        ]);
+
+        [$user, $token] = $this->authenticateUser();
+        $user->assignRole('admin');
+        app(ModuleRegistry::class)->setEnabled('demo-platform', true);
+
+        $recordId = $this->withHeader('Authorization', 'Bearer '.$token)
+            ->postJson('/api/v1/data/demo-contacts', [
+                'nombre' => 'Busqueda Meili',
+                'estado' => 'active',
+                'prioridad' => 'high',
+                'custom_fields' => [
+                    'segmento' => 'Enterprise',
+                ],
+            ])
+            ->assertOk()
+            ->json('datos.id');
+
+        $this->withHeader('Authorization', 'Bearer '.$token)
+            ->postJson('/api/v1/data/demo-contacts/search/reindex')
+            ->assertOk()
+            ->assertJsonPath('datos.documents_indexed', 1);
+
+        $this->withHeader('Authorization', 'Bearer '.$token)
+            ->getJson('/api/v1/data/demo-contacts/search/status')
+            ->assertOk()
+            ->assertJsonPath('datos.engine', 'meilisearch')
+            ->assertJsonPath('datos.configured', true)
+            ->assertJsonPath('datos.stats.number_of_documents', 1);
+
+        $this->withHeader('Authorization', 'Bearer '.$token)
+            ->getJson('/api/v1/data/demo-contacts?q=Enterprise')
+            ->assertOk()
+            ->assertJsonPath('meta.search.engine', 'meilisearch')
+            ->assertJsonPath('meta.search.fallback', false)
+            ->assertJsonPath('meta.pagination.total', 1)
+            ->assertJsonPath('datos.0.id', $recordId);
     }
 
     protected function authenticateUser(): array

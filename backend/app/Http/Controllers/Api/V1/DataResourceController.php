@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api\V1;
 
 use App\Core\DataEngine\DataResourceRegistry;
 use App\Core\DataEngine\Models\CoreDataTransferRun;
+use App\Core\DataEngine\Services\DataSearchManager;
 use App\Core\DataEngine\Services\DataTransferManager;
 use App\Core\Http\Concerns\ApiResponse;
 use App\Core\Metrics\MetricsRecorder;
@@ -16,6 +17,7 @@ use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Validator;
 
 class DataResourceController extends Controller
@@ -25,6 +27,7 @@ class DataResourceController extends Controller
     public function __construct(
         protected DataResourceRegistry $resources,
         protected DataTransferManager $transfers,
+        protected DataSearchManager $search,
         protected MetricsRecorder $metrics,
     ) {
     }
@@ -50,7 +53,14 @@ class DataResourceController extends Controller
             return $this->resourceNotFoundResponse();
         }
 
-        $query = $this->buildResourceQuery($request, $resource);
+        $searchQuery = trim((string) $request->query('q', ''));
+        $searchResult = null;
+
+        if ($searchQuery !== '') {
+            $searchResult = $this->search->searchIds($resource, $searchQuery, $request->user());
+        }
+
+        $query = $this->buildResourceQuery($request, $resource, $searchResult['ids'] ?? null, ($searchResult['fallback'] ?? true) === false);
         $perPage = min(max($request->integer('per_page', 10), 1), 100);
         $records = $query->paginate($perPage);
 
@@ -71,6 +81,11 @@ class DataResourceController extends Controller
                     'per_page' => $records->perPage(),
                     'current_page' => $records->currentPage(),
                     'last_page' => $records->lastPage(),
+                ],
+                'search' => [
+                    'engine' => $searchResult['engine'] ?? 'database',
+                    'fallback' => $searchResult['fallback'] ?? false,
+                    'estimated_total_hits' => $searchResult['estimated_total_hits'] ?? null,
                 ],
             ],
         );
@@ -244,6 +259,7 @@ class DataResourceController extends Controller
         $modelClass = $resource['model'];
         /** @var Model $record */
         $record = $modelClass::query()->create($payload);
+        $this->search->syncRecord($resource, $record);
         $this->metrics->record(
             moduleKey: (string) ($resource['source_module'] ?? 'core-platform'),
             eventKey: 'data.record.created',
@@ -277,6 +293,7 @@ class DataResourceController extends Controller
 
         $payload = $this->validatePayload($request, $resource, true);
         $record->fill($payload)->save();
+        $this->search->syncRecord($resource, $record);
         $this->metrics->record(
             moduleKey: (string) ($resource['source_module'] ?? 'core-platform'),
             eventKey: 'data.record.updated',
@@ -308,7 +325,9 @@ class DataResourceController extends Controller
             return $this->recordNotFoundResponse();
         }
 
+        $recordPrimaryKey = $record->getKey();
         $record->delete();
+        $this->search->deleteRecord($resource, $recordPrimaryKey);
         $this->metrics->record(
             moduleKey: (string) ($resource['source_module'] ?? 'core-platform'),
             eventKey: 'data.record.deleted',
@@ -323,6 +342,48 @@ class DataResourceController extends Controller
         return $this->successResponse(
             data: null,
             message: 'Registro eliminado correctamente',
+        );
+    }
+
+    public function duplicate(Request $request, string $resourceKey, string $recordId): JsonResponse
+    {
+        $resource = $this->resolveResource($request, $resourceKey);
+
+        if ($resource === null) {
+            return $this->resourceNotFoundResponse();
+        }
+
+        if (! (($resource['capabilities']['duplicate'] ?? false) || ($resource['record_actions']['duplicate'] ?? false))) {
+            return $this->errorResponse(
+                message: 'Este recurso no permite duplicar registros.',
+                status: 422,
+            );
+        }
+
+        $record = $this->resolveRecord($resource, $recordId);
+
+        if ($record === null) {
+            return $this->recordNotFoundResponse();
+        }
+
+        $duplicate = $this->buildDuplicateRecord($record, $resource);
+        $duplicate->save();
+        $this->search->syncRecord($resource, $duplicate);
+        $this->metrics->record(
+            moduleKey: (string) ($resource['source_module'] ?? 'core-platform'),
+            eventKey: 'data.record.duplicated',
+            eventCategory: 'data-engine',
+            actor: $request->user(),
+            context: [
+                'resource_key' => $resourceKey,
+                'record_id' => $record->getKey(),
+                'duplicate_id' => $duplicate->getKey(),
+            ],
+        );
+
+        return $this->successResponse(
+            data: $this->transformRecord($duplicate->fresh($this->resourceRelations($resource)), $resource),
+            message: 'Registro duplicado correctamente',
         );
     }
 
@@ -341,9 +402,9 @@ class DataResourceController extends Controller
             ->first();
     }
 
-    protected function buildResourceQuery(Request $request, array $resource): Builder
+    protected function buildResourceQuery(Request $request, array $resource, ?array $searchIds = null, bool $preserveSearchOrder = false): Builder
     {
-        return $this->transfers->buildQueryFromCriteria($resource, $this->exportCriteriaFromRequest($request))
+        return $this->transfers->buildQueryFromCriteria($resource, $this->exportCriteriaFromRequest($request, $searchIds, $preserveSearchOrder))
             ->with($this->resourceRelations($resource));
     }
 
@@ -379,55 +440,6 @@ class DataResourceController extends Controller
         }
 
         return $rules;
-    }
-
-    protected function applySearch(Builder $query, Request $request, array $resource): void
-    {
-        $search = trim((string) $request->query('q', ''));
-        $searchableFields = $resource['searchable_fields'] ?? [];
-
-        if ($search === '' || $searchableFields === []) {
-            return;
-        }
-
-        $query->where(function (Builder $builder) use ($searchableFields, $search): void {
-            foreach ($searchableFields as $index => $field) {
-                $method = $index === 0 ? 'where' : 'orWhere';
-                $builder->{$method}($field, 'like', '%'.$search.'%');
-            }
-        });
-    }
-
-    protected function applyFilters(Builder $query, Request $request, array $resource): void
-    {
-        $filters = $request->input('filters', []);
-        $allowedFields = collect($resource['filter_fields'] ?? [])->pluck('key')->all();
-
-        foreach ($filters as $field => $value) {
-            if (! in_array($field, $allowedFields, true) || $value === null || $value === '') {
-                continue;
-            }
-
-            $query->where($field, $value);
-        }
-    }
-
-    protected function applySorting(Builder $query, Request $request, array $resource): void
-    {
-        $sortableFields = $resource['sortable_fields'] ?? [];
-        $defaultSort = $resource['default_sort'] ?? ['field' => 'id', 'direction' => 'desc'];
-        $sortBy = (string) $request->query('sort_by', $defaultSort['field'] ?? 'id');
-        $sortDirection = strtolower((string) $request->query('sort_direction', $defaultSort['direction'] ?? 'desc'));
-
-        if (! in_array($sortBy, $sortableFields, true)) {
-            $sortBy = $defaultSort['field'] ?? 'id';
-        }
-
-        if (! in_array($sortDirection, ['asc', 'desc'], true)) {
-            $sortDirection = 'desc';
-        }
-
-        $query->orderBy($sortBy, $sortDirection);
     }
 
     protected function transformRecord(Model $record, array $resource): array
@@ -479,14 +491,98 @@ class DataResourceController extends Controller
         );
     }
 
-    protected function exportCriteriaFromRequest(Request $request): array
+    public function searchStatus(Request $request, string $resourceKey): JsonResponse
+    {
+        $resource = $this->resolveResource($request, $resourceKey);
+
+        if ($resource === null) {
+            return $this->resourceNotFoundResponse();
+        }
+
+        return $this->successResponse(
+            data: $this->search->status($resource),
+            message: 'Estado de busqueda listado',
+        );
+    }
+
+    public function reindexSearch(Request $request, string $resourceKey): JsonResponse
+    {
+        $resource = $this->resolveResource($request, $resourceKey);
+
+        if ($resource === null) {
+            return $this->resourceNotFoundResponse();
+        }
+
+        $result = $this->search->reindex($resource, $request->user());
+
+        return $this->successResponse(
+            data: $result,
+            message: 'Reindexacion completada correctamente',
+        );
+    }
+
+    protected function exportCriteriaFromRequest(Request $request, ?array $searchIds = null, bool $preserveSearchOrder = false): array
     {
         return [
             'q' => $request->query('q'),
             'filters' => $request->input('filters', []),
             'sort_by' => $request->query('sort_by'),
             'sort_direction' => $request->query('sort_direction'),
+            'search_ids' => $searchIds,
+            'preserve_search_order' => $preserveSearchOrder,
         ];
+    }
+
+    protected function buildDuplicateRecord(Model $record, array $resource): Model
+    {
+        /** @var Model $duplicate */
+        $duplicate = $record->replicate(['uuid', 'created_at', 'updated_at', 'deleted_at']);
+        $modelClass = $resource['model'];
+
+        foreach ($resource['fields'] as $field) {
+            $key = $field['key'];
+
+            if (! in_array($key, $duplicate->getFillable(), true)) {
+                continue;
+            }
+
+            if ($key === 'slug') {
+                $duplicate->setAttribute($key, $this->uniqueDuplicateSlug($modelClass, (string) $record->getAttribute($key)));
+                continue;
+            }
+
+            if (in_array($key, ['nombre', 'name'], true)) {
+                $duplicate->setAttribute($key, $this->duplicateLabel((string) $record->getAttribute($key)));
+                continue;
+            }
+        }
+
+        if (in_array('uuid', $duplicate->getFillable(), true)) {
+            $duplicate->setAttribute('uuid', (string) Str::uuid());
+        }
+
+        return $duplicate;
+    }
+
+    protected function duplicateLabel(string $value): string
+    {
+        $normalized = trim($value);
+
+        return $normalized === '' ? 'Registro copia' : $normalized.' (copia)';
+    }
+
+    protected function uniqueDuplicateSlug(string $modelClass, string $baseSlug): string
+    {
+        $seed = trim($baseSlug) !== '' ? $baseSlug : 'registro';
+        $candidate = Str::slug($seed).'-copia';
+        $attempt = 2;
+
+        while ($modelClass::query()->where('slug', $candidate)->exists()) {
+            $candidate = Str::slug($seed).'-copia-'.$attempt;
+            $attempt++;
+        }
+
+        return $candidate;
     }
 
     protected function normalizeExportFormat(string $format): string

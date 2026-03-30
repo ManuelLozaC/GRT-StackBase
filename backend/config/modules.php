@@ -20,6 +20,10 @@ return [
                 'roles.manage',
                 'tenancy.manage',
                 'security.manage',
+                'operations.view',
+                'metrics.view',
+                'security.logs.view',
+                'error-logs.view',
             ],
             'settings' => [
                 [

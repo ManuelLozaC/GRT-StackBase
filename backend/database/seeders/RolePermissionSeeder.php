@@ -43,6 +43,10 @@ class RolePermissionSeeder extends Seeder
         User::query()
             ->whereIn('email', $adminCandidates)
             ->get()
-            ->each(fn (User $user) => $user->syncRoles([$adminRole->name]));
+            ->each(function (User $user) use ($adminRole): void {
+                if (! $user->hasRole($adminRole->name)) {
+                    $user->assignRole($adminRole);
+                }
+            });
     }
 }

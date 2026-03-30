@@ -194,17 +194,22 @@ class InstalacionBaseSeeder extends Seeder
             ]);
         }
 
-        $usuario->fill([
+        $payload = [
             'persona_id' => $persona->id,
             'name' => 'Manuel Loza',
             'alias' => 'mloza',
             'telefono' => '+591 70818566',
-            'password' => 'admin1984!',
             'activo' => true,
             'primer_acceso_pendiente' => false,
             'expira_password_en' => Carbon::now()->addMonths(6),
             'organizacion_activa_id' => $organizacion->id,
-        ])->save();
+        ];
+
+        if (! $usuario->exists || blank($usuario->getRawOriginal('password'))) {
+            $payload['password'] = 'admin1984!';
+        }
+
+        $usuario->fill($payload)->save();
 
         return $usuario->fresh();
     }

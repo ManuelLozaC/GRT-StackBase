@@ -9,6 +9,11 @@ use Throwable;
 
 class EmailNotificationService
 {
+    public function providerName(): string
+    {
+        return (string) config('mail.default', 'mail');
+    }
+
     public function isConfigured(): bool
     {
         return filled(config('mail.from.address'))
@@ -31,7 +36,11 @@ class EmailNotificationService
                 'status' => 'skipped_missing_target',
                 'detail' => 'El usuario no tiene correo electronico configurado.',
                 'destination' => null,
-                'metadata' => [],
+                'metadata' => [
+                    'provider' => $this->providerName(),
+                    'provider_status' => 'missing_target',
+                    'error_code' => 'missing_target',
+                ],
             ];
         }
 
@@ -40,7 +49,11 @@ class EmailNotificationService
                 'status' => 'simulated',
                 'detail' => 'Canal email listo para integracion, pero sin credenciales completas.',
                 'destination' => $recipient->email,
-                'metadata' => [],
+                'metadata' => [
+                    'provider' => $this->providerName(),
+                    'provider_status' => 'configuration_missing',
+                    'error_code' => 'configuration_missing',
+                ],
             ];
         }
 
@@ -58,6 +71,8 @@ class EmailNotificationService
                 'destination' => $recipient->email,
                 'metadata' => [
                     'mailer' => config('mail.default'),
+                    'provider' => $this->providerName(),
+                    'provider_status' => 'accepted',
                 ],
             ];
         } catch (Throwable $exception) {
@@ -69,6 +84,9 @@ class EmailNotificationService
                 'destination' => $recipient->email,
                 'metadata' => [
                     'mailer' => config('mail.default'),
+                    'provider' => $this->providerName(),
+                    'provider_status' => 'rejected',
+                    'error_code' => 'provider_rejected',
                     'error' => $exception->getMessage(),
                 ],
             ];

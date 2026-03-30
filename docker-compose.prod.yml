@@ -1,0 +1,12 @@
+services:
+  web:
+    volumes:
+      - ./backend:/var/www/backend
+      - ./frontend/dist:/var/www/frontend/dist:ro
+      - ./docker/nginx/production.conf:/etc/nginx/conf.d/default.conf:ro
+
+  frontend:
+    ports: []
+    command: sh -c "npm ci && tail -f /dev/null"
+    healthcheck:
+      disable: true

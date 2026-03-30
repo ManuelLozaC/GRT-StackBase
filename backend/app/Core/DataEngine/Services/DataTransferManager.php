@@ -182,6 +182,10 @@ class DataTransferManager
         $rowsRead = 0;
         $fields = $this->importableFields($resource);
         $fieldKeys = $fields->pluck('key')->all();
+        $customFieldKeys = $this->importableCustomFields($resource)
+            ->pluck('key')
+            ->map(fn (string $key): string => 'custom_fields.'.$key)
+            ->all();
 
         $run = CoreDataTransferRun::query()->create([
             'requested_by' => $actor?->id,
@@ -237,7 +241,12 @@ class DataTransferManager
                 $payload = [];
 
                 foreach ($headers as $index => $header) {
-                    if (! in_array($header, $fieldKeys, true)) {
+                    if (! in_array($header, $fieldKeys, true) && ! in_array($header, $customFieldKeys, true)) {
+                        continue;
+                    }
+
+                    if (str_starts_with($header, 'custom_fields.')) {
+                        Arr::set($payload, $header, $normalizedRow[$index] ?? null);
                         continue;
                     }
 
@@ -397,26 +406,64 @@ class DataTransferManager
         /** @var Builder $query */
         $query = $modelClass::query();
         $search = trim((string) ($criteria['q'] ?? ''));
-        $searchableFields = $resource['searchable_fields'] ?? [];
+        $searchableFields = collect($resource['fields'] ?? [])->where('searchable', true)->values();
+        $searchableCustomFields = collect($resource['searchable_custom_fields'] ?? []);
 
-        if ($search !== '' && $searchableFields !== []) {
-            $query->where(function (Builder $builder) use ($searchableFields, $search): void {
-                foreach ($searchableFields as $index => $field) {
-                    $method = $index === 0 ? 'where' : 'orWhere';
-                    $builder->{$method}($field, 'like', '%'.$search.'%');
+        if ($search !== '' && ($searchableFields->isNotEmpty() || $searchableCustomFields->isNotEmpty())) {
+            $query->where(function (Builder $builder) use ($searchableFields, $searchableCustomFields, $search): void {
+                $clausesApplied = 0;
+
+                foreach ($searchableFields as $field) {
+                    $relation = $field['relation'] ?? null;
+
+                    if (is_array($relation) && ! empty($relation['name'])) {
+                        $method = $clausesApplied === 0 ? 'whereHas' : 'orWhereHas';
+                        $builder->{$method}($relation['name'], function (Builder $relationQuery) use ($relation, $search): void {
+                            $relationQuery->where($relation['label_field'] ?? 'nombre', 'like', '%'.$search.'%');
+                        });
+                        $clausesApplied++;
+                        continue;
+                    }
+
+                    $method = $clausesApplied === 0 ? 'where' : 'orWhere';
+                    $builder->{$method}($field['key'], 'like', '%'.$search.'%');
+                    $clausesApplied++;
+                }
+
+                foreach ($searchableCustomFields as $field) {
+                    $method = $clausesApplied === 0 ? 'where' : 'orWhere';
+                    $builder->{$method}('custom_fields->'.$field['key'], 'like', '%'.$search.'%');
+                    $clausesApplied++;
                 }
             });
         }
 
         $filters = is_array($criteria['filters'] ?? null) ? $criteria['filters'] : [];
         $allowedFields = collect($resource['filter_fields'] ?? [])->pluck('key')->all();
+        $allowedCustomFieldKeys = $this->filterableCustomFields($resource)->pluck('key')->all();
 
         foreach ($filters as $field => $value) {
-            if (! in_array($field, $allowedFields, true) || $value === null || $value === '') {
+            if ($value === null || $value === '') {
                 continue;
             }
 
-            $query->where($field, $value);
+            if (in_array($field, $allowedFields, true)) {
+                $query->where($field, $value);
+                continue;
+            }
+
+            if (str_starts_with($field, 'custom_fields.') && in_array(substr($field, 14), $allowedCustomFieldKeys, true)) {
+                $query->where('custom_fields->'.substr($field, 14), $value);
+            }
+        }
+
+        $searchIds = collect($criteria['search_ids'] ?? [])
+            ->filter(fn (mixed $id): bool => $id !== null && $id !== '')
+            ->map(fn (mixed $id): int => (int) $id)
+            ->values();
+
+        if ($searchIds->isNotEmpty()) {
+            $query->whereKey($searchIds->all());
         }
 
         $sortableFields = $resource['sortable_fields'] ?? [];
@@ -430,6 +477,15 @@ class DataTransferManager
 
         if (! in_array($sortDirection, ['asc', 'desc'], true)) {
             $sortDirection = 'desc';
+        }
+
+        if (($criteria['preserve_search_order'] ?? false) && $searchIds->isNotEmpty() && ($criteria['sort_by'] ?? null) === null) {
+            $idColumn = $query->getModel()->qualifyColumn($query->getModel()->getKeyName());
+            $orderClause = collect($searchIds)
+                ->map(fn (int $id, int $index): string => sprintf('WHEN %s = %d THEN %d', $idColumn, $id, $index))
+                ->implode(' ');
+
+            return $query->orderByRaw(sprintf('CASE %s ELSE %d END', $orderClause, $searchIds->count()));
         }
 
         return $query->orderBy($sortBy, $sortDirection);
@@ -471,7 +527,7 @@ class DataTransferManager
 
         foreach ($records as $record) {
             $row = $fields
-                ->map(fn (array $field): string => $this->normalizeCsvValue($record->getAttribute($field['key'])))
+                ->map(fn (array $field): string => $this->normalizeCsvValue(data_get($record, $field['key'])))
                 ->all();
 
             fputcsv($handle, $row);
@@ -492,7 +548,7 @@ class DataTransferManager
         $rows = $records
             ->map(function (Model $record) use ($fields): string {
                 $cells = $fields
-                    ->map(fn (array $field): string => '<td>'.e($this->normalizeCsvValue($record->getAttribute($field['key']))).'</td>')
+                    ->map(fn (array $field): string => '<td>'.e($this->normalizeCsvValue(data_get($record, $field['key']))).'</td>')
                     ->implode('');
 
                 return '<tr>'.$cells.'</tr>';
@@ -526,7 +582,7 @@ HTML;
         ])->merge(
             $records->take(35)->map(function (Model $record) use ($fields): string {
                 return $fields
-                    ->map(fn (array $field): string => mb_substr($this->normalizeCsvValue($record->getAttribute($field['key'])), 0, 24))
+                    ->map(fn (array $field): string => mb_substr($this->normalizeCsvValue(data_get($record, $field['key'])), 0, 24))
                     ->implode(' | ');
             }),
         )->all();
@@ -648,15 +704,26 @@ HTML;
 
     protected function importRules(array $resource): array
     {
-        return $this->importableFields($resource)
+        $rules = $this->importableFields($resource)
             ->mapWithKeys(fn (array $field): array => [$field['key'] => $field['rules'] ?? []])
             ->all();
+
+        foreach ($this->importableCustomFields($resource) as $field) {
+            $rules['custom_fields.'.$field['key']] = $field['rules'] ?? [];
+        }
+
+        return $rules;
     }
 
     protected function exportableFields(array $resource): Collection
     {
         return collect($resource['fields'] ?? [])
             ->where('exportable', true)
+            ->concat($this->exportableCustomFields($resource)->map(fn (array $field): array => [
+                'key' => 'custom_fields.'.$field['key'],
+                'label' => $field['label'] ?? $field['key'],
+                'type' => $field['type'] ?? 'text',
+            ]))
             ->values();
     }
 
@@ -665,5 +732,20 @@ HTML;
         return collect($resource['fields'] ?? [])
             ->where('importable', true)
             ->values();
+    }
+
+    protected function exportableCustomFields(array $resource): Collection
+    {
+        return collect($resource['exportable_custom_fields'] ?? []);
+    }
+
+    protected function importableCustomFields(array $resource): Collection
+    {
+        return collect($resource['importable_custom_fields'] ?? []);
+    }
+
+    protected function filterableCustomFields(array $resource): Collection
+    {
+        return collect($resource['filterable_custom_fields'] ?? []);
     }
 }

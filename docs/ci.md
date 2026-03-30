@@ -40,7 +40,7 @@ Jobs incluidos:
 ## Alcance actual
 
 - valida backend Laravel con dependencias reales
-- valida frontend con tests de stores base, permisos/guards, lint y build
+- valida frontend con tests de stores base, permisos/guards, componentes criticos (`topbar`, `login`, `settings`, `usuarios`), lint y build
 - usa `FILESYSTEM_DISK=local` en CI para no depender aun de credenciales de Spaces
 - valida que el arbol de rutas backend siga resolviendo correctamente antes de correr tests
 - ejecuta smoke tests minimos de:
@@ -61,4 +61,4 @@ Jobs incluidos:
 - agregar checks separados por dominio si el tiempo de pipeline crece demasiado
 - decidir si se agrega generacion/verificacion de OpenAPI como chequeo adicional
 - integrar validacion real de Spaces en un entorno con secretos configurados
-- ampliar la cobertura frontend hacia componentes visuales, topbar, auth y pantallas criticas
+- seguir ampliando la cobertura frontend hacia mas pantallas administrativas y flujos visuales secundarios

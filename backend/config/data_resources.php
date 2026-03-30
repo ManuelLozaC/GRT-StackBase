@@ -19,6 +19,9 @@ return [
         'source_module' => 'core-platform',
         'permission_key' => 'tenancy.manage',
         'model' => Organizacion::class,
+        'search' => [
+            'engine' => 'meilisearch',
+        ],
         'default_sort' => [
             'field' => 'nombre',
             'direction' => 'asc',
@@ -175,6 +178,9 @@ return [
         'source_module' => 'core-platform',
         'permission_key' => 'tenancy.manage',
         'model' => Oficina::class,
+        'search' => [
+            'engine' => 'meilisearch',
+        ],
         'default_sort' => [
             'field' => 'nombre',
             'direction' => 'asc',
@@ -249,6 +255,9 @@ return [
         'source_module' => 'core-platform',
         'permission_key' => 'tenancy.manage',
         'model' => Persona::class,
+        'search' => [
+            'engine' => 'meilisearch',
+        ],
         'default_sort' => [
             'field' => 'nombres',
             'direction' => 'asc',
@@ -340,6 +349,9 @@ return [
         'source_module' => 'core-platform',
         'permission_key' => 'tenancy.manage',
         'model' => AsignacionLaboral::class,
+        'search' => [
+            'engine' => 'meilisearch',
+        ],
         'default_sort' => [
             'field' => 'id',
             'direction' => 'desc',
@@ -470,6 +482,9 @@ return [
         'source_module' => 'demo-platform',
         'permission_key' => null,
         'model' => DemoContact::class,
+        'search' => [
+            'engine' => 'meilisearch',
+        ],
         'default_sort' => [
             'field' => 'nombre',
             'direction' => 'asc',
@@ -480,18 +495,27 @@ return [
             'delete' => true,
             'export' => true,
             'import' => true,
+            'duplicate' => true,
+        ],
+        'record_actions' => [
+            'duplicate' => true,
         ],
         'custom_fields' => [
             [
                 'key' => 'segmento',
                 'label' => 'Segmento',
                 'type' => 'text',
+                'table' => true,
+                'filterable' => true,
+                'searchable' => true,
                 'rules' => ['nullable', 'string', 'max:120'],
             ],
             [
                 'key' => 'canal_origen',
                 'label' => 'Canal de origen',
                 'type' => 'select',
+                'table' => true,
+                'filterable' => true,
                 'rules' => ['nullable', 'in:web,referido,evento,outbound'],
                 'options' => [
                     ['label' => 'Web', 'value' => 'web'],
@@ -504,7 +528,24 @@ return [
                 'key' => 'presupuesto_estimado',
                 'label' => 'Presupuesto estimado',
                 'type' => 'text',
+                'table' => true,
                 'rules' => ['nullable', 'string', 'max:40'],
+            ],
+            [
+                'key' => 'ultima_interaccion',
+                'label' => 'Ultima interaccion',
+                'type' => 'date',
+                'table' => true,
+                'filterable' => true,
+                'rules' => ['nullable', 'date'],
+            ],
+            [
+                'key' => 'cliente_recurrente',
+                'label' => 'Cliente recurrente',
+                'type' => 'boolean',
+                'table' => true,
+                'filterable' => true,
+                'rules' => ['nullable', 'boolean'],
             ],
         ],
         'fields' => [
@@ -545,7 +586,7 @@ return [
                 'type' => 'relation',
                 'rules' => ['nullable', 'integer', 'exists:empresas,id'],
                 'sortable' => false,
-                'searchable' => false,
+                'searchable' => true,
                 'table' => true,
                 'form' => true,
                 'importable' => false,
@@ -564,6 +605,7 @@ return [
                 'rules' => ['nullable', 'integer', 'exists:sucursales,id'],
                 'table' => true,
                 'form' => true,
+                'searchable' => true,
                 'importable' => false,
                 'exportable' => false,
                 'relation' => [
@@ -580,6 +622,7 @@ return [
                 'rules' => ['nullable', 'integer', 'exists:equipos,id'],
                 'table' => true,
                 'form' => true,
+                'searchable' => true,
                 'importable' => false,
                 'exportable' => false,
                 'relation' => [

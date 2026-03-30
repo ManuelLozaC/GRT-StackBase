@@ -72,20 +72,49 @@ Separar mas adelante:
 
 ## Flujo minimo de despliegue
 
-1. Clonar repo y completar `.env` raiz y `backend/.env`.
-2. Levantar stack con `docker compose up -d --build`.
+1. Clonar repo y completar `.env` raiz, `backend/.env` y `frontend/.env`.
+2. Levantar stack productivo con:
+   - `docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d --build app worker scheduler search db redis`
 3. Ejecutar:
-   - `docker compose exec app composer install --no-interaction --prefer-dist`
-   - `docker compose exec app php artisan key:generate`
-   - `docker compose exec app php artisan migrate --force`
-   - `docker compose exec app php artisan db:seed --force`
-   - `docker compose exec app php artisan settings:deduplicate`
-   - `docker compose exec app php artisan optimize:clear`
-   - `docker compose exec app php artisan optimize`
+   - `docker compose -f docker-compose.yml -f docker-compose.prod.yml exec -T app composer install --no-interaction --prefer-dist --optimize-autoloader`
+   - generar `APP_KEY` solo si `backend/.env` todavia no tiene una clave valida
+   - `docker compose -f docker-compose.yml -f docker-compose.prod.yml exec -T app php artisan migrate --force`
+   - `docker compose -f docker-compose.yml -f docker-compose.prod.yml exec -T app php artisan platform:ensure-bootstrap`
+   - `docker compose -f docker-compose.yml -f docker-compose.prod.yml exec -T app php artisan settings:deduplicate`
+   - `docker compose -f docker-compose.yml -f docker-compose.prod.yml run --rm frontend sh -c "npm ci && npm run build"`
+   - `docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d --build web`
+   - `docker compose -f docker-compose.yml -f docker-compose.prod.yml exec -T app php artisan optimize:clear`
+   - `docker compose -f docker-compose.yml -f docker-compose.prod.yml exec -T app php artisan optimize`
+   - `docker compose -f docker-compose.yml -f docker-compose.prod.yml exec -T app php artisan data:reindex-search`
 4. Verificar salud:
-   - `docker compose ps`
+   - `docker compose -f docker-compose.yml -f docker-compose.prod.yml ps`
    - `https://tu-dominio/api/v1/health`
 5. Configurar TLS y proxy reverso con Nginx del host o balanceador externo.
+
+## Regla critica de produccion
+
+- no regenerar `APP_KEY` en cada deploy
+- no correr `db:seed --force` en cada release
+- el bootstrap productivo debe pasar por `platform:ensure-bootstrap`
+- el frontend productivo debe servirse desde `dist` compilado por Nginx, no desde `npm run dev`
+- la reindexacion debe cubrir todos los recursos buscables, no solo demos
+
+## Automatizacion desde GitHub Actions
+
+El repo ya incluye:
+
+- [`D:\Desarrollo\GRT-StackBase\.github\workflows\deploy-droplet.yml`](D:\Desarrollo\GRT-StackBase\.github\workflows\deploy-droplet.yml)
+- [`D:\Desarrollo\GRT-StackBase\.github\workflows\external-health-monitor.yml`](D:\Desarrollo\GRT-StackBase\.github\workflows\external-health-monitor.yml)
+
+Y el script remoto:
+
+- [`D:\Desarrollo\GRT-StackBase\scripts\ops\deploy-droplet.sh`](D:\Desarrollo\GRT-StackBase\scripts\ops\deploy-droplet.sh)
+
+Manual de secrets y variables:
+
+- [`D:\Desarrollo\GRT-StackBase\docs\github_deploy_secrets.md`](D:\Desarrollo\GRT-StackBase\docs\github_deploy_secrets.md)
+
+Con eso el deploy puede ejecutarse directo desde GitHub por `workflow_dispatch`, escribiendo `.env` en el Droplet y validando `healthcheck` al final.
 
 ## Checks de salida
 

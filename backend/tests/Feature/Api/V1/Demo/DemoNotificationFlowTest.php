@@ -10,6 +10,7 @@ use App\Core\Notifications\Services\NotificationCenter;
 use App\Core\Settings\CoreSettingsManager;
 use App\Models\Organizacion;
 use App\Models\User;
+use Database\Seeders\RolePermissionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Queue;
@@ -237,8 +238,38 @@ class DemoNotificationFlowTest extends TestCase
         ]);
     }
 
+    public function test_user_cannot_retry_exhausted_email_delivery(): void
+    {
+        [$user, $token] = $this->authenticateUser();
+
+        $delivery = CoreNotificationDelivery::query()->create([
+            'organizacion_id' => $user->organizacion_activa_id,
+            'recipient_id' => $user->id,
+            'channel' => 'email',
+            'status' => 'failed',
+            'destination' => $user->email,
+            'status_detail' => 'Se agotaron los intentos previos.',
+            'metadata' => [
+                'title' => 'Retry agotado',
+                'message' => 'Ya no deberia reintentarse.',
+                'attempts' => 3,
+                'max_attempts' => 3,
+                'backoff_schedule' => [10, 30, 60],
+                'retriable' => true,
+                'queued' => false,
+            ],
+        ]);
+
+        $this->withHeader('Authorization', 'Bearer '.$token)
+            ->postJson("/api/v1/notifications/deliveries/{$delivery->id}/retry")
+            ->assertUnprocessable()
+            ->assertJsonPath('mensaje', 'Esta entrega no admite reintentos manuales.');
+    }
+
     protected function authenticateUser(): array
     {
+        $this->seed(RolePermissionSeeder::class);
+
         $organizacion = Organizacion::query()->create([
             'nombre' => 'Acme Notifications',
             'slug' => 'acme-notifications',
@@ -249,6 +280,7 @@ class DemoNotificationFlowTest extends TestCase
         ]);
 
         $user->organizaciones()->attach($organizacion->id);
+        $user->givePermissionTo('demo.access');
 
         $loginResponse = $this->postJson('/api/v1/auth/login', [
             'email' => $user->email,
@@ -264,6 +296,8 @@ class DemoNotificationFlowTest extends TestCase
 
     protected function authenticateUserWithTwoOrganizations(): array
     {
+        $this->seed(RolePermissionSeeder::class);
+
         $primaryOrganization = Organizacion::query()->create([
             'nombre' => 'Acme Notifications Primary',
             'slug' => 'acme-notifications-primary',
@@ -282,6 +316,7 @@ class DemoNotificationFlowTest extends TestCase
             $primaryOrganization->id,
             $secondaryOrganization->id,
         ]);
+        $user->givePermissionTo('demo.access');
 
         $loginResponse = $this->postJson('/api/v1/auth/login', [
             'email' => $user->email,

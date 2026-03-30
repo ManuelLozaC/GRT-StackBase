@@ -77,7 +77,7 @@ class NotificationController extends Controller
             );
         }
 
-        $canRetry = (bool) data_get($delivery->metadata, 'retriable', false);
+        $canRetry = $this->notifications->canRetry($delivery);
 
         if (! $canRetry || ! in_array($delivery->channel, ['email', 'push'], true)) {
             return $this->errorResponse(
@@ -229,8 +229,13 @@ class NotificationController extends Controller
             'max_attempts' => (int) data_get($delivery->metadata, 'max_attempts', 0),
             'backoff_schedule' => data_get($delivery->metadata, 'backoff_schedule', []),
             'last_attempt_at' => data_get($delivery->metadata, 'last_attempt_at'),
-            'can_retry' => (bool) data_get($delivery->metadata, 'retriable', false),
+            'can_retry' => $this->notifications->canRetry($delivery),
+            'retry_exhausted' => (bool) data_get($delivery->metadata, 'retry_exhausted', false),
+            'next_retry_in_seconds' => data_get($delivery->metadata, 'next_retry_in_seconds'),
             'mailer' => data_get($delivery->metadata, 'mailer'),
+            'provider' => data_get($delivery->metadata, 'provider'),
+            'provider_status' => data_get($delivery->metadata, 'provider_status'),
+            'error_code' => data_get($delivery->metadata, 'error_code'),
             'processed_at' => $delivery->processed_at?->toIso8601String(),
             'created_at' => $delivery->created_at?->toIso8601String(),
             'metadata' => $delivery->metadata ?? [],

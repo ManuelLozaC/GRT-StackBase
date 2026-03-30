@@ -90,6 +90,9 @@ class FirebasePushService
                 'detail' => 'El usuario no tiene dispositivos push registrados.',
                 'destination' => null,
                 'metadata' => [
+                    'provider' => 'fcm',
+                    'provider_status' => 'missing_target',
+                    'error_code' => 'missing_target',
                     'subscriptions' => 0,
                 ],
             ];
@@ -101,6 +104,9 @@ class FirebasePushService
                 'detail' => 'FCM aun no esta configurado completamente en servidor.',
                 'destination' => $subscriptions->count().' dispositivo(s)',
                 'metadata' => [
+                    'provider' => 'fcm',
+                    'provider_status' => 'configuration_missing',
+                    'error_code' => 'configuration_missing',
                     'subscriptions' => $subscriptions->count(),
                 ],
             ];
@@ -108,6 +114,8 @@ class FirebasePushService
 
         $results = [];
         $deliveredCount = 0;
+        $failedCount = 0;
+        $invalidatedCount = 0;
 
         foreach ($subscriptions as $subscription) {
             $result = $this->sendToToken(
@@ -133,22 +141,35 @@ class FirebasePushService
                 continue;
             }
 
+            $failedCount++;
+
             if (($result['error_code'] ?? null) === 'UNREGISTERED') {
                 $subscription->forceFill([
                     'is_active' => false,
                 ])->save();
+                $invalidatedCount++;
             }
         }
 
+        $status = $deliveredCount > 0
+            ? ($failedCount > 0 ? 'partial' : 'delivered')
+            : 'failed';
+
         return [
-            'status' => $deliveredCount > 0 ? 'delivered' : 'failed',
+            'status' => $status,
             'detail' => $deliveredCount > 0
-                ? 'FCM envio la notificacion a uno o mas dispositivos.'
+                ? ($failedCount > 0
+                    ? 'FCM entrego la notificacion parcialmente; algunos dispositivos fallaron.'
+                    : 'FCM envio la notificacion a uno o mas dispositivos.')
                 : 'FCM no pudo entregar la notificacion a los dispositivos registrados.',
             'destination' => $subscriptions->count().' dispositivo(s)',
             'metadata' => [
+                'provider' => 'fcm',
+                'provider_status' => $status,
                 'subscriptions' => $subscriptions->count(),
                 'delivered_count' => $deliveredCount,
+                'failed_count' => $failedCount,
+                'invalidated_subscriptions' => $invalidatedCount,
                 'results' => $results,
             ],
         ];

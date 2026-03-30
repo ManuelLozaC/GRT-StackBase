@@ -6,6 +6,7 @@ use App\Jobs\Demo\ProcessDemoJobRun;
 use App\Core\Jobs\Models\CoreJobRun;
 use App\Models\Organizacion;
 use App\Models\User;
+use Database\Seeders\RolePermissionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Queue;
 use Tests\TestCase;
@@ -139,6 +140,8 @@ class DemoJobFlowTest extends TestCase
 
     protected function authenticateUser(): array
     {
+        $this->seed(RolePermissionSeeder::class);
+
         $organizacion = Organizacion::query()->create([
             'nombre' => 'Acme Jobs',
             'slug' => 'acme-jobs',
@@ -149,6 +152,7 @@ class DemoJobFlowTest extends TestCase
         ]);
 
         $user->organizaciones()->attach($organizacion->id);
+        $user->givePermissionTo('demo.access');
 
         $loginResponse = $this->postJson('/api/v1/auth/login', [
             'email' => $user->email,

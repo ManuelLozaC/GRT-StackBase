@@ -62,6 +62,8 @@ class DataResourceRegistry
             'form_fields' => $resource['form_fields'],
             'filter_fields' => $resource['filter_fields'],
             'custom_fields' => $resource['custom_fields'],
+            'record_actions' => $resource['record_actions'],
+            'search' => $resource['search'],
         ];
     }
 
@@ -88,6 +90,12 @@ class DataResourceRegistry
         $customFields = collect($resource['custom_fields'] ?? [])
             ->map(fn (array $field): array => array_merge([
                 'type' => 'text',
+                'table' => false,
+                'form' => true,
+                'filterable' => false,
+                'searchable' => false,
+                'importable' => true,
+                'exportable' => true,
                 'rules' => [],
                 'options' => [],
             ], $field))
@@ -112,6 +120,13 @@ class DataResourceRegistry
                 'delete' => true,
                 'export' => true,
                 'import' => true,
+                'duplicate' => false,
+            ],
+            'record_actions' => [
+                'duplicate' => false,
+            ],
+            'search' => [
+                'engine' => config('search.default_engine', 'database'),
             ],
             'fields' => $normalizedFields,
             'custom_fields' => $customFields,
@@ -124,6 +139,10 @@ class DataResourceRegistry
             'searchable_fields' => collect($normalizedFields)->where('searchable', true)->pluck('key')->values()->all(),
             'sortable_fields' => collect($normalizedFields)->where('sortable', true)->pluck('key')->values()->all(),
             'relation_fields' => collect($normalizedFields)->whereNotNull('relation')->values()->all(),
+            'searchable_custom_fields' => collect($customFields)->where('searchable', true)->values()->all(),
+            'filterable_custom_fields' => collect($customFields)->where('filterable', true)->values()->all(),
+            'exportable_custom_fields' => collect($customFields)->where('exportable', true)->values()->all(),
+            'importable_custom_fields' => collect($customFields)->where('importable', true)->values()->all(),
         ]);
     }
 

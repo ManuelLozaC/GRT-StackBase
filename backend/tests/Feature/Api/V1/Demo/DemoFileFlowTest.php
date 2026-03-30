@@ -10,6 +10,7 @@ use App\Core\Modules\ModuleSettingsManager;
 use App\Jobs\Demo\ProcessDemoFilePackageRun;
 use App\Models\Organizacion;
 use App\Models\User;
+use Database\Seeders\RolePermissionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Queue;
@@ -428,6 +429,8 @@ class DemoFileFlowTest extends TestCase
 
     protected function authenticateUser(): array
     {
+        $this->seed(RolePermissionSeeder::class);
+
         $organizacion = Organizacion::query()->create([
             'nombre' => 'Acme Files',
             'slug' => 'acme-files',
@@ -438,6 +441,7 @@ class DemoFileFlowTest extends TestCase
         ]);
 
         $user->organizaciones()->attach($organizacion->id);
+        $user->givePermissionTo('demo.access');
 
         return [
             $user,
@@ -447,6 +451,8 @@ class DemoFileFlowTest extends TestCase
 
     protected function authenticateUserWithTwoOrganizations(): array
     {
+        $this->seed(RolePermissionSeeder::class);
+
         $primaryOrganization = Organizacion::query()->create([
             'nombre' => 'Acme Files Primary',
             'slug' => 'acme-files-primary',
@@ -465,6 +471,7 @@ class DemoFileFlowTest extends TestCase
             $primaryOrganization->id,
             $secondaryOrganization->id,
         ]);
+        $user->givePermissionTo('demo.access');
 
         return [
             $user,

@@ -52,9 +52,12 @@ Route::prefix('v1')->group(function (): void {
         Route::get('/data/{resourceKey}/export', [DataResourceController::class, 'export']);
         Route::post('/data/{resourceKey}/import', [DataResourceController::class, 'import'])->middleware('throttle:data-writes');
         Route::get('/data/{resourceKey}/transfers', [DataResourceController::class, 'transfers']);
+        Route::get('/data/{resourceKey}/search/status', [DataResourceController::class, 'searchStatus']);
+        Route::post('/data/{resourceKey}/search/reindex', [DataResourceController::class, 'reindexSearch'])->middleware('throttle:data-writes');
         Route::get('/data/transfers/{transferRun}/download', [DataResourceController::class, 'downloadTransfer'])
             ->middleware('throttle:downloads')
             ->name('api.v1.data.transfers.download');
+        Route::post('/data/{resourceKey}/{recordId}/duplicate', [DataResourceController::class, 'duplicate'])->middleware('throttle:data-writes');
         Route::get('/data/{resourceKey}/{recordId}', [DataResourceController::class, 'show']);
         Route::match(['put', 'patch'], '/data/{resourceKey}/{recordId}', [DataResourceController::class, 'update'])->middleware('throttle:data-writes');
         Route::delete('/data/{resourceKey}/{recordId}', [DataResourceController::class, 'destroy'])->middleware('throttle:data-writes');
@@ -74,7 +77,7 @@ Route::prefix('v1')->group(function (): void {
         Route::post('/auth/api-tokens', [ApiTokenController::class, 'store'])->middleware('throttle:data-writes');
         Route::delete('/auth/api-tokens/{tokenId}', [ApiTokenController::class, 'destroy']);
 
-        Route::prefix('demo')->group(function (): void {
+        Route::middleware('permission:demo.access')->prefix('demo')->group(function (): void {
             Route::get('/audit', [DemoAuditController::class, 'index']);
             Route::get('/files', [DemoFileController::class, 'index']);
             Route::post('/files', [DemoFileController::class, 'store']);
@@ -113,10 +116,10 @@ Route::prefix('v1')->group(function (): void {
             Route::patch('/roles/{role}', [RoleManagementController::class, 'update'])->middleware('throttle:data-writes');
         });
 
-        Route::middleware('permission:security.manage')->get('/security/logs', [SecurityLogController::class, 'index']);
-        Route::middleware('permission:security.manage')->get('/error-logs', [ErrorLogController::class, 'index']);
-        Route::middleware('permission:security.manage')->get('/operations/overview', OperationsOverviewController::class);
-        Route::middleware('permission:security.manage')->get('/metrics/overview', MetricsOverviewController::class);
+        Route::middleware('permission:security.logs.view')->get('/security/logs', [SecurityLogController::class, 'index']);
+        Route::middleware('permission:error-logs.view')->get('/error-logs', [ErrorLogController::class, 'index']);
+        Route::middleware('permission:operations.view')->get('/operations/overview', OperationsOverviewController::class);
+        Route::middleware('permission:metrics.view')->get('/metrics/overview', MetricsOverviewController::class);
 
         Route::middleware('permission:integrations.manage')->group(function (): void {
             Route::get('/webhooks/endpoints', [WebhookController::class, 'endpoints']);
