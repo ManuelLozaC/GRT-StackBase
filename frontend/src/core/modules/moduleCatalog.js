@@ -13,6 +13,18 @@ const enabledKeys = computed(() => {
     return state.items.filter((item) => item.enabled).map((item) => item.key);
 });
 
+function resolveRoutePermission(moduleItem, route) {
+    if (route.meta?.permissionKey) {
+        return route.meta.permissionKey;
+    }
+
+    if (Array.isArray(moduleItem.permissions) && moduleItem.permissions.length === 1) {
+        return moduleItem.permissions[0];
+    }
+
+    return null;
+}
+
 const menuTree = computed(() => {
     return state.items
         .map((moduleItem) => {
@@ -24,7 +36,7 @@ const menuTree = computed(() => {
                     icon: route.menu.icon,
                     to: route.path,
                     moduleKey: moduleItem.key,
-                    permissionKey: route.meta?.permissionKey
+                    permissionKey: resolveRoutePermission(moduleItem, route)
                 }));
 
             if (items.length === 0) {
@@ -58,7 +70,8 @@ const routeRecords = computed(() => {
                     meta: {
                         moduleKey: moduleItem.key,
                         requiresAuth: true,
-                        ...(route.meta ?? {})
+                        ...(route.meta ?? {}),
+                        permissionKey: resolveRoutePermission(moduleItem, route)
                     },
                     component
                 };

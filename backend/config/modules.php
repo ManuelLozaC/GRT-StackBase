@@ -1,7 +1,6 @@
 <?php
 
-return [
-    'installed' => [
+$installed = [
         'core-platform' => [
             'name' => 'Core Platform',
             'description' => 'Servicios transversales del sistema base.',
@@ -24,6 +23,9 @@ return [
                 'metrics.view',
                 'security.logs.view',
                 'error-logs.view',
+                'data-engine.access',
+                'technical.docs.view',
+                'api-tokens.manage',
             ],
             'settings' => [
                 [
@@ -136,6 +138,16 @@ return [
                     'label' => 'Demo',
                 ],
                 'routes' => [
+                    [
+                        'path' => '/demo/module-tutorial',
+                        'name' => 'demo-module-tutorial',
+                        'view' => 'demo.module-tutorial',
+                        'meta' => [],
+                        'menu' => [
+                            'label' => 'Build Module Tutorial',
+                            'icon' => 'pi pi-fw pi-book',
+                        ],
+                    ],
                     [
                         'path' => '/demo/platform',
                         'name' => 'platform-demo',
@@ -289,5 +301,26 @@ return [
                 ],
             ],
         ],
-    ],
+];
+
+$moduleManifestFiles = glob(base_path('app/Modules/*/module.php')) ?: [];
+
+foreach ($moduleManifestFiles as $manifestFile) {
+    $manifest = require $manifestFile;
+
+    if (! is_array($manifest)) {
+        continue;
+    }
+
+    foreach ($manifest as $moduleKey => $moduleConfig) {
+        if (! is_array($moduleConfig) || array_key_exists($moduleKey, $installed)) {
+            continue;
+        }
+
+        $installed[$moduleKey] = $moduleConfig;
+    }
+}
+
+return [
+    'installed' => $installed,
 ];

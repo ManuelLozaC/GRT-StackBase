@@ -24,11 +24,10 @@ use App\Http\Controllers\Api\V1\WebhookController;
 use App\Http\Controllers\Api\V1\WebhookReceiverController;
 use Illuminate\Support\Facades\Route;
 
-Route::prefix('v1')->group(function (): void {
-    Route::get('/health', HealthCheckController::class);
-    Route::get('/openapi.json', OpenApiController::class);
+    Route::prefix('v1')->group(function (): void {
+        Route::get('/health', HealthCheckController::class);
 
-    Route::prefix('auth')->group(function (): void {
+        Route::prefix('auth')->group(function (): void {
         Route::middleware('throttle:auth-api')->group(function (): void {
             Route::post('/login', [AuthController::class, 'login']);
             Route::post('/register', [AuthController::class, 'register']);
@@ -46,21 +45,25 @@ Route::prefix('v1')->group(function (): void {
     });
 
     Route::middleware(['auth-token', 'tenant-context'])->group(function (): void {
-        Route::get('/data/resources', [DataResourceController::class, 'resources']);
-        Route::get('/data/{resourceKey}', [DataResourceController::class, 'index']);
-        Route::post('/data/{resourceKey}', [DataResourceController::class, 'store'])->middleware('throttle:data-writes');
-        Route::get('/data/{resourceKey}/export', [DataResourceController::class, 'export']);
-        Route::post('/data/{resourceKey}/import', [DataResourceController::class, 'import'])->middleware('throttle:data-writes');
-        Route::get('/data/{resourceKey}/transfers', [DataResourceController::class, 'transfers']);
-        Route::get('/data/{resourceKey}/search/status', [DataResourceController::class, 'searchStatus']);
-        Route::post('/data/{resourceKey}/search/reindex', [DataResourceController::class, 'reindexSearch'])->middleware('throttle:data-writes');
-        Route::get('/data/transfers/{transferRun}/download', [DataResourceController::class, 'downloadTransfer'])
-            ->middleware('throttle:downloads')
-            ->name('api.v1.data.transfers.download');
-        Route::post('/data/{resourceKey}/{recordId}/duplicate', [DataResourceController::class, 'duplicate'])->middleware('throttle:data-writes');
-        Route::get('/data/{resourceKey}/{recordId}', [DataResourceController::class, 'show']);
-        Route::match(['put', 'patch'], '/data/{resourceKey}/{recordId}', [DataResourceController::class, 'update'])->middleware('throttle:data-writes');
-        Route::delete('/data/{resourceKey}/{recordId}', [DataResourceController::class, 'destroy'])->middleware('throttle:data-writes');
+        Route::middleware('permission:technical.docs.view')->get('/openapi.json', OpenApiController::class);
+
+        Route::middleware('permission:data-engine.access')->group(function (): void {
+            Route::get('/data/resources', [DataResourceController::class, 'resources']);
+            Route::get('/data/{resourceKey}', [DataResourceController::class, 'index']);
+            Route::post('/data/{resourceKey}', [DataResourceController::class, 'store'])->middleware('throttle:data-writes');
+            Route::get('/data/{resourceKey}/export', [DataResourceController::class, 'export']);
+            Route::post('/data/{resourceKey}/import', [DataResourceController::class, 'import'])->middleware('throttle:data-writes');
+            Route::get('/data/{resourceKey}/transfers', [DataResourceController::class, 'transfers']);
+            Route::get('/data/{resourceKey}/search/status', [DataResourceController::class, 'searchStatus']);
+            Route::post('/data/{resourceKey}/search/reindex', [DataResourceController::class, 'reindexSearch'])->middleware('throttle:data-writes');
+            Route::get('/data/transfers/{transferRun}/download', [DataResourceController::class, 'downloadTransfer'])
+                ->middleware('throttle:downloads')
+                ->name('api.v1.data.transfers.download');
+            Route::post('/data/{resourceKey}/{recordId}/duplicate', [DataResourceController::class, 'duplicate'])->middleware('throttle:data-writes');
+            Route::get('/data/{resourceKey}/{recordId}', [DataResourceController::class, 'show']);
+            Route::match(['put', 'patch'], '/data/{resourceKey}/{recordId}', [DataResourceController::class, 'update'])->middleware('throttle:data-writes');
+            Route::delete('/data/{resourceKey}/{recordId}', [DataResourceController::class, 'destroy'])->middleware('throttle:data-writes');
+        });
 
         Route::get('/notifications', [NotificationController::class, 'index']);
         Route::get('/notifications/deliveries', [NotificationController::class, 'deliveries']);
@@ -73,9 +76,11 @@ Route::prefix('v1')->group(function (): void {
         Route::get('/settings/bootstrap', [SettingController::class, 'bootstrap']);
         Route::get('/settings/me', [SettingController::class, 'me']);
         Route::patch('/settings/me', [SettingController::class, 'updateMe']);
-        Route::get('/auth/api-tokens', [ApiTokenController::class, 'index']);
-        Route::post('/auth/api-tokens', [ApiTokenController::class, 'store'])->middleware('throttle:data-writes');
-        Route::delete('/auth/api-tokens/{tokenId}', [ApiTokenController::class, 'destroy']);
+        Route::middleware('permission:api-tokens.manage')->group(function (): void {
+            Route::get('/auth/api-tokens', [ApiTokenController::class, 'index']);
+            Route::post('/auth/api-tokens', [ApiTokenController::class, 'store'])->middleware('throttle:data-writes');
+            Route::delete('/auth/api-tokens/{tokenId}', [ApiTokenController::class, 'destroy']);
+        });
 
         Route::middleware('permission:demo.access')->prefix('demo')->group(function (): void {
             Route::get('/audit', [DemoAuditController::class, 'index']);

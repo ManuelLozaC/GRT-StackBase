@@ -3,6 +3,10 @@
 ## Objetivo
 Esta guia define el camino recomendado para crear un modulo de negocio nuevo sobre StackBase sin duplicar capacidades del core.
 
+Complemento visual dentro del `Demo Module`:
+
+- [`D:\Desarrollo\GRT-StackBase\frontend\src\views\pages\demo\DemoModuleTutorial.vue`](D:\Desarrollo\GRT-StackBase\frontend\src\views\pages\demo\DemoModuleTutorial.vue)
+
 ## Regla principal
 - el modulo resuelve negocio
 - el core resuelve capacidades transversales
@@ -17,6 +21,36 @@ Esta guia define el camino recomendado para crear un modulo de negocio nuevo sob
 6. definir eventos de negocio importantes
 7. decidir si el modulo necesita jobs, webhooks, archivos o notificaciones
 8. crear una demo funcional o recipe equivalente en `Demo Module` si introduce un patron reusable
+
+## Scaffolding recomendado
+
+StackBase ya incluye dos comandos pequenos y controlados para acelerar el arranque sin meter magia:
+
+```bash
+php artisan stackbase:make-module Leads
+php artisan stackbase:make-data-resource leads lead-card "App\\Modules\\Leads\\Models\\LeadCard" --search
+```
+
+### Que genera `stackbase:make-module`
+
+- `backend/app/Modules/<Modulo>/<Modulo>ServiceProvider.php`
+- `backend/app/Modules/<Modulo>/module.php`
+- `frontend/src/modules/<modulo>/registry.js` si la ruta frontend existe en el entorno
+- `docs/modules/<modulo>.md` si la ruta de docs existe en el entorno
+
+### Que genera `stackbase:make-data-resource`
+
+- `backend/app/Modules/<Modulo>/DataResources/<resource>.php`
+
+### Limites deliberados
+
+- no crea migraciones
+- no inventa modelos de negocio
+- no toca archivos gigantes del core manualmente
+- no registra relaciones complejas por su cuenta
+- no reemplaza analisis de negocio ni modelado de UX
+
+La idea es acelerar estructura repetitiva, no esconder arquitectura.
 
 ## Estructura recomendada
 - backend:
@@ -57,6 +91,23 @@ Debe:
 - construir `title`, `message`, `actionUrl`
 - declarar `metadata` de negocio
 - dejar que el core resuelva canales y destinos
+
+## Eventos de dominio
+
+El modulo puede emitir eventos pequenos y predecibles usando la libreria base:
+
+- [`D:\Desarrollo\GRT-StackBase\backend\app\Core\Domain\Events\DomainEvent.php`](D:\Desarrollo\GRT-StackBase\backend\app\Core\Domain\Events\DomainEvent.php)
+- [`D:\Desarrollo\GRT-StackBase\backend\app\Core\Domain\Events\AbstractDomainEvent.php`](D:\Desarrollo\GRT-StackBase\backend\app\Core\Domain\Events\AbstractDomainEvent.php)
+- [`D:\Desarrollo\GRT-StackBase\backend\app\Core\Domain\Events\DomainEventBus.php`](D:\Desarrollo\GRT-StackBase\backend\app\Core\Domain\Events\DomainEventBus.php)
+- [`D:\Desarrollo\GRT-StackBase\backend\app\Core\Domain\Events\DispatchesDomainEvents.php`](D:\Desarrollo\GRT-StackBase\backend\app\Core\Domain\Events\DispatchesDomainEvents.php)
+
+Patron recomendado:
+
+- el agregado o servicio de negocio registra el evento
+- el modulo lo despacha por `DomainEventBus`
+- listeners, jobs, notificaciones o webhooks reaccionan despues
+
+Eso mantiene negocio y efectos secundarios mejor separados.
 
 ## Jobs
 Usar jobs cuando:

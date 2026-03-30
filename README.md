@@ -36,6 +36,7 @@ Resolver una sola vez las capacidades transversales del producto y reutilizarlas
 - smoke tests de release para auth, Data Engine, healthchecks y canales base
 - deploy productivo endurecido: sin regenerar `APP_KEY`, sin `db:seed --force`, con frontend compilado a `dist` y reindexacion completa
 - `Demo Module` expandido como biblioteca viva de ejemplos tecnicos, UI y recipes de pantalla
+- `Demo Module` ya incluye tutorial guiado para crear un modulo nuevo
 
 ## Fuente de verdad documental
 
@@ -46,6 +47,7 @@ Resolver una sola vez las capacidades transversales del producto y reutilizarlas
 - dominio vigente: [docs/modelo_dominio.md](./docs/modelo_dominio.md)
 - contrato modular: [docs/contrato_modulos.md](./docs/contrato_modulos.md)
 - guia de nuevo modulo: [docs/guia_nuevo_modulo.md](./docs/guia_nuevo_modulo.md)
+- eventos de dominio: [docs/eventos_dominio.md](./docs/eventos_dominio.md)
 - patrones de notificaciones: [docs/patrones_notificaciones.md](./docs/patrones_notificaciones.md)
 - demo module: [docs/demo_module.md](./docs/demo_module.md)
 - pipeline CI: [docs/ci.md](./docs/ci.md)

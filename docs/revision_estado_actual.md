@@ -20,6 +20,7 @@ La base actual ya cumple con lo principal que se definio durante el proyecto:
 - busqueda real con Meilisearch y reindex manual por recurso desde API/UI/Artisan
 - deploy productivo endurecido: preserva `APP_KEY`, evita reseed destructivo, compila frontend a `dist` y reindexa todos los recursos buscables
 - suite frontend ya cubre stores, guards y componentes criticos como topbar, login, settings y administracion de usuarios
+- shell endurecido con permisos minimos para `demo`, `data engine`, `documentacion tecnica` y `API tokens`
 - bootstrap oficial inicial
 - tenancy base
 - RBAC base y permisos contextuales iniciales

@@ -54,6 +54,30 @@ class RbacCoverageTest extends TestCase
         $this->withHeader('Authorization', 'Bearer '.$token)->getJson('/api/v1/error-logs')->assertOk();
     }
 
+    public function test_simple_user_cannot_access_demo_data_engine_documentation_or_api_tokens_without_permissions(): void
+    {
+        $this->seed(RolePermissionSeeder::class);
+
+        [$user, $token] = $this->issueToken();
+
+        $this->withHeader('Authorization', 'Bearer '.$token)->getJson('/api/v1/demo/files')->assertForbidden();
+        $this->withHeader('Authorization', 'Bearer '.$token)->getJson('/api/v1/data/resources')->assertForbidden();
+        $this->withHeader('Authorization', 'Bearer '.$token)->getJson('/api/v1/openapi.json')->assertForbidden();
+        $this->withHeader('Authorization', 'Bearer '.$token)->getJson('/api/v1/auth/api-tokens')->assertForbidden();
+
+        $user->givePermissionTo([
+            'demo.access',
+            'data-engine.access',
+            'technical.docs.view',
+            'api-tokens.manage',
+        ]);
+
+        $this->withHeader('Authorization', 'Bearer '.$token)->getJson('/api/v1/demo/files')->assertOk();
+        $this->withHeader('Authorization', 'Bearer '.$token)->getJson('/api/v1/data/resources')->assertOk();
+        $this->withHeader('Authorization', 'Bearer '.$token)->getJson('/api/v1/openapi.json')->assertOk();
+        $this->withHeader('Authorization', 'Bearer '.$token)->getJson('/api/v1/auth/api-tokens')->assertOk();
+    }
+
     protected function issueToken(): array
     {
         $organization = Organizacion::query()->create([

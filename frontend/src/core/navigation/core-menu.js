@@ -15,12 +15,14 @@ export const coreMenu = [
             {
                 label: 'Data Engine',
                 icon: 'pi pi-fw pi-database',
-                to: '/platform/data-engine'
+                to: '/platform/data-engine',
+                permissionKey: 'data-engine.access'
             },
             {
                 label: 'Documentation',
                 icon: 'pi pi-fw pi-book',
-                to: '/start/documentation'
+                to: '/start/documentation',
+                permissionKey: 'technical.docs.view'
             }
         ]
     },
@@ -94,7 +96,8 @@ export const coreMenu = [
             {
                 label: 'API Tokens',
                 icon: 'pi pi-fw pi-key',
-                to: '/account/api-tokens'
+                to: '/account/api-tokens',
+                permissionKey: 'api-tokens.manage'
             }
         ]
     }

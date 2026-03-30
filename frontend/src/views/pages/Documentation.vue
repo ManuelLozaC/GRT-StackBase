@@ -1,6 +1,25 @@
 <script setup>
-const apiBaseUrl = import.meta.env.VITE_API_URL || 'http://localhost:8080/api/v1';
-const openApiUrl = `${apiBaseUrl}/openapi.json`;
+import api from '@/service/api';
+import { useToast } from 'primevue/usetoast';
+
+const toast = useToast();
+
+async function openOpenApiJson() {
+    try {
+        const response = await api.get('/v1/openapi.json', {
+            responseType: 'blob'
+        });
+        const blobUrl = window.URL.createObjectURL(new Blob([response.data], { type: 'application/json' }));
+        window.open(blobUrl, '_blank', 'noopener,noreferrer');
+    } catch (error) {
+        toast.add({
+            severity: 'error',
+            summary: 'No se pudo abrir OpenAPI',
+            detail: error?.response?.data?.mensaje ?? 'Tu usuario no tiene acceso a la documentación técnica o el archivo no pudo cargarse.',
+            life: 4000
+        });
+    }
+}
 </script>
 
 <template>
@@ -12,10 +31,10 @@ const openApiUrl = `${apiBaseUrl}/openapi.json`;
                     <h1 class="mb-3 text-3xl font-semibold text-slate-900">Documentacion operativa</h1>
                     <p class="max-w-3xl text-slate-600">Esta vista reemplaza la documentacion del template original. Su objetivo es resumir la arquitectura activa del proyecto y orientar el siguiente desarrollo sobre `Core Platform + Modules`.</p>
                 </div>
-                <a :href="openApiUrl" target="_blank" rel="noreferrer" class="inline-flex items-center gap-2 rounded-2xl border border-sky-200 bg-sky-50 px-4 py-3 text-sm font-semibold text-sky-700 transition hover:bg-sky-100">
+                <button type="button" class="inline-flex items-center gap-2 rounded-2xl border border-sky-200 bg-sky-50 px-4 py-3 text-sm font-semibold text-sky-700 transition hover:bg-sky-100" @click="openOpenApiJson">
                     <i class="pi pi-external-link"></i>
                     Ver OpenAPI JSON
-                </a>
+                </button>
             </div>
         </div>
 

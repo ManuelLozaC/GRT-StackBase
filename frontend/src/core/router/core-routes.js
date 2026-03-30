@@ -22,11 +22,17 @@ export const coreRoutes = [
             {
                 path: '/platform/data-engine',
                 name: 'platform-data-engine',
+                meta: {
+                    permissionKey: 'data-engine.access'
+                },
                 component: () => import('@/views/pages/PlatformDataEngine.vue')
             },
             {
                 path: '/start/documentation',
                 name: 'documentation',
+                meta: {
+                    permissionKey: 'technical.docs.view'
+                },
                 component: () => import('@/views/pages/Documentation.vue')
             },
             {
@@ -37,6 +43,9 @@ export const coreRoutes = [
             {
                 path: '/account/api-tokens',
                 name: 'api-tokens',
+                meta: {
+                    permissionKey: 'api-tokens.manage'
+                },
                 component: () => import('@/views/pages/ApiTokens.vue')
             },
             {

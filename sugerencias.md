@@ -22,6 +22,10 @@ Esta seccion no propone “agregar complejidad”. Propone automatizar tareas re
 
 ### 1.1. Generador de modulo
 
+Estado actual:
+
+- ya existe una primera version pequena y controlada mediante `php artisan stackbase:make-module`
+
 #### Que es
 
 Un comando controlado del proyecto, por ejemplo:
@@ -120,6 +124,10 @@ Un “meta framework que crea medio sistema solo” no.
 
 ### 1.2. Generador de recurso Data Engine
 
+Estado actual:
+
+- ya existe una primera version pequena y controlada mediante `php artisan stackbase:make-data-resource`
+
 #### Que es
 
 Un scaffold para acelerar recursos CRUD que vivan sobre el Data Engine.
@@ -180,6 +188,10 @@ No usarlo cuando:
 ---
 
 ### 1.3. Libreria de eventos de dominio
+
+Estado actual:
+
+- ya existe una libreria base pequena sobre el dispatcher de Laravel
 
 #### Que es
 

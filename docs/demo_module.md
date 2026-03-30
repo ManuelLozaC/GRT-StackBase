@@ -30,6 +30,7 @@ Hoy ya existen demos funcionales de:
 - UI typography/content
 - UI advanced inputs
 - UI screen recipes
+- tutorial guiado para construir un modulo nuevo
 - notificaciones
 - archivos
 - jobs
@@ -159,6 +160,7 @@ Cada ejemplo del `Demo Module` debe mostrar:
 - `demo.ui.typography-content`
 - `demo.ui.advanced-inputs`
 - `demo.ui.screen-recipes`
+- `demo.module-tutorial`
 
 ## Criterio de calidad
 

@@ -36,6 +36,8 @@ class RoleManagementTest extends TestCase
             ->assertOk()
             ->assertJsonFragment([
                 'available_permissions' => [
+                    'api-tokens.manage',
+                    'data-engine.access',
                     'demo.access',
                     'error-logs.view',
                     'integrations.manage',
@@ -47,6 +49,7 @@ class RoleManagementTest extends TestCase
                     'security.logs.view',
                     'settings.manage',
                     'tenancy.manage',
+                    'technical.docs.view',
                     'users.impersonate',
                     'users.manage_roles',
                 ],

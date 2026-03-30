@@ -3,6 +3,8 @@
 use App\Core\Settings\Models\CoreSetting;
 use App\Core\DataEngine\DataResourceRegistry;
 use App\Core\DataEngine\Services\DataSearchManager;
+use App\Core\Scaffolding\Services\DataResourceScaffoldGenerator;
+use App\Core\Scaffolding\Services\ModuleScaffoldGenerator;
 use App\Models\User;
 use Database\Seeders\InstalacionBaseSeeder;
 use Database\Seeders\RolePermissionSeeder;
@@ -82,3 +84,43 @@ Artisan::command('platform:ensure-bootstrap', function () {
 
     $this->info('Bootstrap inicial ya existe. Solo se refrescaron roles y permisos base.');
 })->purpose('Ensure bootstrap data exists without resetting production credentials');
+
+Artisan::command('stackbase:make-module {name} {--force}', function (string $name) {
+    $result = app(ModuleScaffoldGenerator::class)->generate(
+        name: $name,
+        force: (bool) $this->option('force'),
+    );
+
+    $this->info("Modulo generado: {$result['module']['label']} [{$result['module']['key']}]");
+
+    foreach ($result['created'] as $path) {
+        $this->line("  + {$path}");
+    }
+
+    foreach ($result['warnings'] as $warning) {
+        $this->warn($warning);
+    }
+
+    $this->newLine();
+    $this->comment('Siguiente paso recomendado: completar rutas frontend, documentar el flujo y agregar recursos Data Engine solo si el caso realmente encaja.');
+})->purpose('Generate a minimal StackBase module scaffold without touching giant config files manually');
+
+Artisan::command('stackbase:make-data-resource {moduleKey} {resourceKey} {modelClass} {--permission=} {--search} {--force}', function (string $moduleKey, string $resourceKey, string $modelClass) {
+    $result = app(DataResourceScaffoldGenerator::class)->generate(
+        moduleKey: $moduleKey,
+        resourceName: $resourceKey,
+        modelClass: $modelClass,
+        permissionKey: $this->option('permission') ?: null,
+        searchable: (bool) $this->option('search'),
+        force: (bool) $this->option('force'),
+    );
+
+    $this->info("Recurso Data Engine generado: {$result['resource']['label']} [{$result['resource']['key']}]");
+
+    foreach ($result['created'] as $path) {
+        $this->line("  + {$path}");
+    }
+
+    $this->newLine();
+    $this->comment('El scaffold es intencionalmente conservador: revisa campos, reglas, relaciones y permiso antes de usarlo en produccion.');
+})->purpose('Generate a controlled Data Engine resource scaffold for an existing module');

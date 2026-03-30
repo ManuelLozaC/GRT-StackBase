@@ -88,6 +88,22 @@ describe('router guards', () => {
         expect(router.currentRoute.value.name).toBe('accessDenied');
     });
 
+    it('protects data engine, documentation and api tokens when the user lacks permissions', async () => {
+        isAuthenticated.value = true;
+        hasPermissionMock.mockImplementation((permission) => permission === 'settings.manage');
+        vi.resetModules();
+        const router = (await import('./index')).default;
+
+        await router.push('/platform/data-engine');
+        expect(router.currentRoute.value.name).toBe('accessDenied');
+
+        await router.push('/start/documentation');
+        expect(router.currentRoute.value.name).toBe('accessDenied');
+
+        await router.push('/account/api-tokens');
+        expect(router.currentRoute.value.name).toBe('accessDenied');
+    });
+
     it('redirects to modules screen when a protected module is disabled', async () => {
         isAuthenticated.value = true;
         isModuleEnabledMock.mockReturnValue(false);

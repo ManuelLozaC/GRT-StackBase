@@ -12,7 +12,7 @@ use App\Models\Persona;
 use App\Models\Sucursal;
 use App\Modules\DemoPlatform\Models\DemoContact;
 
-return [
+$resources = [
     'organizations' => [
         'name' => 'Empresas',
         'description' => 'Empresa o tenant principal del sistema. Internamente la tabla sigue siendo organizaciones mientras termina la convergencia final del dominio.',
@@ -668,3 +668,23 @@ return [
         ],
     ],
 ];
+
+$moduleResourceFiles = glob(base_path('app/Modules/*/DataResources/*.php')) ?: [];
+
+foreach ($moduleResourceFiles as $resourceFile) {
+    $resourceConfig = require $resourceFile;
+
+    if (! is_array($resourceConfig)) {
+        continue;
+    }
+
+    foreach ($resourceConfig as $resourceKey => $definition) {
+        if (! is_array($definition) || array_key_exists($resourceKey, $resources)) {
+            continue;
+        }
+
+        $resources[$resourceKey] = $definition;
+    }
+}
+
+return $resources;

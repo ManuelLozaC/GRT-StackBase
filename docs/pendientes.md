@@ -103,6 +103,8 @@ Nota:
 - [x] Demos funcionales de las capacidades genericas pendientes.
 - [ ] Convertir `Demo Module` en catalogo vivo amplio y curado de UI y patrones reutilizables del stack.
 - [ ] Definir los catalogos universales reales que el core soportara de forma explicita.
+- [x] Crear un tutorial super completo, paso a paso, de como crear un modulo nuevo sobre StackBase.
+  Ya existe dentro del `Demo Module` y se apoya ademas en `docs/guia_nuevo_modulo.md` y `docs/eventos_dominio.md` para onboarding tecnico y decisiones de arquitectura.
 - [x] Unificar metadata modular backend/frontend para que rutas y menu se consuman por API.
 - [x] Pipeline CI base para backend y frontend.
 - [x] Arquitectura operativa base alineada entre Docker local y Droplets.
