@@ -372,3 +372,13 @@ La combinacion mas sensata es:
 - deploy por GitHub Actions con secretos bien gestionados
 
 Eso da una base clara, segura y mantenible sin convertir StackBase en un Frankenstein operativo.
+
+## Estado actual del monitor externo
+
+El monitor externo de health en GitHub Actions quedo pausado como tarea programada para evitar correos periodicos mientras no se necesite observabilidad continua.
+
+Hoy:
+
+- `external-health-monitor.yml` solo corre manualmente
+- ya no dispara alertas por cron
+- puede reactivarse mas adelante reponiendo el bloque `schedule` del workflow

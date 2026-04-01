@@ -9,6 +9,12 @@ Workflow relacionado:
 - [`D:\Desarrollo\GRT-StackBase\.github\workflows\deploy-droplet.yml`](D:\Desarrollo\GRT-StackBase\.github\workflows\deploy-droplet.yml)
 - [`D:\Desarrollo\GRT-StackBase\.github\workflows\external-health-monitor.yml`](D:\Desarrollo\GRT-StackBase\.github\workflows\external-health-monitor.yml)
 
+Nota operativa actual:
+
+- `External Health Monitor` esta pausado como tarea programada
+- hoy solo corre manualmente por `workflow_dispatch`
+- esto evita correos automaticos hasta que decidas volver a activar monitoreo externo continuo
+
 ## GitHub Secrets requeridos
 
 Crear estos secrets en:
@@ -174,7 +180,7 @@ Antes del primer deploy, el Droplet debe tener:
 
 ## Observabilidad externa base
 
-`external-health-monitor.yml` corre cada 15 minutos y, cuando `HEALTHCHECK_URL` esta configurado, falla si:
+`external-health-monitor.yml` hoy solo corre manualmente y, cuando `HEALTHCHECK_URL` esta configurado, falla si:
 
 - la URL publica no responde
 - algun check del JSON de health sale distinto de `ok`
