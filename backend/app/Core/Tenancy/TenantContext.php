@@ -6,13 +6,18 @@ use App\Models\User;
 
 class TenantContext
 {
-    protected ?int $organizationId = null;
+    protected ?int $companyId = null;
     protected ?int $actorId = null;
     protected ?int $workAssignmentId = null;
 
+    public function setCompanyId(?int $companyId): void
+    {
+        $this->companyId = $companyId;
+    }
+
     public function setOrganizationId(?int $organizationId): void
     {
-        $this->organizationId = $organizationId;
+        $this->setCompanyId($organizationId);
     }
 
     public function setActorId(?int $actorId): void
@@ -27,19 +32,19 @@ class TenantContext
 
     public function setFromUser(?User $user): void
     {
-        $this->organizationId = $user?->activeOrganizationId();
+        $this->companyId = $user?->activeCompanyId();
         $this->actorId = $user?->id;
         $this->workAssignmentId = $user?->activeWorkAssignmentId();
     }
 
-    public function organizationId(?User $fallbackUser = null): ?int
-    {
-        return $this->organizationId ?? $fallbackUser?->activeOrganizationId();
-    }
-
     public function companyId(?User $fallbackUser = null): ?int
     {
-        return $this->organizationId($fallbackUser);
+        return $this->companyId ?? $fallbackUser?->activeCompanyId();
+    }
+
+    public function organizationId(?User $fallbackUser = null): ?int
+    {
+        return $this->companyId($fallbackUser);
     }
 
     public function actorId(?User $fallbackUser = null): ?int
@@ -54,13 +59,13 @@ class TenantContext
 
     public function snapshot(?User $fallbackUser = null): array
     {
-        $organizationId = $this->organizationId($fallbackUser);
+        $companyId = $this->companyId($fallbackUser);
         $workAssignmentId = $this->workAssignmentId($fallbackUser);
 
         return [
-            'organizacion_id' => $organizationId,
-            'empresa_id' => $organizationId,
-            'company_id' => $organizationId,
+            'empresa_id' => $companyId,
+            'company_id' => $companyId,
+            'organizacion_id' => $companyId,
             'actor_id' => $this->actorId($fallbackUser),
             'asignacion_laboral_id' => $workAssignmentId,
             'active_work_assignment_id' => $workAssignmentId,
@@ -69,7 +74,7 @@ class TenantContext
 
     public function clear(): void
     {
-        $this->organizationId = null;
+        $this->companyId = null;
         $this->actorId = null;
         $this->workAssignmentId = null;
     }

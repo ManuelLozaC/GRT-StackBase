@@ -49,7 +49,7 @@ class DataSearchManager
             ];
         }
 
-        $organizationId = $this->tenantContext->organizationId($actor);
+        $organizationId = $this->tenantContext->companyId($actor);
         $payload = [
             'q' => $query,
             'limit' => $limit,
@@ -175,7 +175,7 @@ class DataSearchManager
                 'documents_indexed' => count($documents),
                 'index_uid' => $this->indexUid($resource),
             ],
-            organizationId: $this->tenantContext->organizationId($actor),
+            organizationId: $this->tenantContext->companyId($actor),
         );
 
         return $snapshot;

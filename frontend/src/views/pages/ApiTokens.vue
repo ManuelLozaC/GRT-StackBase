@@ -2,13 +2,13 @@
 import StateEmpty from '@/components/core/StateEmpty.vue';
 import StateSkeleton from '@/components/core/StateSkeleton.vue';
 import { formatDateTime } from '@/core/settings/formatters';
+import { useActionFeedback } from '@/core/ui/useActionFeedback';
 import api from '@/service/api';
 import { useConfirm } from 'primevue/useconfirm';
-import { useToast } from 'primevue/usetoast';
 import { computed, onMounted, reactive } from 'vue';
 
-const toast = useToast();
 const confirm = useConfirm();
+const feedback = useActionFeedback();
 
 const state = reactive({
     loading: false,
@@ -50,19 +50,9 @@ async function createToken() {
             expires_in_days: 30
         };
         await loadTokens();
-        toast.add({
-            severity: 'success',
-            summary: 'Token creado',
-            detail: 'Copia el token ahora. Luego ya no podra mostrarse otra vez.',
-            life: 4000
-        });
+        feedback.showSuccess('Token creado', 'Copia el token ahora. Luego ya no podra mostrarse otra vez.', 4000);
     } catch (error) {
-        toast.add({
-            severity: 'error',
-            summary: 'No se pudo crear el token',
-            detail: error?.response?.data?.mensaje ?? 'Revisa el nombre y expiracion configurados.',
-            life: 4000
-        });
+        feedback.showError('No se pudo crear el token', error, 'Revisa el nombre y expiracion configurados.');
     } finally {
         state.saving = false;
     }
@@ -81,12 +71,7 @@ function revokeToken(token) {
             try {
                 await api.delete(`/v1/auth/api-tokens/${token.id}`);
                 await loadTokens();
-                toast.add({
-                    severity: 'success',
-                    summary: 'Token revocado',
-                    detail: 'El acceso API ya fue revocado.',
-                    life: 3000
-                });
+                feedback.showSuccess('Token revocado', 'El acceso API ya fue revocado.');
             } finally {
                 state.revokingId = null;
             }

@@ -57,6 +57,11 @@ class User extends Authenticatable
             ->withTimestamps();
     }
 
+    public function empresas(): BelongsToMany
+    {
+        return $this->organizaciones();
+    }
+
     public function organizacionActiva(): BelongsTo
     {
         return $this->belongsTo(Organizacion::class, 'organizacion_activa_id');
@@ -101,6 +106,13 @@ class User extends Authenticatable
     public function activeWorkAssignmentId(): ?int
     {
         return $this->active_work_assignment_id;
+    }
+
+    public function companyMembershipIds(): array
+    {
+        return $this->relationLoaded('organizaciones')
+            ? $this->organizaciones->pluck('id')->values()->all()
+            : $this->organizaciones()->pluck('organizaciones.id')->values()->all();
     }
 
     public function pushSubscriptions(): HasMany

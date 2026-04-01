@@ -22,7 +22,7 @@ class ErrorLogger
         array $context = [],
         ?User $actor = null,
     ): CoreErrorLog {
-        $resolvedOrganizationId = $this->tenantContext->organizationId($actor);
+        $resolvedOrganizationId = $this->tenantContext->companyId($actor);
         $resolvedActorId = $actor?->id ?? $this->tenantContext->actorId();
 
         return CoreErrorLog::query()->create([

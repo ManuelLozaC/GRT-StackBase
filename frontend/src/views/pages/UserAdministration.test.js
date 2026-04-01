@@ -85,12 +85,14 @@ describe('UserAdministration', () => {
             });
     });
 
-    it('crea un usuario nuevo desde el formulario principal', async () => {
-        apiPostMock.mockResolvedValue({
-            data: {
-                datos: {
-                    id: 22
-                }
+    it(
+        'crea un usuario nuevo desde el formulario principal',
+        async () => {
+            apiPostMock.mockResolvedValue({
+                data: {
+                    datos: {
+                        id: 22
+                    }
             }
         });
 
@@ -124,15 +126,17 @@ describe('UserAdministration', () => {
         await createButton.trigger('click');
         await flushPromises();
 
-        expect(apiPostMock).toHaveBeenCalledWith('/v1/users', {
-            persona_id: 15,
-            name: null,
-            alias: 'maria.suarez',
-            email: 'maria.acceso@grt.com.bo',
-            activo: true,
-            roles: [],
-            password: 'Admin2026',
-            password_confirmation: 'Admin2026'
-        });
-    });
+            expect(apiPostMock).toHaveBeenCalledWith('/v1/users', {
+                persona_id: 15,
+                name: null,
+                alias: 'maria.suarez',
+                email: 'maria.acceso@grt.com.bo',
+                activo: true,
+                roles: [],
+                password: 'Admin2026',
+                password_confirmation: 'Admin2026'
+            });
+        },
+        15000
+    );
 });

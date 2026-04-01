@@ -30,6 +30,8 @@ class DemoJobFlowTest extends TestCase
             ->assertOk()
             ->assertJsonPath('datos.status', 'pending')
             ->assertJsonPath('datos.requested_payload.mode', 'queued')
+            ->assertJsonPath('datos.policy_key', 'demo-fast-feedback')
+            ->assertJsonPath('datos.max_tries', 3)
             ->assertJsonPath('meta.queue_runtime.connection', config('queue.default'));
 
         Queue::assertPushed(ProcessDemoJobRun::class, 1);
@@ -54,6 +56,7 @@ class DemoJobFlowTest extends TestCase
         $response
             ->assertOk()
             ->assertJsonPath('datos.status', 'completed')
+            ->assertJsonPath('datos.can_retry', false)
             ->assertJsonPath('datos.result_payload.uppercase_message', 'STACKBASE JOBS LISTOS')
             ->assertJsonPath('datos.requested_by', $user->name);
     }
@@ -72,6 +75,8 @@ class DemoJobFlowTest extends TestCase
         $response
             ->assertOk()
             ->assertJsonPath('datos.status', 'failed')
+            ->assertJsonPath('datos.retry_exhausted', false)
+            ->assertJsonPath('datos.next_retry_in_seconds', 5)
             ->assertJsonPath('mensaje', 'Job demo ejecutado con fallo controlado');
 
         $this->assertDatabaseHas('core_job_runs', [
@@ -139,6 +144,39 @@ class DemoJobFlowTest extends TestCase
             'status' => 'pending',
             'organizacion_id' => $user->organizacion_activa_id,
         ]);
+    }
+
+    public function test_failed_demo_job_cannot_retry_after_policy_is_exhausted(): void
+    {
+        [$user, $token] = $this->authenticateUser();
+
+        $jobRun = CoreJobRun::query()->create([
+            'uuid' => (string) \Illuminate\Support\Str::uuid(),
+            'organizacion_id' => $user->organizacion_activa_id,
+            'requested_by' => $user->id,
+            'job_key' => 'demo.text-transform',
+            'queue' => 'demo',
+            'status' => 'failed',
+            'requested_payload' => ['message' => 'agotado'],
+            'metadata' => [
+                'key' => 'demo-fast-feedback',
+                'label' => 'Demo Fast Feedback',
+                'max_attempts' => 3,
+                'backoff_schedule' => [5, 15],
+                'retry_exhausted' => true,
+                'retriable' => false,
+                'next_retry_in_seconds' => null,
+            ],
+            'attempts' => 3,
+            'failed_at' => now(),
+            'finished_at' => now(),
+            'error_message' => 'Sin mas retries',
+        ]);
+
+        $this->withHeader('Authorization', 'Bearer '.$token)
+            ->postJson("/api/v1/demo/jobs/{$jobRun->uuid}/retry")
+            ->assertStatus(422)
+            ->assertJsonPath('mensaje', 'Este job ya agoto su politica de reintentos.');
     }
 
     protected function authenticateUser(): array

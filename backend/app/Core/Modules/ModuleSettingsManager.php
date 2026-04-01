@@ -82,6 +82,8 @@ class ModuleSettingsManager
             return $this->forModule($moduleKey);
         }
 
+        $this->modules->syncManifestToPersistence();
+
         foreach ($validated as $settingKey => $value) {
             SystemModuleSetting::query()->updateOrCreate(
                 [

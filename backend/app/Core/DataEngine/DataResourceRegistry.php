@@ -43,12 +43,14 @@ class DataResourceRegistry
     public function toFrontendPayload(?User $user = null): array
     {
         return $this->available($user, true)
-            ->map(fn (array $resource): array => $this->serializeDefinition($resource))
+            ->map(fn (array $resource): array => $this->serializeDefinition($resource, $user))
             ->all();
     }
 
-    public function serializeDefinition(array $resource): array
+    public function serializeDefinition(array $resource, ?User $user = null): array
     {
+        $capabilities = $this->resolveCapabilities($resource, $user);
+
         return [
             'key' => $resource['key'],
             'name' => $resource['name'],
@@ -57,14 +59,38 @@ class DataResourceRegistry
             'permission_key' => $resource['permission_key'],
             'default_sort' => $resource['default_sort'],
             'per_page_options' => $resource['per_page_options'],
-            'capabilities' => $resource['capabilities'],
+            'capabilities' => $capabilities,
             'table_fields' => $resource['table_fields'],
             'form_fields' => $resource['form_fields'],
             'filter_fields' => $resource['filter_fields'],
             'custom_fields' => $resource['custom_fields'],
-            'record_actions' => $resource['record_actions'],
-            'search' => $resource['search'],
+            'record_actions' => array_merge($resource['record_actions'], [
+                'duplicate' => $capabilities['duplicate'] ?? false,
+            ]),
+            'search' => array_merge($resource['search'], [
+                'can_manage' => $this->userHasPermission($user, 'data-engine.search.manage'),
+            ]),
         ];
+    }
+
+    public function userCanPerform(array $resource, ?User $user, string $action): bool
+    {
+        if (! $this->userCanAccess($resource, $user)) {
+            return false;
+        }
+
+        if (! ($resource['capabilities'][$action] ?? false)) {
+            return false;
+        }
+
+        $permissionKey = $resource['capability_permissions'][$action]
+            ?? $this->defaultCapabilityPermission($action);
+
+        if ($permissionKey === null || $user === null) {
+            return $permissionKey === null;
+        }
+
+        return $user->can($permissionKey) || $this->contextPermissions->hasPermission($user, $permissionKey);
     }
 
     protected function normalizeResource(string $key, array $resource): array
@@ -125,6 +151,7 @@ class DataResourceRegistry
             'record_actions' => [
                 'duplicate' => false,
             ],
+            'capability_permissions' => [],
             'search' => [
                 'engine' => config('search.default_engine', 'database'),
             ],
@@ -170,6 +197,36 @@ class DataResourceRegistry
 
         if ($permissionKey === null || $user === null) {
             return true;
+        }
+
+        return $this->userHasPermission($user, $permissionKey);
+    }
+
+    protected function resolveCapabilities(array $resource, ?User $user): array
+    {
+        return collect($resource['capabilities'] ?? [])
+            ->mapWithKeys(fn (bool $enabled, string $action): array => [
+                $action => $enabled && $this->userCanPerform($resource, $user, $action),
+            ])
+            ->all();
+    }
+
+    protected function defaultCapabilityPermission(string $action): ?string
+    {
+        return [
+            'create' => 'data-engine.create',
+            'update' => 'data-engine.update',
+            'delete' => 'data-engine.delete',
+            'import' => 'data-engine.import',
+            'export' => 'data-engine.export',
+            'duplicate' => 'data-engine.duplicate',
+        ][$action] ?? null;
+    }
+
+    public function userHasPermission(?User $user, string $permissionKey): bool
+    {
+        if ($user === null) {
+            return false;
         }
 
         return $user->can($permissionKey) || $this->contextPermissions->hasPermission($user, $permissionKey);

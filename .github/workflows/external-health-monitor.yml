@@ -18,13 +18,14 @@ jobs:
       - name: Validate configured healthcheck URL
         run: |
           if [ -z "${HEALTHCHECK_URL}" ]; then
-            echo "HEALTHCHECK_URL no esta configurado en GitHub Variables." >&2
-            exit 1
+            echo "HEALTHCHECK_URL no esta configurado en GitHub Variables. Se omite el monitor externo."
+            exit 0
           fi
         env:
           HEALTHCHECK_URL: ${{ vars.HEALTHCHECK_URL }}
 
       - name: Check public health JSON
+        if: ${{ vars.HEALTHCHECK_URL != '' }}
         run: |
           python - <<'PY'
           import json

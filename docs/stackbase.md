@@ -98,3 +98,61 @@ Debe cubrir dos frentes:
 - la documentacion debe reflejar el estado real del codigo
 - el backend debe ser la fuente de verdad de metadata modular
 - la documentacion del repo debe tener una sola fuente de verdad para backlog, diagnostico y plan de cierre
+
+## Catalogos universales del core
+
+El core solo debe soportar de forma explicita catalogos que probablemente reutilizaran multiples modulos de negocio.
+
+Hoy el contrato visible del core queda en:
+
+- `Empresas`
+- `Oficinas`
+- `Equipos`
+- `Personas`
+- `Divisiones`
+- `Areas`
+- `Cargos`
+- `Asignaciones laborales`
+
+La definicion operativa vive tambien en [`backend/config/core_catalogs.php`](/D:/Desarrollo/GRT-StackBase/backend/config/core_catalogs.php).
+
+Regla:
+
+- si una entidad solo describe estructura organizativa o identidad base, puede vivir en el core
+- si una entidad necesita workflow, SLA, aprobaciones, tablero o UX propia, debe vivir en un modulo
+
+Ejemplos que no deben entrar al core por defecto:
+
+- `Leads`
+- `Noticias`
+- `Tickets`
+- `Pedidos`
+- `Cobranzas`
+
+## Regla de arquitectura del shell core
+
+El shell core debe quedarse pequeno, claro y transversal.
+
+Debe incluir:
+
+- autenticacion
+- contexto de empresa
+- administracion de usuarios, roles y permisos
+- settings del sistema
+- modulos
+- Data Engine para catalogos universales
+- observabilidad tecnica
+- documentacion tecnica
+- integraciones transversales
+
+No debe absorber:
+
+- bandejas o dashboards de negocio
+- workflows especificos
+- listados operativos exclusivos de un modulo
+- formularios ricos que solo sirven a un dominio particular
+
+Cuando aparezca una duda, la decision correcta por defecto es:
+
+- primero preguntarse si mas de un modulo usaria esa capacidad
+- si la respuesta es no, debe nacer fuera del core

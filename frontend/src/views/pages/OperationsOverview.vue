@@ -2,11 +2,14 @@
 import StateEmpty from '@/components/core/StateEmpty.vue';
 import StateSkeleton from '@/components/core/StateSkeleton.vue';
 import { formatDateTime } from '@/core/settings/formatters';
+import { useActionFeedback } from '@/core/ui/useActionFeedback';
 import api from '@/service/api';
 import { computed, onMounted, reactive } from 'vue';
 
+const feedback = useActionFeedback();
 const state = reactive({
     loading: false,
+    loadError: '',
     summary: null,
     recentFailedJobs: [],
     recentFailedTransfers: [],
@@ -65,6 +68,10 @@ async function loadOverview() {
         state.recentFailedTransfers = data.recent_failed_transfers ?? [];
         state.recentSecurityEvents = data.recent_security_events ?? [];
         state.generatedAt = response.data.meta?.generated_at ?? null;
+        state.loadError = '';
+    } catch (error) {
+        state.loadError = feedback.messageFromError(error, 'No se pudo construir el overview operativo del tenant activo.');
+        feedback.showError('No se pudo cargar Operations Overview', error, state.loadError);
     } finally {
         state.loading = false;
     }
@@ -92,13 +99,18 @@ onMounted(loadOverview);
                     <h1 class="text-3xl font-semibold text-slate-900 mb-3">Operations Overview</h1>
                     <p class="text-slate-600 max-w-3xl">Vista ejecutiva del tenant activo para seguir seguridad, jobs, transferencias, auditoria, archivos y notificaciones sin salir del shell administrativo.</p>
                 </div>
-                <Tag severity="contrast" :value="state.generatedAt ? `Actualizado ${formatDateTime(state.generatedAt)}` : 'Sin timestamp'" />
+                <div class="flex items-center gap-3">
+                    <Tag severity="contrast" :value="state.generatedAt ? `Actualizado ${formatDateTime(state.generatedAt)}` : 'Sin timestamp'" />
+                    <Button class="app-button-standard" label="Actualizar" icon="pi pi-refresh" severity="secondary" outlined :loading="state.loading" @click="loadOverview" />
+                </div>
             </div>
         </div>
 
         <StateSkeleton v-if="state.loading" />
 
         <template v-else>
+            <Message v-if="state.loadError" severity="warn" :closable="false">{{ state.loadError }}</Message>
+
             <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
                 <div v-for="card in summaryCards" :key="card.title" class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
                     <div class="text-xs uppercase tracking-[0.25em] text-slate-500">{{ card.title }}</div>

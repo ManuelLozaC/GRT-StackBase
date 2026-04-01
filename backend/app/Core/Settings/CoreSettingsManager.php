@@ -20,13 +20,13 @@ class CoreSettingsManager
     public function bootstrap(User $user): array
     {
         $global = $this->forScope('global');
-        $organization = $this->forScope('organization', $user->organizacion_activa_id);
+        $company = $this->forScope('company', $user->activeCompanyId());
         $preferences = $this->forScope('user', null, $user->id);
 
         return [
             'global' => $global,
-            'organization' => $organization,
-            'company' => $organization,
+            'company' => $company,
+            'organization' => $company,
             'user' => $preferences,
             'feature_flags' => $this->featureFlags($global),
         ];
@@ -34,11 +34,13 @@ class CoreSettingsManager
 
     public function forScope(string $scope, ?int $organizationId = null, ?int $userId = null): array
     {
-        $definitions = collect($this->definitions[$scope] ?? [])
+        $normalizedScope = $this->normalizeScope($scope);
+
+        $definitions = collect($this->definitions[$normalizedScope] ?? [])
             ->map(fn (array $setting): array => $this->normalizeSetting($setting))
             ->values();
 
-        $persisted = $this->persistedValues($scope, $organizationId, $userId);
+        $persisted = $this->persistedValues($normalizedScope, $organizationId, $userId);
 
         return $definitions
             ->map(function (array $setting) use ($persisted): array {
@@ -60,7 +62,8 @@ class CoreSettingsManager
 
     public function update(string $scope, array $payload, ?int $organizationId = null, ?int $userId = null): array
     {
-        $settings = collect($this->forScope($scope, $organizationId, $userId));
+        $normalizedScope = $this->normalizeScope($scope);
+        $settings = collect($this->forScope($normalizedScope, $organizationId, $userId));
 
         if ($settings->isEmpty()) {
             throw new DomainException('No existen definiciones de settings para este scope.');
@@ -79,7 +82,7 @@ class CoreSettingsManager
         }
 
         if ($rules === []) {
-            return $this->forScope($scope, $organizationId, $userId);
+            return $this->forScope($normalizedScope, $organizationId, $userId);
         }
 
         $validated = Validator::make($normalizedPayload, $rules)->validate();
@@ -87,7 +90,7 @@ class CoreSettingsManager
         if ($this->canUsePersistence()) {
             foreach ($validated as $settingKey => $value) {
                 $query = CoreSetting::query()
-                    ->where('scope', $scope)
+                    ->where('scope', $normalizedScope)
                     ->where('setting_key', $settingKey);
 
                 $organizationId === null
@@ -106,7 +109,7 @@ class CoreSettingsManager
                     ])->save();
 
                     CoreSetting::query()
-                        ->where('scope', $scope)
+                        ->where('scope', $normalizedScope)
                         ->where('setting_key', $settingKey)
                         ->when($organizationId === null, fn ($cleanup) => $cleanup->whereNull('organizacion_id'), fn ($cleanup) => $cleanup->where('organizacion_id', $organizationId))
                         ->when($userId === null, fn ($cleanup) => $cleanup->whereNull('user_id'), fn ($cleanup) => $cleanup->where('user_id', $userId))
@@ -117,7 +120,7 @@ class CoreSettingsManager
                 }
 
                 CoreSetting::query()->create([
-                    'scope' => $scope,
+                    'scope' => $normalizedScope,
                     'organizacion_id' => $organizationId,
                     'user_id' => $userId,
                     'setting_key' => $settingKey,
@@ -126,7 +129,7 @@ class CoreSettingsManager
             }
         }
 
-        return $this->forScope($scope, $organizationId, $userId);
+        return $this->forScope($normalizedScope, $organizationId, $userId);
     }
 
     protected function featureFlags(array $globalSettings): array
@@ -190,5 +193,13 @@ class CoreSettingsManager
         } catch (Throwable) {
             return false;
         }
+    }
+
+    protected function normalizeScope(string $scope): string
+    {
+        return match ($scope) {
+            'company' => 'organization',
+            default => $scope,
+        };
     }
 }

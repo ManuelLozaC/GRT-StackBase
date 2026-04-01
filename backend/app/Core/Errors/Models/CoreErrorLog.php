@@ -48,4 +48,14 @@ class CoreErrorLog extends Model
     {
         return $this->belongsTo(Organizacion::class, 'organizacion_id');
     }
+
+    public function empresa(): BelongsTo
+    {
+        return $this->organizacion();
+    }
+
+    public function company(): BelongsTo
+    {
+        return $this->organizacion();
+    }
 }

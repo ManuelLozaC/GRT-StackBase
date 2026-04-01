@@ -7,20 +7,48 @@ import { computed, onMounted, reactive } from 'vue';
 
 const state = reactive({
     loading: false,
-    items: []
+    items: [],
+    filters: {
+        q: '',
+        error_code: '',
+        request_id: ''
+    }
 });
 
 const hasItems = computed(() => state.items.length > 0);
+const errorCodeOptions = computed(() =>
+    [...new Set(state.items.map((item) => item.error_code).filter(Boolean))].map((value) => ({
+        label: value,
+        value
+    }))
+);
 
 async function loadLogs() {
     state.loading = true;
 
     try {
-        const response = await api.get('/v1/error-logs');
+        const response = await api.get('/v1/error-logs', {
+            params: {
+                ...Object.fromEntries(Object.entries(state.filters).filter(([, value]) => value))
+            }
+        });
         state.items = response.data.datos ?? [];
     } finally {
         state.loading = false;
     }
+}
+
+function applyFilters() {
+    loadLogs();
+}
+
+function clearFilters() {
+    state.filters = {
+        q: '',
+        error_code: '',
+        request_id: ''
+    };
+    loadLogs();
 }
 
 onMounted(loadLogs);
@@ -32,6 +60,41 @@ onMounted(loadLogs);
             <div class="text-sm uppercase tracking-[0.3em] text-sky-600 font-semibold mb-3">Errors</div>
             <h1 class="text-3xl font-semibold text-slate-900 mb-3">Error Logs</h1>
             <p class="text-slate-600 max-w-3xl">Registro tecnico de excepciones no controladas para soporte operativo del tenant activo y correlacion con `request_id`.</p>
+        </div>
+
+        <div class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+            <div class="app-panel-header">
+                <div class="app-panel-header-copy">
+                    <h2 class="text-xl font-semibold text-slate-900 m-0">Filtros tecnicos</h2>
+                    <p class="text-sm text-slate-600 m-0">Busca por codigo, clase, request ID o texto del error para correlacionar incidentes con soporte y observabilidad.</p>
+                </div>
+                <div class="app-panel-actions">
+                    <Button class="app-button-standard" label="Actualizar" icon="pi pi-refresh" severity="secondary" outlined :loading="state.loading" @click="loadLogs" />
+                </div>
+            </div>
+
+            <div class="grid grid-cols-12 gap-4">
+                <div class="col-span-12 lg:col-span-6">
+                    <label class="block text-sm font-semibold text-slate-600 mb-2">Busqueda global</label>
+                    <IconField>
+                        <InputIcon class="pi pi-search" />
+                        <InputText v-model="state.filters.q" class="w-full" placeholder="Codigo, clase, mensaje, actor, request ID o archivo" @keyup.enter="applyFilters" />
+                    </IconField>
+                </div>
+                <div class="col-span-12 md:col-span-6 lg:col-span-3">
+                    <label class="block text-sm font-semibold text-slate-600 mb-2">Codigo</label>
+                    <Select v-model="state.filters.error_code" :options="errorCodeOptions" optionLabel="label" optionValue="value" showClear class="w-full" />
+                </div>
+                <div class="col-span-12 md:col-span-6 lg:col-span-3">
+                    <label class="block text-sm font-semibold text-slate-600 mb-2">Request ID</label>
+                    <InputText v-model="state.filters.request_id" class="w-full" placeholder="req-..." />
+                </div>
+            </div>
+
+            <div class="mt-4 flex flex-wrap gap-3">
+                <Button class="app-button-standard" label="Aplicar filtros" icon="pi pi-filter" @click="applyFilters" />
+                <Button class="app-button-standard" label="Limpiar" severity="secondary" outlined @click="clearFilters" />
+            </div>
         </div>
 
         <StateSkeleton v-if="state.loading" />

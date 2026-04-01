@@ -39,6 +39,9 @@ Fecha de referencia: `2026-03-26`
 - seguir endureciendo tenancy, auditoria y seguridad en las superficies restantes
 - evaluar guardado de filtros y otras mejoras no criticas del Data Engine
 - evolucionar el core sin reabrir deuda estructural de la version base
+- seguir puliendo feedback optimista/pesimista, fallbacks de UX y recipes reutilizables cuando un modulo real lo justifique
+- definir si algun modulo real obliga a encriptar datos funcionales sensibles dentro del dominio
+- evaluar PWA solo si el uso movil real del producto lo vuelve rentable
 
 ### Reciente
 
@@ -99,6 +102,14 @@ Fecha de referencia: `2026-03-26`
 - automatizar despliegue y observabilidad
 - seguir ampliando checks de release sin inflar la base
 - seguir endureciendo tenancy y seguridad sin romper la simplicidad del core
+
+### Fase 7. Evolucion opcional no bloqueante
+
+- profundizar recipes del `Demo Module` segun necesidades reales de onboarding
+- mejorar feedback optimista/pesimista y fallbacks UX donde los modulos lo pidan
+- profundizar exportaciones pesadas async si algun modulo requiere mayor observabilidad o notificacion
+- evaluar encriptacion de datos sensibles segun el dominio concreto del siguiente modulo
+- evaluar PWA solo si el uso movil recurrente del sistema lo justifica
 
 ## Criterio de exito
 

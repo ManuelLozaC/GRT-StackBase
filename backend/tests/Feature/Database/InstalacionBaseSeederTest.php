@@ -2,6 +2,7 @@
 
 namespace Tests\Feature\Database;
 
+use App\Models\User;
 use Database\Seeders\InstalacionBaseSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -65,5 +66,20 @@ class InstalacionBaseSeederTest extends TestCase
         $this->assertSame(1, \App\Models\Persona::query()->where('correo', 'mloza@grt.com.bo')->count());
         $this->assertSame(1, \App\Models\User::query()->where('email', 'mloza@grt.com.bo')->count());
         $this->assertSame(1, \App\Models\AsignacionLaboral::query()->count());
+    }
+
+    public function test_bootstrap_user_receives_current_admin_permissions(): void
+    {
+        $this->seed(InstalacionBaseSeeder::class);
+
+        $user = User::query()->where('email', 'mloza@grt.com.bo')->firstOrFail();
+        $permissions = $user->getAllPermissions()->pluck('name');
+
+        $this->assertTrue($user->hasRole('admin'));
+        $this->assertTrue($permissions->contains('modules.view'));
+        $this->assertTrue($permissions->contains('settings.view'));
+        $this->assertTrue($permissions->contains('data-engine.access'));
+        $this->assertTrue($permissions->contains('users.view'));
+        $this->assertTrue($permissions->contains('roles.view'));
     }
 }

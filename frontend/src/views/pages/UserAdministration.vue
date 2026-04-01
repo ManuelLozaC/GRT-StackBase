@@ -2,13 +2,13 @@
 import { sessionStore } from '@/core/auth/sessionStore';
 import StateEmpty from '@/components/core/StateEmpty.vue';
 import StateSkeleton from '@/components/core/StateSkeleton.vue';
+import { useActionFeedback } from '@/core/ui/useActionFeedback';
 import api from '@/service/api';
 import { computed, onMounted, reactive, watch } from 'vue';
 import { useRouter } from 'vue-router';
-import { useToast } from 'primevue/usetoast';
 
 const router = useRouter();
-const toast = useToast();
+const feedback = useActionFeedback();
 const state = reactive({
     loading: false,
     savingUserId: null,
@@ -168,20 +168,10 @@ async function submitUserForm() {
 
         await loadUsers();
         closeUserDialog();
-        toast.add({
-            severity: 'success',
-            summary: isEditing.value ? 'Usuario actualizado' : 'Usuario creado',
-            detail: isEditing.value ? 'Los cambios del usuario se guardaron correctamente.' : 'El nuevo usuario fue creado correctamente.',
-            life: 3000
-        });
+        feedback.showSuccess(isEditing.value ? 'Usuario actualizado' : 'Usuario creado', isEditing.value ? 'Los cambios del usuario se guardaron correctamente.' : 'El nuevo usuario fue creado correctamente.');
     } catch (error) {
         state.formError = error?.response?.data?.mensaje ?? 'Revisa los datos e intenta de nuevo.';
-        toast.add({
-            severity: 'error',
-            summary: 'No se pudo guardar el usuario',
-            detail: state.formError,
-            life: 4000
-        });
+        feedback.showError('No se pudo guardar el usuario', error, state.formError);
     } finally {
         state.savingForm = false;
     }
@@ -201,19 +191,9 @@ async function saveRoles(user) {
             state.items[index] = normalizeUser(updated);
         }
 
-        toast.add({
-            severity: 'success',
-            summary: 'Roles actualizados',
-            detail: `Los roles de ${updated.name} se guardaron correctamente.`,
-            life: 3000
-        });
+        feedback.showSuccess('Roles actualizados', `Los roles de ${updated.name} se guardaron correctamente.`);
     } catch (error) {
-        toast.add({
-            severity: 'error',
-            summary: 'No se pudieron guardar los roles',
-            detail: error?.response?.data?.mensaje ?? 'Revisa la seleccion e intenta de nuevo.',
-            life: 4000
-        });
+        feedback.showError('No se pudieron guardar los roles', error, 'Revisa la seleccion e intenta de nuevo.');
     } finally {
         state.savingUserId = null;
     }
@@ -233,19 +213,9 @@ async function toggleUserStatus(user) {
             state.items[index] = normalizeUser(updated);
         }
 
-        toast.add({
-            severity: 'success',
-            summary: updated.activo ? 'Usuario activado' : 'Usuario desactivado',
-            detail: `${updated.name} ahora tiene estado ${updated.activo ? 'activo' : 'inactivo'}.`,
-            life: 3000
-        });
+        feedback.showSuccess(updated.activo ? 'Usuario activado' : 'Usuario desactivado', `${updated.name} ahora tiene estado ${updated.activo ? 'activo' : 'inactivo'}.`);
     } catch (error) {
-        toast.add({
-            severity: 'error',
-            summary: 'No se pudo cambiar el estado',
-            detail: error?.response?.data?.mensaje ?? 'Intenta nuevamente.',
-            life: 4000
-        });
+        feedback.showError('No se pudo cambiar el estado', error, 'Intenta nuevamente.');
     } finally {
         state.togglingUserId = null;
     }
@@ -276,19 +246,9 @@ async function submitPasswordReset() {
         });
         await loadUsers();
         closePasswordDialog();
-        toast.add({
-            severity: 'success',
-            summary: 'Contrasena restablecida',
-            detail: 'El usuario debera cambiarla al volver a ingresar.',
-            life: 3000
-        });
+        feedback.showSuccess('Contrasena restablecida', 'El usuario debera cambiarla al volver a ingresar.');
     } catch (error) {
-        toast.add({
-            severity: 'error',
-            summary: 'No se pudo restablecer la contrasena',
-            detail: error?.response?.data?.mensaje ?? 'Revisa la nueva contrasena e intenta de nuevo.',
-            life: 4000
-        });
+        feedback.showError('No se pudo restablecer la contrasena', error, 'Revisa la nueva contrasena e intenta de nuevo.');
     } finally {
         state.resettingPassword = false;
     }
@@ -299,20 +259,10 @@ async function impersonateUser(user) {
 
     try {
         await sessionStore.impersonate(user.id);
-        toast.add({
-            severity: 'success',
-            summary: 'Impersonacion iniciada',
-            detail: `La sesion ahora esta actuando como ${user.email}.`,
-            life: 3000
-        });
+        feedback.showSuccess('Impersonacion iniciada', `La sesion ahora esta actuando como ${user.email}.`);
         await router.push({ name: 'dashboard' });
     } catch (error) {
-        toast.add({
-            severity: 'error',
-            summary: 'No se pudo impersonar',
-            detail: error?.response?.data?.mensaje ?? 'No se pudo abrir la sesion impersonada.',
-            life: 4000
-        });
+        feedback.showError('No se pudo impersonar', error, 'No se pudo abrir la sesion impersonada.');
     } finally {
         state.impersonatingUserId = null;
     }

@@ -17,6 +17,37 @@ Caso guiado detallado:
 - el core resuelve capacidades transversales
 - si una necesidad puede servir a mas de un modulo, primero debe evaluarse si pertenece al core
 
+## Antes de crear el modulo
+
+Haz dos preguntas simples:
+
+1. esta entidad ya existe como catalogo universal del core
+2. esta pantalla o flujo podria servir a mas de un modulo
+
+Si la respuesta a la primera es si, reutiliza el catalogo del core.
+
+Si la respuesta a la segunda es no, no la metas al shell core.
+
+Catalogos universales ya cerrados en la base:
+
+- `Empresas`
+- `Oficinas`
+- `Equipos`
+- `Personas`
+- `Divisiones`
+- `Areas`
+- `Cargos`
+- `Asignaciones laborales`
+
+Ejemplos que deben nacer como modulo y no como catalogo universal:
+
+- `Leads`
+- `Noticias`
+- `Tickets`
+- `Pedidos`
+- `Cobros`
+- `Aprobaciones` de un negocio especifico
+
 ## Checklist minimo
 1. definir `module_key`, nombre, descripcion y version
 2. declarar permisos operativos del modulo
@@ -78,6 +109,12 @@ El modulo debe exponer una registry declarativa para:
 - menu
 - pantallas
 - accesos visibles segun permisos
+
+Regla importante:
+
+- si el modulo tiene mas de un permiso, cada ruta debe declarar `meta.permissionKey` de forma explicita
+- no dependas de inferencias por nombre del modulo
+- el catalogo modular ya omite rutas y menus ambiguos cuando falta ese permiso explicito
 
 ## Permisos
 Todo modulo nuevo debe declarar al menos:
@@ -154,6 +191,11 @@ Antes de inventar una UX nueva:
 - revisar `Demo Module`
 - copiar un patron ya curado
 - mantener consistencia con headers, acciones, dialogos y formularios del shell
+
+Regla adicional del shell:
+
+- si la pantalla es tecnica, transversal o administrativa del sistema, puede vivir en el core
+- si la pantalla existe para operar un dominio de negocio, debe vivir en el modulo
 
 ## Definition Of Done
 - metadata backend y frontend registradas

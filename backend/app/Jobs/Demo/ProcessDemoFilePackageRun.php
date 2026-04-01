@@ -29,7 +29,7 @@ class ProcessDemoFilePackageRun implements ShouldQueue
     public function handle(FileManager $fileManager, TenantContext $tenantContext): void
     {
         $jobRun = CoreJobRun::query()->findOrFail($this->jobRunId);
-        $tenantContext->setOrganizationId($jobRun->organizacion_id);
+        $tenantContext->setCompanyId($jobRun->organizacion_id);
         $tenantContext->setActorId($jobRun->requested_by);
 
         try {

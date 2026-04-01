@@ -347,7 +347,7 @@ class WebhookManager
 
     protected function isFreshWebhookTimestamp(string $timestampHeader): bool
     {
-        if (! (bool) config('security.webhooks.require_timestamp', true)) {
+        if (! (bool) config('security.channels.webhooks.require_timestamp', config('security.webhooks.require_timestamp', true))) {
             return true;
         }
 
@@ -356,14 +356,14 @@ class WebhookManager
         }
 
         $timestamp = (int) $timestampHeader;
-        $window = max(30, (int) config('security.webhooks.replay_window_seconds', 300));
+        $window = max(30, (int) config('security.channels.webhooks.replay_window_seconds', config('security.webhooks.replay_window_seconds', 300)));
 
         return abs(now()->timestamp - $timestamp) <= $window;
     }
 
     protected function reserveIncomingWebhookRequest(CoreWebhookReceiver $receiver, string $requestId): bool
     {
-        $window = max(30, (int) config('security.webhooks.replay_window_seconds', 300));
+        $window = max(30, (int) config('security.channels.webhooks.replay_window_seconds', config('security.webhooks.replay_window_seconds', 300)));
         $cacheKey = sprintf('webhook-replay:%s:%s', $receiver->id, sha1($requestId));
 
         return Cache::add($cacheKey, true, now()->addSeconds($window));

@@ -72,6 +72,12 @@ export const coreMenu = [
                 permissionKey: 'roles.view'
             },
             {
+                label: 'Audit Logs',
+                icon: 'pi pi-fw pi-history',
+                to: '/admin/audit',
+                permissionKey: 'audit.logs.view'
+            },
+            {
                 label: 'Security Logs',
                 icon: 'pi pi-fw pi-shield',
                 to: '/admin/security',

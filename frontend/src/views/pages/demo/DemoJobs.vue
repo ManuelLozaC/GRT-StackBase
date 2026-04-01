@@ -237,6 +237,7 @@ onBeforeUnmount(stopPolling);
                             <div>
                                 <div class="font-semibold">{{ job.job_key }}</div>
                                 <div class="text-sm text-color-secondary">{{ job.queue }} - solicitado por {{ job.requested_by || 'sistema' }}</div>
+                                <div class="text-sm text-color-secondary">{{ job.policy_label }} · {{ job.policy_key }}</div>
                             </div>
                             <Tag :severity="resolveSeverity(job.status)" :value="job.status" />
                         </div>
@@ -245,6 +246,7 @@ onBeforeUnmount(stopPolling);
                             <span><strong>Intentos:</strong> {{ job.attempts }}</span>
                             <span><strong>Maximo:</strong> {{ job.max_tries }}</span>
                             <span><strong>Backoff:</strong> {{ job.backoff_schedule.join(', ') }} s</span>
+                            <span><strong>Proximo retry:</strong> {{ job.next_retry_in_seconds ? `${job.next_retry_in_seconds} s` : '-' }}</span>
                             <span><strong>Despachado:</strong> {{ formatDate(job.dispatched_at) }}</span>
                             <span><strong>Finalizado:</strong> {{ formatDate(job.finished_at) }}</span>
                         </div>
@@ -253,6 +255,8 @@ onBeforeUnmount(stopPolling);
                             <span><strong>Tenant:</strong> {{ job.organizacion_id || '-' }}</span>
                             <span><strong>Empresa:</strong> {{ job.empresa_id || '-' }}</span>
                             <span><strong>Actor:</strong> {{ job.requested_by || 'sistema' }} (#{{ job.requested_by_id || '-' }})</span>
+                            <span><strong>Ultimo intento:</strong> {{ formatDate(job.last_attempt_at) }}</span>
+                            <span><strong>Retry agotado:</strong> {{ job.retry_exhausted ? 'Si' : 'No' }}</span>
                         </div>
 
                         <div class="demo-payload-box">

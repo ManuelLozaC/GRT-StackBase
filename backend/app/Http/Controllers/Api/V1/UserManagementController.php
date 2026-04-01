@@ -291,7 +291,11 @@ class UserManagementController extends Controller
 
     public function updateRoles(UpdateUserRolesRequest $request, User $user): JsonResponse
     {
+        $previousRoles = $user->getRoleNames()->sort()->values()->all();
         $user->syncRoles($request->input('roles', []));
+        $currentRoles = $user->getRoleNames()->sort()->values()->all();
+        $addedRoles = array_values(array_diff($currentRoles, $previousRoles));
+        $removedRoles = array_values(array_diff($previousRoles, $currentRoles));
 
         $this->auditLogger->record(
             eventKey: 'user.roles_updated',
@@ -301,7 +305,10 @@ class UserManagementController extends Controller
             summary: 'Se actualizaron los roles de un usuario.',
             sourceModule: 'core-platform',
             context: [
-                'roles' => $user->getRoleNames()->values()->all(),
+                'roles' => $currentRoles,
+                'previous_roles' => $previousRoles,
+                'added_roles' => $addedRoles,
+                'removed_roles' => $removedRoles,
             ],
         );
 
@@ -312,7 +319,9 @@ class UserManagementController extends Controller
             summary: 'Se actualizaron roles de un usuario.',
             context: [
                 'target_user_id' => $user->id,
-                'roles' => $user->getRoleNames()->values()->all(),
+                'roles' => $currentRoles,
+                'added_roles' => $addedRoles,
+                'removed_roles' => $removedRoles,
             ],
         );
         $this->metrics->record(
@@ -322,7 +331,9 @@ class UserManagementController extends Controller
             actor: $request->user(),
             context: [
                 'target_user_id' => $user->id,
-                'roles' => $user->getRoleNames()->values()->all(),
+                'roles' => $currentRoles,
+                'added_roles' => $addedRoles,
+                'removed_roles' => $removedRoles,
             ],
         );
 
@@ -422,7 +433,9 @@ class UserManagementController extends Controller
                 ),
             ],
             message: 'Impersonacion iniciada',
-        )->withCookie($this->authCookies->make($token));
+        )
+            ->withCookie($this->authCookies->make($token))
+            ->withCookie($this->authCookies->makeCsrf($token));
     }
 
     public function leaveImpersonation(Request $request): JsonResponse
@@ -499,7 +512,9 @@ class UserManagementController extends Controller
                 'user' => $this->transformUser($restoredUser),
             ],
             message: 'Impersonacion finalizada',
-        )->withCookie($this->authCookies->make($restoredToken));
+        )
+            ->withCookie($this->authCookies->make($restoredToken))
+            ->withCookie($this->authCookies->makeCsrf($restoredToken));
     }
 
     protected function transformUser(User $user, array $impersonation = []): array

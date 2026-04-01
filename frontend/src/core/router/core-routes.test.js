@@ -12,6 +12,7 @@ describe('core routes permission metadata', () => {
     it('uses fine-grained permissions for operational administration screens', () => {
         expect(findChildRoute('operations-overview')?.meta?.permissionKey).toBe('operations.view');
         expect(findChildRoute('usage-metrics')?.meta?.permissionKey).toBe('metrics.view');
+        expect(findChildRoute('audit-logs')?.meta?.permissionKey).toBe('audit.logs.view');
         expect(findChildRoute('security-logs')?.meta?.permissionKey).toBe('security.logs.view');
         expect(findChildRoute('error-logs')?.meta?.permissionKey).toBe('error-logs.view');
     });

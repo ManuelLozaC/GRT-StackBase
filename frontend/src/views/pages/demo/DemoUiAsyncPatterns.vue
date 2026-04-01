@@ -178,7 +178,11 @@ onBeforeUnmount(() => {
                         'cuando el polling oculta la falta de un endpoint de estado mas claro',
                         'cuando el retry es automatico pero no se explica su impacto'
                     ]"
-                    :wiring="['exponer estado local claro: saving, retrying, pollingActive y progress', 'emitir feedback visual y textual en cada transicion importante', 'limpiar timers y side effects al desmontar la pantalla']"
+                    :wiring="[
+                        'exponer estado local claro: saving, retrying, pollingActive y progress',
+                        'emitir feedback visual y textual en cada transicion importante con useActionFeedback cuando aplique',
+                        'limpiar timers y side effects al desmontar la pantalla'
+                    ]"
                     :notes="['estos patrones son ideales para jobs, exports, imports y conectores externos', 'si el proceso tiene actor o tenant, reflejarlo tambien en el mensaje visible']"
                 />
             </div>

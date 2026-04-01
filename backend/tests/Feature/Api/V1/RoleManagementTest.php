@@ -2,6 +2,7 @@
 
 namespace Tests\Feature\Api\V1;
 
+use App\Core\Audit\Models\AuditLog;
 use App\Core\Auth\Services\AccessTokenService;
 use App\Models\Organizacion;
 use App\Models\User;
@@ -63,5 +64,14 @@ class RoleManagementTest extends TestCase
             ->assertJsonMissing([
                 'roles.manage',
             ]);
+
+        $auditLog = AuditLog::query()
+            ->where('event_key', 'role.updated')
+            ->latest('id')
+            ->first();
+
+        $this->assertNotNull($auditLog);
+        $this->assertSame(['roles.manage'], $auditLog->context['removed_permissions']);
+        $this->assertSame([], $auditLog->context['added_permissions']);
     }
 }

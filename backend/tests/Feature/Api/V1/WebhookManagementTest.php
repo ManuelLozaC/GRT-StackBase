@@ -351,8 +351,16 @@ class WebhookManagementTest extends TestCase
 
         $user->organizaciones()->attach($organization->id);
 
-        $permission = Permission::query()->firstOrCreate([
+        $managePermission = Permission::query()->firstOrCreate([
             'name' => 'integrations.manage',
+            'guard_name' => 'web',
+        ]);
+        $viewPermission = Permission::query()->firstOrCreate([
+            'name' => 'integrations.view',
+            'guard_name' => 'web',
+        ]);
+        $testPermission = Permission::query()->firstOrCreate([
+            'name' => 'integrations.test',
             'guard_name' => 'web',
         ]);
         $demoPermission = Permission::query()->firstOrCreate([
@@ -360,7 +368,9 @@ class WebhookManagementTest extends TestCase
             'guard_name' => 'web',
         ]);
 
-        $user->givePermissionTo($permission);
+        $user->givePermissionTo($managePermission);
+        $user->givePermissionTo($viewPermission);
+        $user->givePermissionTo($testPermission);
         $user->givePermissionTo($demoPermission);
 
         return [
@@ -389,12 +399,17 @@ class WebhookManagementTest extends TestCase
             $secondaryOrganization->id,
         ]);
 
-        $permission = Permission::query()->firstOrCreate([
+        $managePermission = Permission::query()->firstOrCreate([
             'name' => 'integrations.manage',
             'guard_name' => 'web',
         ]);
+        $viewPermission = Permission::query()->firstOrCreate([
+            'name' => 'integrations.view',
+            'guard_name' => 'web',
+        ]);
 
-        $user->givePermissionTo($permission);
+        $user->givePermissionTo($managePermission);
+        $user->givePermissionTo($viewPermission);
 
         return [
             $user,

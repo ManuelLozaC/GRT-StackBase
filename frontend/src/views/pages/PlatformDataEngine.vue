@@ -95,18 +95,49 @@ function currentDataEnginePreferences() {
     return settingsStore.getSettingValue('user', 'data_engine_preferences', {}) ?? {};
 }
 
+function meaningfulEntries(payload) {
+    return Object.fromEntries(Object.entries(payload).filter(([, value]) => value !== '' && value !== null && value !== undefined));
+}
+
+function currentResourcePreferences() {
+    const resourceKey = state.selectedResourceKey;
+
+    if (!resourceKey) {
+        return {};
+    }
+
+    return currentDataEnginePreferences()?.[resourceKey] ?? {};
+}
+
 function defaultVisibleColumnsForCurrentResource() {
     return tableFields.value.map((field) => field.key);
 }
 
 function syncVisibleColumnsFromPreferences() {
-    const resourceKey = state.selectedResourceKey;
-    const preferences = currentDataEnginePreferences();
-    const preferred = Array.isArray(preferences?.[resourceKey]?.visible_columns) ? preferences[resourceKey].visible_columns : [];
+    const preferred = Array.isArray(currentResourcePreferences()?.visible_columns) ? currentResourcePreferences().visible_columns : [];
     const validKeys = tableFields.value.map((field) => field.key);
     const selected = preferred.filter((key) => validKeys.includes(key));
 
     state.visibleColumnKeys = selected.length ? selected : validKeys;
+}
+
+function syncQueryPreferencesFromSettings() {
+    const resource = currentResource.value;
+    const preferences = currentResourcePreferences();
+
+    if (!resource) {
+        return;
+    }
+
+    state.search = typeof preferences.search === 'string' ? preferences.search : '';
+    state.sortBy = typeof preferences.sort_by === 'string' && preferences.sort_by !== '' ? preferences.sort_by : (resource.default_sort?.field ?? null);
+    state.sortDirection = preferences.sort_direction === 'desc' ? 'desc' : (resource.default_sort?.direction ?? 'asc');
+    state.perPage = resource.per_page_options?.includes(preferences.per_page) ? preferences.per_page : (resource.per_page_options?.[0] ?? 10);
+
+    const validFilterKeys = filterFields.value.map((field) => field.key);
+    const persistedFilters = preferences.filters && typeof preferences.filters === 'object' ? preferences.filters : {};
+
+    state.filters = Object.fromEntries(validFilterKeys.map((key) => [key, Object.prototype.hasOwnProperty.call(persistedFilters, key) ? persistedFilters[key] : '']));
 }
 
 async function saveViewPreferences() {
@@ -120,7 +151,12 @@ async function saveViewPreferences() {
         ...currentDataEnginePreferences(),
         [resourceKey]: {
             ...(currentDataEnginePreferences()?.[resourceKey] ?? {}),
-            visible_columns: state.visibleColumnKeys
+            visible_columns: state.visibleColumnKeys,
+            search: state.search,
+            sort_by: state.sortBy,
+            sort_direction: state.sortDirection,
+            per_page: state.perPage,
+            filters: Object.fromEntries(filterFields.value.map((field) => [field.key, state.filters[field.key] ?? '']))
         }
     };
 
@@ -225,7 +261,7 @@ async function loadRecords() {
     state.loadingRecords = true;
 
     try {
-        const filters = Object.fromEntries(Object.entries(state.filters).filter(([, value]) => value));
+        const filters = meaningfulEntries(state.filters);
         const response = await api.get(`/v1/data/${state.selectedResourceKey}`, {
             params: {
                 page: state.page,
@@ -304,14 +340,12 @@ function prepareResourceState() {
 
     if (!resource) {
         resetFilters();
+        state.search = '';
         state.sortBy = null;
         state.sortDirection = null;
         return;
     }
 
-    state.perPage = resource.per_page_options?.[0] ?? 10;
-    state.sortBy = resource.default_sort?.field ?? null;
-    state.sortDirection = resource.default_sort?.direction ?? 'asc';
     state.page = 1;
     resetFilters();
     resetForm();
@@ -319,6 +353,7 @@ function prepareResourceState() {
     state.searchStatus = null;
     state.relationOptions = {};
     state.visibleColumnKeys = [];
+    syncQueryPreferencesFromSettings();
 }
 
 function openCreateDialog() {
@@ -423,7 +458,7 @@ async function exportResource() {
     state.exporting = true;
 
     try {
-        const filters = Object.fromEntries(Object.entries(state.filters).filter(([, value]) => value));
+        const filters = meaningfulEntries(state.filters);
         const response = await api.get(`/v1/data/${state.selectedResourceKey}/export`, {
             params: {
                 q: state.search || undefined,
@@ -579,12 +614,14 @@ function confirmDelete(record) {
 
 function applyFilters() {
     state.page = 1;
+    void saveViewPreferences();
     loadRecords();
 }
 
 function clearSearch() {
     state.search = '';
     state.page = 1;
+    void saveViewPreferences();
     loadRecords();
 }
 
@@ -596,12 +633,14 @@ async function onVisibleColumnsChange(value) {
 function onPageChange(event) {
     state.page = Math.floor(event.first / event.rows) + 1;
     state.perPage = event.rows;
+    void saveViewPreferences();
     loadRecords();
 }
 
 function onSort(event) {
     state.sortBy = event.sortField;
     state.sortDirection = event.sortOrder === 1 ? 'asc' : 'desc';
+    void saveViewPreferences();
     loadRecords();
 }
 
@@ -684,7 +723,7 @@ onMounted(async () => {
                         <div class="data-engine-toolbar-actions">
                             <Tag v-if="state.searchStatus" severity="contrast" :value="searchSummary" />
                             <Button
-                                v-if="state.searchStatus?.engine === 'meilisearch'"
+                                v-if="state.searchStatus?.engine === 'meilisearch' && currentResource?.search?.can_manage"
                                 label="Reindexar busqueda"
                                 icon="pi pi-sync"
                                 severity="secondary"
@@ -794,7 +833,7 @@ onMounted(async () => {
                     <Column header="Acciones" style="width: 10rem">
                         <template #body="slotProps">
                             <div class="flex gap-2">
-                                <Button v-if="currentResource?.record_actions?.duplicate" icon="pi pi-copy" severity="secondary" text rounded @click="duplicateRecord(slotProps.data)" />
+                                <Button v-if="resourceCapabilities.duplicate" icon="pi pi-copy" severity="secondary" text rounded @click="duplicateRecord(slotProps.data)" />
                                 <Button icon="pi pi-pencil" severity="secondary" text rounded @click="openEditDialog(slotProps.data)" />
                                 <Button icon="pi pi-trash" severity="danger" text rounded @click="confirmDelete(slotProps.data)" />
                             </div>

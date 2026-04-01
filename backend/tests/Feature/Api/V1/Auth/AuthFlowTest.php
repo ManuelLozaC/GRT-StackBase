@@ -3,6 +3,7 @@
 namespace Tests\Feature\Api\V1\Auth;
 
 use App\Core\Auth\Services\AccessTokenService;
+use App\Core\Auth\Services\AuthCookieService;
 use App\Models\AsignacionLaboral;
 use App\Models\Cargo;
 use App\Models\Oficina;
@@ -42,7 +43,8 @@ class AuthFlowTest extends TestCase
         $loginResponse
             ->assertOk()
             ->assertJsonPath('estado', 'ok')
-            ->assertCookie(config('security.auth_cookie.name', 'stackbase_access_token'));
+            ->assertCookie(config('security.auth_cookie.name', 'stackbase_access_token'))
+            ->assertCookie(config('security.auth_cookie.csrf_cookie_name', 'stackbase_xsrf_token'));
 
         $token = $loginResponse->json('datos.token');
 
@@ -82,7 +84,9 @@ class AuthFlowTest extends TestCase
         ])->assertOk();
 
         $cookieName = config('security.auth_cookie.name', 'stackbase_access_token');
+        $csrfCookieName = config('security.auth_cookie.csrf_cookie_name', 'stackbase_xsrf_token');
         $plainTextToken = $loginResponse->json('datos.token');
+        $expectedCsrfToken = app(AuthCookieService::class)->csrfTokenFor($plainTextToken);
 
         $this->withCredentials()
             ->withUnencryptedCookies([$cookieName => $plainTextToken])
@@ -91,6 +95,60 @@ class AuthFlowTest extends TestCase
             ])
             ->assertOk()
             ->assertJsonPath('datos.email', 'cookie@stackbase.local');
+
+        $this->assertNotEmpty($expectedCsrfToken);
+    }
+
+    public function test_cookie_authenticated_unsafe_requests_require_csrf_header(): void
+    {
+        $organizacion = Organizacion::query()->create([
+            'nombre' => 'Cookie Org',
+            'slug' => 'cookie-org',
+        ]);
+
+        $otraOrganizacion = Organizacion::query()->create([
+            'nombre' => 'Cookie Org 2',
+            'slug' => 'cookie-org-2',
+        ]);
+
+        $user = User::factory()->create([
+            'email' => 'cookie@stackbase.local',
+            'password' => 'Password123',
+            'organizacion_activa_id' => $organizacion->id,
+        ]);
+
+        $user->organizaciones()->attach([
+            $organizacion->id,
+            $otraOrganizacion->id,
+        ]);
+
+        $loginResponse = $this->postJson('/api/v1/auth/login', [
+            'email' => 'cookie@stackbase.local',
+            'password' => 'Password123',
+            'device_name' => 'phpunit-cookie',
+        ])->assertOk();
+
+        $cookieName = config('security.auth_cookie.name', 'stackbase_access_token');
+        $csrfHeaderName = config('security.auth_cookie.csrf_header_name', 'X-StackBase-CSRF');
+        $plainTextToken = $loginResponse->json('datos.token');
+        $csrfToken = app(AuthCookieService::class)->csrfTokenFor($plainTextToken);
+
+        $this->withCredentials()
+            ->withUnencryptedCookies([$cookieName => $plainTextToken])
+            ->patchJson('/api/v1/auth/active-company', [
+                'empresa_id' => $otraOrganizacion->id,
+            ])
+            ->assertStatus(419)
+            ->assertJsonPath('meta.error_code', 'csrf_mismatch');
+
+        $this->withCredentials()
+            ->withUnencryptedCookies([$cookieName => $plainTextToken])
+            ->withHeader($csrfHeaderName, $csrfToken)
+            ->patchJson('/api/v1/auth/active-company', [
+                'empresa_id' => $otraOrganizacion->id,
+            ])
+            ->assertOk()
+            ->assertJsonPath('datos.organizacion_activa.slug', 'cookie-org-2');
     }
 
     public function test_user_can_login_with_alias_and_retrieve_profile(): void
@@ -475,6 +533,7 @@ class AuthFlowTest extends TestCase
             'fecha_inicio' => '2026-03-01',
             'metadata' => [
                 'context_permissions' => [
+                    'users.view',
                     'users.manage_roles',
                 ],
             ],
@@ -489,7 +548,8 @@ class AuthFlowTest extends TestCase
         $this->withHeader('Authorization', 'Bearer '.$token)
             ->getJson('/api/v1/auth/me')
             ->assertOk()
-            ->assertJsonPath('datos.context_permissions.0', 'users.manage_roles');
+            ->assertJsonFragment(['users.view'])
+            ->assertJsonFragment(['users.manage_roles']);
 
         $this->withHeader('Authorization', 'Bearer '.$token)
             ->getJson('/api/v1/users')

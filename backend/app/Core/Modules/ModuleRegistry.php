@@ -25,8 +25,6 @@ class ModuleRegistry
             return $defaults->values();
         }
 
-        $this->syncDefaults();
-
         $persisted = $this->modulesTableQuery()
             ->get()
             ->map(fn (object $module): array => $this->mapPersistedModule($module))
@@ -44,6 +42,15 @@ class ModuleRegistry
         return $catalog
             ->map(fn (array $module): array => $this->decorateModule($module, $catalog))
             ->values();
+    }
+
+    public function syncManifestToPersistence(): void
+    {
+        if (! $this->canUsePersistence()) {
+            return;
+        }
+
+        $this->syncDefaults();
     }
 
     public function enabled(): Collection
@@ -82,6 +89,8 @@ class ModuleRegistry
                 'enabled' => $enabled,
             ]);
         }
+
+        $this->syncDefaults();
 
         $payload = [
             'name' => $module['name'] ?? $key,

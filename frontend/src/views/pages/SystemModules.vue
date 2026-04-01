@@ -1,10 +1,10 @@
 <script setup>
 import { moduleCatalog } from '@/core/modules/moduleCatalog';
+import { useActionFeedback } from '@/core/ui/useActionFeedback';
 import api from '@/service/api';
-import { useToast } from 'primevue/usetoast';
 import { computed, onMounted, reactive } from 'vue';
 
-const toast = useToast();
+const feedback = useActionFeedback();
 const state = reactive({
     settingsDialogVisible: false,
     settingsLoading: false,
@@ -98,12 +98,7 @@ async function openSettings(moduleItem) {
         state.settings = response.data.datos ?? [];
         state.form = Object.fromEntries(state.settings.map((setting) => [setting.key, setting.value]));
     } catch (error) {
-        toast.add({
-            severity: 'error',
-            summary: 'No se pudieron cargar los settings',
-            detail: error?.response?.data?.mensaje ?? 'Ocurrio un error al cargar la configuracion del modulo.',
-            life: 4000
-        });
+        feedback.showError('No se pudieron cargar los settings', error, 'Ocurrio un error al cargar la configuracion del modulo.');
         resetSettingsState();
     } finally {
         state.settingsLoading = false;
@@ -125,21 +120,11 @@ async function saveSettings() {
         state.settings = response.data.datos ?? [];
         state.form = Object.fromEntries(state.settings.map((setting) => [setting.key, setting.value]));
 
-        toast.add({
-            severity: 'success',
-            summary: 'Settings actualizados',
-            detail: `La configuracion de ${state.selectedModule.name} se guardo correctamente.`,
-            life: 3000
-        });
+        feedback.showSuccess('Settings actualizados', `La configuracion de ${state.selectedModule.name} se guardo correctamente.`);
 
         state.settingsDialogVisible = false;
     } catch (error) {
-        toast.add({
-            severity: 'error',
-            summary: 'No se pudieron guardar los settings',
-            detail: error?.response?.data?.mensaje ?? 'Revisa los valores enviados al modulo.',
-            life: 4000
-        });
+        feedback.showError('No se pudieron guardar los settings', error, 'Revisa los valores enviados al modulo.');
     } finally {
         state.settingsSaving = false;
     }
@@ -150,12 +135,7 @@ async function onToggle(moduleItem) {
         const message = getBlockingMessage(moduleItem);
 
         if (message) {
-            toast.add({
-                severity: 'warn',
-                summary: 'Accion bloqueada',
-                detail: message,
-                life: 3500
-            });
+            feedback.showWarn('Accion bloqueada', message, 3500);
         }
 
         return;
@@ -165,31 +145,23 @@ async function onToggle(moduleItem) {
 
     try {
         await moduleCatalog.updateModuleStatus(moduleItem.key, nextValue);
-        toast.add({
-            severity: 'success',
-            summary: 'Modulo actualizado',
-            detail: `${moduleItem.name} ahora esta ${nextValue ? 'habilitado' : 'deshabilitado'}.`,
-            life: 3000
-        });
+        feedback.showSuccess('Modulo actualizado', `${moduleItem.name} ahora esta ${nextValue ? 'habilitado' : 'deshabilitado'}.`);
     } catch (error) {
-        toast.add({
-            severity: 'error',
-            summary: 'No se pudo actualizar',
-            detail: error?.response?.data?.mensaje ?? 'Ocurrio un error al guardar el estado del modulo.',
-            life: 4000
-        });
+        feedback.showError('No se pudo actualizar', error, 'Ocurrio un error al guardar el estado del modulo.');
     }
 }
 </script>
 
 <template>
     <div class="card">
-        <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
-            <div>
+        <div class="app-panel-header mb-6">
+            <div class="app-panel-header-copy">
                 <h3 class="m-0 text-xl font-semibold">Administracion de modulos</h3>
-                <p class="mt-2 mb-0 text-color-secondary">Desde aqui puedes habilitar o deshabilitar modulos plug-in, incluido el modulo de demo para probar funcionalidades genericas.</p>
+                <p class="mt-2 mb-0 text-color-secondary">Desde aqui puedes habilitar o deshabilitar modulos plug-in, revisar su contrato tecnico y ajustar settings sin mezclar esto con pantallas de negocio.</p>
             </div>
-            <Tag severity="contrast" :value="`${modules.length} modulos`" />
+            <div class="app-panel-actions">
+                <Tag severity="contrast" :value="`${modules.length} modulos`" />
+            </div>
         </div>
 
         <div class="overflow-x-auto">

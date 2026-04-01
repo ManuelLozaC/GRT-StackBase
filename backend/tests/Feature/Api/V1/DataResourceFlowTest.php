@@ -10,10 +10,12 @@ use App\Core\Tenancy\TenantContext;
 use App\Jobs\DataEngine\ProcessDataExportRun;
 use App\Models\Organizacion;
 use App\Models\User;
+use App\Modules\DemoPlatform\Models\DemoContact;
 use Database\Seeders\RolePermissionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Http;
+use Spatie\Permission\Models\Permission;
 use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
@@ -40,6 +42,69 @@ class DataResourceFlowTest extends TestCase
                 'key' => 'demo-contacts',
                 'name' => 'Demo Contacts',
             ]);
+    }
+
+    public function test_data_engine_can_be_view_only_without_mutation_permissions(): void
+    {
+        $this->seed(RolePermissionSeeder::class);
+
+        [$user, $token] = $this->authenticateUser();
+        app(ModuleRegistry::class)->setEnabled('demo-platform', true);
+
+        $user->syncPermissions([Permission::findOrCreate('data-engine.access', 'web')]);
+
+        $record = DemoContact::query()->create([
+            'organizacion_id' => $user->organizacion_activa_id,
+            'nombre' => 'Solo lectura',
+            'estado' => 'active',
+            'prioridad' => 'medium',
+        ]);
+
+        $this->withHeader('Authorization', 'Bearer '.$token)
+            ->getJson('/api/v1/data/resources')
+            ->assertOk()
+            ->assertJsonPath('datos.0.capabilities.create', false)
+            ->assertJsonPath('datos.0.capabilities.update', false)
+            ->assertJsonPath('datos.0.capabilities.delete', false)
+            ->assertJsonPath('datos.0.capabilities.export', false)
+            ->assertJsonPath('datos.0.capabilities.import', false)
+            ->assertJsonPath('datos.0.capabilities.duplicate', false)
+            ->assertJsonPath('datos.0.search.can_manage', false);
+
+        $this->withHeader('Authorization', 'Bearer '.$token)
+            ->getJson('/api/v1/data/demo-contacts')
+            ->assertOk()
+            ->assertJsonPath('meta.pagination.total', 1);
+
+        $this->withHeader('Authorization', 'Bearer '.$token)
+            ->postJson('/api/v1/data/demo-contacts', [
+                'nombre' => 'Bloqueado',
+                'estado' => 'lead',
+                'prioridad' => 'high',
+            ])
+            ->assertStatus(403);
+
+        $this->withHeader('Authorization', 'Bearer '.$token)
+            ->patchJson('/api/v1/data/demo-contacts/'.$record->id, [
+                'estado' => 'inactive',
+            ])
+            ->assertStatus(403);
+
+        $this->withHeader('Authorization', 'Bearer '.$token)
+            ->deleteJson('/api/v1/data/demo-contacts/'.$record->id)
+            ->assertStatus(403);
+
+        $this->withHeader('Authorization', 'Bearer '.$token)
+            ->get('/api/v1/data/demo-contacts/export')
+            ->assertStatus(403);
+
+        $this->withHeader('Authorization', 'Bearer '.$token)
+            ->postJson('/api/v1/data/demo-contacts/'.$record->id.'/duplicate')
+            ->assertStatus(403);
+
+        $this->withHeader('Authorization', 'Bearer '.$token)
+            ->postJson('/api/v1/data/demo-contacts/search/reindex')
+            ->assertStatus(403);
     }
 
     public function test_user_can_crud_demo_contacts_with_search_filters_pagination_and_soft_delete(): void
@@ -766,6 +831,8 @@ CSV);
 
     protected function authenticateUser(): array
     {
+        $this->seed(RolePermissionSeeder::class);
+
         $organization = Organizacion::query()->create([
             'nombre' => 'Acme Data Engine',
             'slug' => 'acme-data-engine',
@@ -776,6 +843,16 @@ CSV);
         ]);
 
         $user->organizaciones()->attach($organization->id);
+        $user->givePermissionTo([
+            'data-engine.access',
+            'data-engine.create',
+            'data-engine.update',
+            'data-engine.delete',
+            'data-engine.import',
+            'data-engine.export',
+            'data-engine.duplicate',
+            'data-engine.search.manage',
+        ]);
 
         return [
             $user,
@@ -785,6 +862,8 @@ CSV);
 
     protected function authenticateUserWithTwoOrganizations(): array
     {
+        $this->seed(RolePermissionSeeder::class);
+
         $primaryOrganization = Organizacion::query()->create([
             'nombre' => 'Acme Data Engine Primary',
             'slug' => 'acme-data-engine-primary',
@@ -802,6 +881,16 @@ CSV);
         $user->organizaciones()->attach([
             $primaryOrganization->id,
             $secondaryOrganization->id,
+        ]);
+        $user->givePermissionTo([
+            'data-engine.access',
+            'data-engine.create',
+            'data-engine.update',
+            'data-engine.delete',
+            'data-engine.import',
+            'data-engine.export',
+            'data-engine.duplicate',
+            'data-engine.search.manage',
         ]);
 
         return [

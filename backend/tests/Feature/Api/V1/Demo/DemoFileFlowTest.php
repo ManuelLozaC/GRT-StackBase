@@ -11,6 +11,7 @@ use App\Jobs\Demo\ProcessDemoFilePackageRun;
 use App\Models\Organizacion;
 use App\Models\User;
 use Database\Seeders\RolePermissionSeeder;
+use Illuminate\Support\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Queue;
@@ -425,6 +426,35 @@ class DemoFileFlowTest extends TestCase
 
         $expires = (int) parse_url($response->json('datos.url'), PHP_URL_QUERY);
         $this->assertNotEmpty($response->json('datos.url'));
+    }
+
+    public function test_temporary_link_ttl_is_clamped_by_signed_url_channel_policy(): void
+    {
+        Storage::fake('local');
+        config([
+            'filesystems.default' => 'local',
+            'security.channels.signed_urls.max_ttl_minutes' => 60,
+        ]);
+
+        [$user, $token] = $this->authenticateUser();
+        $file = app(FileManager::class)->storeUploadedFile(
+            UploadedFile::fake()->createWithContent('ttl-clamped.txt', 'ttl content'),
+            $user,
+            ['source' => 'phpunit'],
+        );
+
+        $response = $this->withHeader('Authorization', 'Bearer '.$token)
+            ->postJson('/api/v1/demo/files/'.$file->uuid.'/temporary-link', [
+                'ttl_minutes' => 180,
+            ]);
+
+        $response
+            ->assertOk()
+            ->assertJsonPath('datos.ttl_minutes', 60);
+
+        $expiresAt = Carbon::parse($response->json('datos.expires_at'));
+
+        $this->assertLessThanOrEqual(60, now()->diffInMinutes($expiresAt));
     }
 
     protected function authenticateUser(): array

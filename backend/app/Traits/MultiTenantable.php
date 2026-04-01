@@ -11,34 +11,39 @@ trait MultiTenantable
 {
     protected static function bootMultiTenantable()
     {
-        static::addGlobalScope('organizacion', function (Builder $builder) {
-            $organizacionId = static::resolveCurrentOrganizationId();
+        static::addGlobalScope('company', function (Builder $builder) {
+            $companyId = static::resolveCurrentCompanyId();
 
-            if ($organizacionId !== null && static::supportsOrganizationColumn()) {
-                $builder->where('organizacion_id', $organizacionId);
+            if ($companyId !== null && static::supportsCompanyColumn()) {
+                $builder->where(static::companyColumnName(), $companyId);
             }
         });
 
         static::creating(function ($model) {
-            $organizacionId = static::resolveCurrentOrganizationId();
+            $companyId = static::resolveCurrentCompanyId();
 
-            if ($organizacionId !== null && static::supportsOrganizationColumn() && ! $model->organizacion_id) {
-                $model->organizacion_id = $organizacionId;
+            if ($companyId !== null && static::supportsCompanyColumn() && ! $model->{static::companyColumnName()}) {
+                $model->{static::companyColumnName()} = $companyId;
             }
         });
     }
 
-    protected static function resolveCurrentOrganizationId(): ?int
+    protected static function resolveCurrentCompanyId(): ?int
     {
         return app(TenantContext::class)->companyId(auth()->user());
     }
 
-    protected static function supportsOrganizationColumn(): bool
+    protected static function supportsCompanyColumn(): bool
     {
         try {
-            return Schema::hasColumn((new static())->getTable(), 'organizacion_id');
+            return Schema::hasColumn((new static())->getTable(), static::companyColumnName());
         } catch (Throwable) {
             return false;
         }
+    }
+
+    protected static function companyColumnName(): string
+    {
+        return 'organizacion_id';
     }
 }

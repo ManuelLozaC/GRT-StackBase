@@ -125,6 +125,51 @@ class OperationalObservabilityTest extends TestCase
         $this->assertGreaterThanOrEqual(1, $metricsPayload['active_categories_last_24h']);
     }
 
+    public function test_error_logs_support_filters(): void
+    {
+        $this->seed(RolePermissionSeeder::class);
+
+        $organization = Organizacion::query()->create([
+            'nombre' => 'Error Filter Tenant',
+            'slug' => 'error-filter-tenant',
+        ]);
+
+        $admin = User::factory()->create([
+            'email' => 'error-filter-admin@stackbase.local',
+            'organizacion_activa_id' => $organization->id,
+        ]);
+        $admin->organizaciones()->attach($organization->id);
+        $admin->assignRole('admin');
+
+        CoreErrorLog::query()->create([
+            'organizacion_id' => $organization->id,
+            'actor_id' => $admin->id,
+            'request_id' => 'req-error-1',
+            'error_class' => \RuntimeException::class,
+            'error_code' => 'validation_error',
+            'message' => 'Error de validacion',
+            'occurred_at' => now()->subMinutes(4),
+        ]);
+
+        CoreErrorLog::query()->create([
+            'organizacion_id' => $organization->id,
+            'actor_id' => $admin->id,
+            'request_id' => 'req-error-2',
+            'error_class' => \InvalidArgumentException::class,
+            'error_code' => 'internal_error',
+            'message' => 'Error interno',
+            'occurred_at' => now()->subMinutes(2),
+        ]);
+
+        $token = app(AccessTokenService::class)->createForUser($admin, 'phpunit-error-filter');
+
+        $this->withHeader('Authorization', 'Bearer '.$token)
+            ->getJson('/api/v1/error-logs?error_code=validation_error&request_id=req-error-1')
+            ->assertOk()
+            ->assertJsonPath('meta.total', 1)
+            ->assertJsonPath('datos.0.error_code', 'validation_error');
+    }
+
     public function test_metrics_and_error_logs_can_inherit_actor_from_tenant_context(): void
     {
         config()->set('app.env', 'production');

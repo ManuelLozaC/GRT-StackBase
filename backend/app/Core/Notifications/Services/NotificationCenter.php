@@ -32,7 +32,7 @@ class NotificationCenter
     ): CoreNotification {
         return CoreNotification::query()->create([
             'uuid' => (string) Str::uuid(),
-            'organizacion_id' => $this->tenantContext->organizationId($recipient),
+            'organizacion_id' => $this->tenantContext->companyId($recipient),
             'recipient_id' => $recipient->id,
             'created_by' => $creator?->id,
             'channel' => 'internal',
@@ -54,7 +54,7 @@ class NotificationCenter
         array $metadata = [],
         array $channels = ['internal'],
     ): array {
-        $organizationId = $this->tenantContext->organizationId($recipient);
+        $organizationId = $this->tenantContext->companyId($recipient);
         $normalizedChannels = collect($channels)
             ->filter(fn (mixed $channel): bool => is_string($channel) && $channel !== '')
             ->map(fn (string $channel): string => strtolower(trim($channel)))

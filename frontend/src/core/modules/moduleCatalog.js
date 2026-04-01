@@ -25,12 +25,23 @@ function resolveRoutePermission(moduleItem, route) {
     return null;
 }
 
+function routeHasExplicitPermission(moduleItem, route) {
+    const resolvedPermission = resolveRoutePermission(moduleItem, route);
+
+    if (resolvedPermission) {
+        return true;
+    }
+
+    return !Array.isArray(moduleItem.permissions) || moduleItem.permissions.length <= 1;
+}
+
 const menuTree = computed(() => {
     return state.items
         .map((moduleItem) => {
             const routes = moduleItem.frontend?.routes ?? [];
             const items = routes
                 .filter((route) => route.menu)
+                .filter((route) => routeHasExplicitPermission(moduleItem, route))
                 .map((route) => ({
                     label: route.menu.label,
                     icon: route.menu.icon,
@@ -57,6 +68,7 @@ const routeRecords = computed(() => {
         const routes = moduleItem.frontend?.routes ?? [];
 
         return routes
+            .filter((route) => routeHasExplicitPermission(moduleItem, route))
             .map((route) => {
                 const component = resolveModuleView(moduleItem.key, route.view);
 

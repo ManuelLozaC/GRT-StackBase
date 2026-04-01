@@ -66,11 +66,20 @@ class SettingManagementTest extends TestCase
             ]);
 
         $this->withHeader('Authorization', 'Bearer '.$token)
+            ->getJson('/api/v1/settings/organization')
+            ->assertOk()
+            ->assertJsonFragment([
+                'key' => 'locale',
+                'value' => 'en-US',
+            ]);
+
+        $this->withHeader('Authorization', 'Bearer '.$token)
             ->getJson('/api/v1/settings/bootstrap')
             ->assertOk()
             ->assertJsonPath('datos.feature_flags.feature_global_error_toasts', false)
             ->assertJsonPath('datos.global.0.key', 'support_email')
-            ->assertJsonPath('datos.company.0.key', 'locale');
+            ->assertJsonPath('datos.company.0.key', 'locale')
+            ->assertJsonPath('datos.organization.0.key', 'locale');
     }
 
     public function test_regular_user_can_manage_only_own_preferences(): void

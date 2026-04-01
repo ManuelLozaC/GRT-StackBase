@@ -122,7 +122,9 @@ class AuthController extends Controller
                 'user' => $this->transformUser($this->ensureActiveOrganization($user)),
             ],
             message: 'Sesion iniciada',
-        )->withCookie($this->authCookies->make($token));
+        )
+            ->withCookie($this->authCookies->make($token))
+            ->withCookie($this->authCookies->makeCsrf($token));
     }
 
     public function register(RegisterRequest $request): JsonResponse
@@ -175,7 +177,9 @@ class AuthController extends Controller
                 'user' => $this->transformUser($user->fresh()),
             ],
             message: 'Usuario registrado correctamente',
-        )->withCookie($this->authCookies->make($token));
+        )
+            ->withCookie($this->authCookies->make($token))
+            ->withCookie($this->authCookies->makeCsrf($token));
     }
 
     public function forgotPassword(ForgotPasswordRequest $request): JsonResponse
@@ -290,7 +294,9 @@ class AuthController extends Controller
         return $this->successResponse(
             data: null,
             message: 'Sesion cerrada',
-        )->withCookie($this->authCookies->expire());
+        )
+            ->withCookie($this->authCookies->expire())
+            ->withCookie($this->authCookies->expireCsrf());
     }
 
     public function switchActiveOrganization(SwitchActiveOrganizationRequest $request): JsonResponse

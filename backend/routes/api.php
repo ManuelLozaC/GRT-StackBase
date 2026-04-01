@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Api\V1\Auth\AuthController;
 use App\Http\Controllers\Api\V1\ApiTokenController;
+use App\Http\Controllers\Api\V1\AuditLogController;
 use App\Http\Controllers\Api\V1\DataResourceController;
 use App\Http\Controllers\Api\V1\Demo\DemoAuditController;
 use App\Http\Controllers\Api\V1\Demo\DemoFileController;
@@ -136,6 +137,7 @@ use Illuminate\Support\Facades\Route;
             Route::patch('/roles/{role}', [RoleManagementController::class, 'update'])->middleware('throttle:data-writes');
         });
 
+        Route::middleware('permission:audit.logs.view')->get('/audit/logs', [AuditLogController::class, 'index']);
         Route::middleware('permission:security.logs.view')->get('/security/logs', [SecurityLogController::class, 'index']);
         Route::middleware('permission:error-logs.view')->get('/error-logs', [ErrorLogController::class, 'index']);
         Route::middleware('permission:operations.view')->get('/operations/overview', OperationsOverviewController::class);
@@ -171,13 +173,13 @@ use Illuminate\Support\Facades\Route;
         Route::middleware('permission:settings.view')->group(function (): void {
             Route::get('/settings/global', [SettingController::class, 'global']);
             Route::get('/settings/organization', [SettingController::class, 'organization']);
-            Route::get('/settings/company', [SettingController::class, 'organization']);
+            Route::get('/settings/company', [SettingController::class, 'company']);
         });
 
         Route::middleware('permission:settings.manage')->group(function (): void {
             Route::patch('/settings/global', [SettingController::class, 'updateGlobal']);
             Route::patch('/settings/organization', [SettingController::class, 'updateOrganization']);
-            Route::patch('/settings/company', [SettingController::class, 'updateOrganization']);
+            Route::patch('/settings/company', [SettingController::class, 'updateCompany']);
         });
     });
 

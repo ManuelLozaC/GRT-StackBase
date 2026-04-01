@@ -1,4 +1,5 @@
 <script setup>
+import { sanitizeNavigableUrl } from '@/core/security/safeUrl';
 import { useLayout } from '@/layout/composables/layout';
 import { computed } from 'vue';
 
@@ -20,6 +21,7 @@ const props = defineProps({
 });
 
 const fullPath = computed(() => (props.item.path ? (props.parentPath ? props.parentPath + props.item.path : props.item.path) : null));
+const safeItemUrl = computed(() => sanitizeNavigableUrl(props.item.url) ?? '#');
 
 const isActive = computed(() => {
     return props.item.path ? layoutState.activePath?.startsWith(fullPath.value) : layoutState.activePath === props.item.to;
@@ -59,7 +61,7 @@ const onMouseEnter = () => {
 <template>
     <li :class="{ 'layout-root-menuitem': root, 'active-menuitem': isActive }">
         <div v-if="root && item.visible !== false" class="layout-menuitem-root-text">{{ item.label }}</div>
-        <a v-if="(!item.to || item.items) && item.visible !== false" :href="item.url" @click="itemClick($event, item)" :class="item.class" :target="item.target" tabindex="0" @mouseenter="onMouseEnter">
+        <a v-if="(!item.to || item.items) && item.visible !== false" :href="safeItemUrl" @click="itemClick($event, item)" :class="item.class" :target="item.target" rel="noopener noreferrer" tabindex="0" @mouseenter="onMouseEnter">
             <i :class="item.icon" class="layout-menuitem-icon" />
             <span class="layout-menuitem-text">{{ item.label }}</span>
             <i class="pi pi-fw pi-angle-down layout-submenu-toggler" v-if="item.items" />

@@ -40,7 +40,7 @@ class ProcessDataExportRun implements ShouldQueue
             throw new \RuntimeException('El recurso del Data Engine ya no esta disponible para exportar.');
         }
 
-        $tenantContext->setOrganizationId($run->organizacion_id);
+        $tenantContext->setCompanyId($run->organizacion_id);
         $tenantContext->setActorId($run->requested_by);
 
         try {

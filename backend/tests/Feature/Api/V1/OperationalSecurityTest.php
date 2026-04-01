@@ -55,7 +55,7 @@ class OperationalSecurityTest extends TestCase
             'password' => 'password',
         ]);
 
-        foreach (range(1, 10) as $attempt) {
+        foreach (range(1, 5) as $attempt) {
             $this->withServerVariables(['REMOTE_ADDR' => '10.0.0.12'])
                 ->postJson('/api/v1/auth/login', [
                     'email' => 'ratelimit@test.local',
@@ -102,6 +102,53 @@ class OperationalSecurityTest extends TestCase
 
         $this->withHeader('Authorization', 'Bearer '.$token)
             ->getJson('/api/v1/security/logs')
+            ->assertOk()
+            ->assertJsonPath('meta.total', 1)
+            ->assertJsonPath('datos.0.event_key', 'auth.login_failed');
+    }
+
+    public function test_security_logs_support_filters(): void
+    {
+        $this->seed(RolePermissionSeeder::class);
+
+        $organization = Organizacion::query()->create([
+            'nombre' => 'Security Filter Tenant',
+            'slug' => 'security-filter-tenant',
+        ]);
+
+        $admin = User::factory()->create([
+            'email' => 'security-filter-admin@stackbase.local',
+            'organizacion_activa_id' => $organization->id,
+        ]);
+        $admin->organizaciones()->attach($organization->id);
+        $admin->assignRole('admin');
+
+        \App\Core\Security\Models\CoreSecurityLog::query()->create([
+            'organizacion_id' => $organization->id,
+            'actor_id' => $admin->id,
+            'event_key' => 'auth.login_failed',
+            'severity' => 'warning',
+            'request_id' => 'req-security-1',
+            'summary' => 'Intento fallido',
+            'context' => ['source' => 'test'],
+            'occurred_at' => now()->subMinutes(4),
+        ]);
+
+        \App\Core\Security\Models\CoreSecurityLog::query()->create([
+            'organizacion_id' => $organization->id,
+            'actor_id' => $admin->id,
+            'event_key' => 'auth.login_succeeded',
+            'severity' => 'info',
+            'request_id' => 'req-security-2',
+            'summary' => 'Login correcto',
+            'context' => ['source' => 'test'],
+            'occurred_at' => now()->subMinutes(2),
+        ]);
+
+        $token = app(AccessTokenService::class)->createForUser($admin, 'phpunit-security-filter');
+
+        $this->withHeader('Authorization', 'Bearer '.$token)
+            ->getJson('/api/v1/security/logs?severity=warning&request_id=req-security-1')
             ->assertOk()
             ->assertJsonPath('meta.total', 1)
             ->assertJsonPath('datos.0.event_key', 'auth.login_failed');

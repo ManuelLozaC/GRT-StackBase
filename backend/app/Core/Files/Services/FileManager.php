@@ -77,18 +77,17 @@ class FileManager
         $uuid = (string) Str::uuid();
         $extension = $uploadedFile->getClientOriginalExtension();
         $filename = $extension !== '' ? $uuid.'.'.$extension : $uuid;
-        $path = $uploadedFile->storeAs(
-            path: 'stackbase-files/'.now()->format('Y/m'),
-            name: $filename,
-            options: [
-                'disk' => $disk,
-            ],
-        );
+        $directory = 'stackbase-files/'.now()->format('Y/m');
+        $path = Storage::disk($disk)->putFileAs($directory, $uploadedFile, $filename);
+
+        if (! is_string($path) || trim($path) === '') {
+            throw new RuntimeException('No se pudo persistir el archivo administrado en el storage configurado.');
+        }
 
         return ManagedFile::query()->create([
             'uuid' => $uuid,
             'version_group_uuid' => $versionGroupUuid ?: $uuid,
-            'organizacion_id' => $this->tenantContext->organizationId($user),
+            'organizacion_id' => $this->tenantContext->companyId($user),
             'uploaded_by' => $user->id,
             'disk' => $disk,
             'path' => $path,
@@ -109,7 +108,10 @@ class FileManager
 
     public function createTemporaryDownloadUrl(ManagedFile $file, int $ttlMinutes = 30): array
     {
-        $expiresAt = now()->addMinutes($ttlMinutes);
+        $defaultTtl = max(1, (int) config('security.channels.signed_urls.default_ttl_minutes', 30));
+        $maxTtl = max($defaultTtl, (int) config('security.channels.signed_urls.max_ttl_minutes', 1440));
+        $resolvedTtl = $ttlMinutes > 0 ? min($ttlMinutes, $maxTtl) : $defaultTtl;
+        $expiresAt = now()->addMinutes($resolvedTtl);
 
         return [
             'url' => URL::temporarySignedRoute(
@@ -120,6 +122,7 @@ class FileManager
                 ],
             ),
             'expires_at' => $expiresAt->toIso8601String(),
+            'ttl_minutes' => $resolvedTtl,
         ];
     }
 
@@ -127,7 +130,7 @@ class FileManager
     {
         FileDownload::query()->create([
             'managed_file_id' => $file->id,
-            'organizacion_id' => $this->tenantContext->organizationId($user) ?? $file->organizacion_id,
+            'organizacion_id' => $this->tenantContext->companyId($user) ?? $file->organizacion_id,
             'user_id' => $user?->id,
             'channel' => $channel,
             'status' => 'completed',
@@ -169,7 +172,7 @@ class FileManager
 
         return CoreJobRun::query()->create([
             'uuid' => (string) Str::uuid(),
-            'organizacion_id' => $this->tenantContext->organizationId($user),
+            'organizacion_id' => $this->tenantContext->companyId($user),
             'requested_by' => $user->id,
             'job_key' => 'demo.files.package',
             'queue' => 'files',

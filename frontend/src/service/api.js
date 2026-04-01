@@ -22,6 +22,9 @@ function normalizeApiBaseUrl(rawBaseUrl) {
 const api = axios.create({
     baseURL: normalizeApiBaseUrl(import.meta.env.VITE_API_URL),
     withCredentials: true,
+    withXSRFToken: true,
+    xsrfCookieName: 'stackbase_xsrf_token',
+    xsrfHeaderName: 'X-StackBase-CSRF',
     headers: {
         'Content-Type': 'application/json',
         Accept: 'application/json'

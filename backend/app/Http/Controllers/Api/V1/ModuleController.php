@@ -27,6 +27,8 @@ class ModuleController extends Controller
 
     public function index(ModuleRegistry $modules): JsonResponse
     {
+        $modules->syncManifestToPersistence();
+
         return $this->successResponse(
             data: $modules->all()->all(),
             message: 'Modulos disponibles',

@@ -31,7 +31,7 @@ class ProcessDemoJobRun implements ShouldQueue
         $jobRun = CoreJobRun::query()->findOrFail($this->jobRunId);
         $attempts = $this->job?->attempts() ?? 1;
 
-        $tenantContext->setOrganizationId($jobRun->organizacion_id);
+        $tenantContext->setCompanyId($jobRun->organizacion_id);
         $tenantContext->setActorId($jobRun->requested_by);
 
         try {

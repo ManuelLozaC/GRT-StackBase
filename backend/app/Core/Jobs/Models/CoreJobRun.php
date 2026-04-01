@@ -24,6 +24,7 @@ class CoreJobRun extends Model
         'status',
         'requested_payload',
         'result_payload',
+        'metadata',
         'attempts',
         'dispatched_at',
         'started_at',
@@ -37,6 +38,7 @@ class CoreJobRun extends Model
         return [
             'requested_payload' => 'array',
             'result_payload' => 'array',
+            'metadata' => 'array',
             'dispatched_at' => 'datetime',
             'started_at' => 'datetime',
             'finished_at' => 'datetime',
@@ -52,6 +54,16 @@ class CoreJobRun extends Model
     public function organizacion(): BelongsTo
     {
         return $this->belongsTo(Organizacion::class);
+    }
+
+    public function empresa(): BelongsTo
+    {
+        return $this->organizacion();
+    }
+
+    public function company(): BelongsTo
+    {
+        return $this->organizacion();
     }
 
     public function requester(): BelongsTo

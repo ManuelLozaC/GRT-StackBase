@@ -45,6 +45,14 @@ Varias de estas demos ya incluyen una guia integrada con:
 - wiring recomendado
 - notas de implementacion
 
+Ademas, el modulo ya esta organizado en tres capas faciles de entender:
+
+- tutoriales guiados
+- capacidades tecnicas del core
+- patrones UI y recipes
+
+Eso reduce el costo de onboarding y evita que un desarrollador nuevo se pierda entre demos inconexas.
+
 ## Siguiente alcance esperado
 
 El `Demo Module` ya cuenta con:
@@ -177,3 +185,19 @@ Tambien debe sentirse como una sola biblioteca, no como una coleccion accidental
 3. pulir microcopy, consistencia visual y criterio de uso entre todas las demos
 4. sumar notas de implementacion reutilizable para onboarding tecnico rapido
 5. ampliar cobertura automatizada del modulo demo cuando el costo/beneficio lo justifique
+
+## Regla de mantenimiento
+
+El `Demo Module` no debe crecer como una vitrina infinita.
+
+Solo deben entrar:
+
+- patrones realmente reutilizables
+- tutoriales que ensenen decisiones de arquitectura
+- demos tecnicas del core
+
+No deben entrar:
+
+- experimentos de negocio de un solo modulo
+- pantallas que solo duplican lo que ya existe
+- variaciones cosmeticas sin valor de aprendizaje

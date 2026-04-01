@@ -146,7 +146,11 @@ function previewLoading() {
                     'cuando un modal contiene demasiadas secciones o flujos largos',
                     'cuando se usan banners por costumbre en lugar de un mensaje realmente util'
                 ]"
-                :wiring="['usar ToastService para mensajes breves y no bloqueantes', 'usar ConfirmDialog antes de acciones destructivas o irreversibles', 'usar Dialog modal o lateral segun la densidad del contenido']"
+                :wiring="[
+                    'usar la primitive useActionFeedback para no repetir wiring de exito, warning y error en cada pantalla',
+                    'usar ConfirmDialog antes de acciones destructivas o irreversibles',
+                    'usar Dialog modal o lateral segun la densidad del contenido'
+                ]"
                 :notes="['cada patron debe decirle al usuario que paso y que puede hacer despues', 'el feedback no debe competir con el contenido principal de la pantalla']"
             />
         </div>

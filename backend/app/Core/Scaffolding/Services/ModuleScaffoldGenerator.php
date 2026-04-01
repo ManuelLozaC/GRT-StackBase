@@ -168,7 +168,21 @@ const registry = {
     navigation: {
         label: '{$module['label']}',
     },
-    routes: [],
+    routes: [
+        // Cada ruta debe declarar permissionKey explicita si el modulo tiene mas de un permiso.
+        // {
+        //     path: '/{$module['key']}',
+        //     name: '{$module['key']}.index',
+        //     view: '{$module['key']}.index',
+        //     meta: {
+        //         permissionKey: '{$module['key']}.view'
+        //     },
+        //     menu: {
+        //         label: '{$module['label']}',
+        //         icon: 'pi pi-fw pi-box'
+        //     }
+        // }
+    ],
 };
 
 export default registry;
@@ -192,6 +206,7 @@ Describe aqui el problema de negocio que resuelve `{$moduleKey}`.
 ## Pasos sugeridos
 1. definir entidades y reglas de negocio
 2. registrar rutas frontend reales en `frontend/src/modules/{$module['frontend_key']}/registry.js`
+3. declarar `permissionKey` explicita por ruta si el modulo tendra mas de un permiso
 3. agregar recursos Data Engine solo si el caso realmente encaja
 4. definir eventos de dominio y notificaciones del modulo
 5. cubrir con tests y documentar el flujo

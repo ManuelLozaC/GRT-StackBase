@@ -170,6 +170,23 @@ Si no haces eso y dejas `22` abierto al mundo, debes asumir mas riesgo.
 
 ## Variables sensibles y configuracion recomendada
 
+## Politicas diferenciadas por canal
+
+StackBase ya no trata todos los accesos como si fueran el mismo tipo de riesgo. La recomendacion, y ahora tambien la implementacion base, es mantener reglas distintas segun el canal:
+
+- `api bearer`
+  pensado para clientes API, scripts e integraciones autenticadas por header `Authorization`
+- `web cookie`
+  pensado para el frontend web autenticado con cookie `HttpOnly` y validacion CSRF
+- `webhooks`
+  pensado para trafico firmado de sistemas externos, con timestamp y anti-replay
+- `signed URLs`
+  pensado para descargas temporales con expiracion corta y trazabilidad
+- `push`
+  pensado para dispositivos previamente suscritos y autenticados
+
+Esto importa porque cada canal tiene riesgos distintos y no conviene protegerlos con una sola politica generica.
+
 ### Backend
 
 En produccion, como minimo:

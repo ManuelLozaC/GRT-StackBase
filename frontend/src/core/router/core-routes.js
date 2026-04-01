@@ -105,6 +105,14 @@ export const coreRoutes = [
                 component: () => import('@/views/pages/RolePermissionAdministration.vue')
             },
             {
+                path: '/admin/audit',
+                name: 'audit-logs',
+                meta: {
+                    permissionKey: 'audit.logs.view'
+                },
+                component: () => import('@/views/pages/AuditLogs.vue')
+            },
+            {
                 path: '/admin/security',
                 name: 'security-logs',
                 meta: {

@@ -1,5 +1,6 @@
 import { initializeApp, getApps } from 'firebase/app';
 import { deleteToken, getMessaging, getToken, isSupported, onMessage } from 'firebase/messaging';
+import { sanitizeNavigableUrl } from '@/core/security/safeUrl';
 import api from '@/service/api';
 
 const firebaseConfig = {
@@ -114,7 +115,7 @@ export async function showForegroundSystemNotification(payload) {
 
     const title = payload.notification?.title ?? payload.data?.title ?? 'Nueva notificacion push';
     const body = payload.notification?.body ?? payload.data?.message ?? '';
-    const actionUrl = payload.data?.action_url ?? '/';
+    const actionUrl = sanitizeNavigableUrl(payload.data?.action_url ?? '/') ?? '/';
     const registration = await navigator.serviceWorker.getRegistration('/firebase-messaging-sw.js');
 
     if (registration) {
@@ -130,7 +131,7 @@ export async function showForegroundSystemNotification(payload) {
     const notification = new Notification(title, { body });
     notification.onclick = () => {
         if (actionUrl) {
-            window.open(actionUrl, '_blank');
+            window.open(actionUrl, '_blank', 'noopener,noreferrer');
         }
     };
 }

@@ -70,7 +70,7 @@ class DataResourceController extends Controller
                 ->all(),
             message: 'Registros listados',
             meta: [
-                'resource' => Arr::only($this->resources->serializeDefinition($resource), [
+                'resource' => Arr::only($this->resources->serializeDefinition($resource, $request->user()), [
                     'key',
                     'name',
                     'default_sort',
@@ -117,6 +117,10 @@ class DataResourceController extends Controller
 
         if ($resource === null) {
             return $this->resourceNotFoundResponse();
+        }
+
+        if (! $this->resources->userCanPerform($resource, $request->user(), 'export')) {
+            return $this->forbiddenActionResponse('exportar este recurso');
         }
 
         $format = $this->normalizeExportFormat((string) $request->query('format', 'csv'));
@@ -173,6 +177,10 @@ class DataResourceController extends Controller
 
         if ($resource === null) {
             return $this->resourceNotFoundResponse();
+        }
+
+        if (! $this->resources->userCanPerform($resource, $request->user(), 'import')) {
+            return $this->forbiddenActionResponse('importar sobre este recurso');
         }
 
         $validated = Validator::make($request->all(), [
@@ -255,6 +263,10 @@ class DataResourceController extends Controller
             return $this->resourceNotFoundResponse();
         }
 
+        if (! $this->resources->userCanPerform($resource, $request->user(), 'create')) {
+            return $this->forbiddenActionResponse('crear registros en este recurso');
+        }
+
         $payload = $this->validatePayload($request, $resource);
         $modelClass = $resource['model'];
         /** @var Model $record */
@@ -291,6 +303,10 @@ class DataResourceController extends Controller
             return $this->recordNotFoundResponse();
         }
 
+        if (! $this->resources->userCanPerform($resource, $request->user(), 'update')) {
+            return $this->forbiddenActionResponse('actualizar este recurso');
+        }
+
         $payload = $this->validatePayload($request, $resource, true);
         $record->fill($payload)->save();
         $this->search->syncRecord($resource, $record);
@@ -323,6 +339,10 @@ class DataResourceController extends Controller
 
         if ($record === null) {
             return $this->recordNotFoundResponse();
+        }
+
+        if (! $this->resources->userCanPerform($resource, $request->user(), 'delete')) {
+            return $this->forbiddenActionResponse('eliminar registros de este recurso');
         }
 
         $recordPrimaryKey = $record->getKey();
@@ -358,6 +378,10 @@ class DataResourceController extends Controller
                 message: 'Este recurso no permite duplicar registros.',
                 status: 422,
             );
+        }
+
+        if (! $this->resources->userCanPerform($resource, $request->user(), 'duplicate')) {
+            return $this->forbiddenActionResponse('duplicar registros de este recurso');
         }
 
         $record = $this->resolveRecord($resource, $recordId);
@@ -513,6 +537,10 @@ class DataResourceController extends Controller
             return $this->resourceNotFoundResponse();
         }
 
+        if (! $this->resources->userHasPermission($request->user(), 'data-engine.search.manage')) {
+            return $this->forbiddenActionResponse('reindexar la busqueda de este recurso');
+        }
+
         $result = $this->search->reindex($resource, $request->user());
 
         return $this->successResponse(
@@ -595,6 +623,14 @@ class DataResourceController extends Controller
         return $this->errorResponse(
             message: 'Registro no encontrado',
             status: 404,
+        );
+    }
+
+    protected function forbiddenActionResponse(string $actionDescription): JsonResponse
+    {
+        return $this->errorResponse(
+            message: "No tienes permisos para {$actionDescription}.",
+            status: 403,
         );
     }
 

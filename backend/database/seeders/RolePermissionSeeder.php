@@ -14,7 +14,7 @@ class RolePermissionSeeder extends Seeder
     {
         app(PermissionRegistrar::class)->forgetCachedPermissions();
 
-        $permissions = collect(config('modules.installed', []))
+        $permissions = collect($this->loadInstalledModules())
             ->flatMap(fn (array $module): array => $module['permissions'] ?? [])
             ->push(
                 'modules.view',
@@ -67,5 +67,14 @@ class RolePermissionSeeder extends Seeder
                     $user->assignRole($adminRole);
                 }
             });
+    }
+
+    protected function loadInstalledModules(): array
+    {
+        $manifest = require base_path('config/modules.php');
+
+        return is_array($manifest['installed'] ?? null)
+            ? $manifest['installed']
+            : [];
     }
 }

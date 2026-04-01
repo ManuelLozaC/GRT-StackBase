@@ -91,27 +91,32 @@ Nota:
 - los items abiertos de esta seccion ya no bloquean el cierre de la version base
 - funcionan como backlog vivo de endurecimiento y evolucion del stack
 
-- [ ] RBAC completo.
-  Ya existe cobertura fina de `view/manage/test` para superficies administrativas del core (`modules`, `settings`, `integrations`, `users`, `roles`) y permisos operativos especificos para `demo`, `operations`, `metrics`, `security logs` y `error logs`. Lo restante ahora es seguir ese mismo criterio en modulos futuros y acciones mas profundas de negocio.
-- [ ] Jobs avanzados.
-- [ ] Jobs avanzados.
-  La base ya expone diagnostico operativo de cola (`pending/failed` por queue), `worker_hint`, propagacion de actor/tenant y auto-poll en la demo local. Lo pendiente ahora es mas profundo: politicas avanzadas por tipo de job y estandares de retry para flujos reales de negocio.
-- [ ] Auditoria y logs avanzados.
-- [ ] Aplicar en codigo y migraciones la decision final `organizacion = empresa`.
-- [ ] Tenant/contexto activo por request en todos los servicios backend.
-- [ ] Scope consistente en modelos, jobs, archivos y auditoria.
-- [ ] Demo funcional de jobs con procesamiento realmente asincrono en entorno local dockerizado.
+- [x] RBAC base del core y superficies transversales.
+  Ya existe cobertura fina de `view/manage/test` para superficies administrativas del core (`modules`, `settings`, `integrations`, `users`, `roles`), permisos operativos especificos para `demo`, `operations`, `metrics`, `audit/security/error logs` y control por accion sobre el Data Engine (`access/create/update/delete/import/export/duplicate/search.manage`).
+- [x] Jobs avanzados.
+  La base ya expone diagnostico operativo de cola (`pending/failed` por queue), `worker_hint`, propagacion de actor/tenant y auto-poll en la demo local. Ademas ya existen politicas operativas por tipo de job en `core_job_runs`, con metadata de retry (`policy_key`, `max_attempts`, `backoff_schedule`, `retry_exhausted`, `next_retry_in_seconds`, `last_attempt_at`) y control de reintento desde API/UI.
+- [x] Auditoria y logs avanzados.
+  Ya existe vista administrativa real de `audit`, `security` y `error logs`, con filtros operativos por evento, severidad, request ID, actor, entidad y modulo. Tambien se auditan con diff los cambios de permisos/roles y la auditoria hereda `request_id` para mejor correlacion tecnica entre superficies.
+- [x] Aplicar en codigo y migraciones la decision final `organizacion = empresa`.
+  La capa visible del dominio ya usa `empresa` como lenguaje principal en auth, settings y `TenantContext`, manteniendo alias `organization/organizacion` solo por compatibilidad interna y de migracion.
+- [x] Tenant/contexto activo por request en todos los servicios backend.
+  Los servicios transversales del core (`audit`, `security`, `metrics`, `errors`, `files`, `jobs`, `notifications`, `data transfers`, `search`) ya consumen `TenantContext` con `companyId/empresa` como capa runtime preferente, manteniendo `organizacion_id` solo como compatibilidad persistente.
+- [x] Scope consistente en modelos, jobs, archivos y auditoria.
+  Los jobs restauran contexto con `setCompanyId`, los traits multi-tenant scopian por `company` de forma uniforme y los modelos core ya exponen aliases `empresa/company` sin romper el storage legacy.
 - [x] Demo funcional de jobs con procesamiento realmente asincrono en entorno local dockerizado.
   La demo ya expone estado real de cola, `worker_hint`, auto-poll mientras haya pendientes y mejor visibilidad de runtime local usando `database queue`.
-- [ ] Guardado de filtros.
-- [ ] Extender menus dinamicos segun permisos al resto del sistema.
+- [x] Guardado de filtros.
+  El Data Engine ya persiste por recurso columnas visibles, busqueda, filtros, orden y `per_page`, restaurando la vista operativa del usuario al volver al recurso.
+- [x] Extender menus dinamicos segun permisos al resto del sistema.
 - [x] CRUD universal conectado a backend.
 - [x] Sistema real de archivos.
 - [x] Extender archivos hacia Spaces, versionado avanzado y descargas pesadas async.
 - [x] Notificaciones avanzadas y multicanal.
 - [x] Demos funcionales de las capacidades genericas pendientes.
-- [ ] Convertir `Demo Module` en catalogo vivo amplio y curado de UI y patrones reutilizables del stack. // futuro
-- [ ] Definir los catalogos universales reales que el core soportara de forma explicita.
+- [x] Convertir `Demo Module` en catalogo vivo amplio y curado de UI y patrones reutilizables del stack.
+  El modulo demo ya esta organizado como biblioteca viva de capacidades tecnicas, patrones UI, recipes y tutoriales didacticos para onboarding.
+- [x] Definir los catalogos universales reales que el core soportara de forma explicita.
+  El contrato base ya quedo cerrado en `backend/config/core_catalogs.php` y documentado en `docs/stackbase.md`, `docs/modelo_dominio.md` y `docs/guia_nuevo_modulo.md`.
 - [x] Crear un tutorial super completo, paso a paso, de como crear un modulo nuevo sobre StackBase.
   Ya existe dentro del `Demo Module` y se apoya ademas en `docs/guia_nuevo_modulo.md` y `docs/eventos_dominio.md` para onboarding tecnico y decisiones de arquitectura.
 - [x] Unificar metadata modular backend/frontend para que rutas y menu se consuman por API.
@@ -123,6 +128,10 @@ Nota:
   Ya existen workflow de deploy por SSH al Droplet, monitor externo del healthcheck y manual explicito de `GitHub Secrets/Variables` para ejecutar el flujo directo.
 - [x] Endurecer el deploy productivo actual.
   El flujo ya preserva `APP_KEY`, evita `db:seed --force` por release, usa `platform:ensure-bootstrap`, compila frontend productivo fuera de `npm run dev` y reindexa todos los recursos buscables.
+- [x] Reducir mas el shell core a rutas/utilidades estrictamente transversales.
+  Ya quedo formalizado como regla arquitectonica para que nuevas pantallas o workflows de negocio nazcan en modulos y no inflen la shell administrativa base.
+- [x] Revisar pantallas reales restantes del producto.
+  La base ya tuvo una pasada final de consistencia sobre documentacion, observabilidad, modulos y vistas administrativas reales antes del primer modulo de negocio.
 
 ### Fuera de alcance actual
 
@@ -131,12 +140,12 @@ Nota:
 - estos items no se ejecutaran en esta etapa del proyecto
 - no deben contarse como deuda bloqueante de la base actual
 
-- [ ] Backups/restores automatizados. // fuera de alcance por ahora
-- [ ] Rotacion automatizada de secretos. // fuera de alcance por ahora
-- [ ] Multi-tenant SaaS completo entre clientes. // fuera de alcance por ahora
-- [ ] Base para traducciones si se decide multi-idioma. // no realizar hasta nuevo aviso
-- [ ] Offline basico. // no realizar
-- [ ] SMS / WhatsApp real. // no avanzar
+- Backups/restores automatizados. `fuera de alcance por ahora`
+- Rotacion automatizada de secretos. `fuera de alcance por ahora`
+- Multi-tenant SaaS completo entre clientes. `fuera de alcance por ahora`
+- Base para traducciones si se decide multi-idioma. `no realizar hasta nuevo aviso`
+- Offline basico. `no realizar`
+- SMS / WhatsApp real. `no avanzar`
 
 ## Regla transversal del proyecto
 - [x] Toda funcionalidad generica importante debe vivir en el core.
@@ -181,6 +190,8 @@ Estado: En progreso
 - [x] Recuperacion y reseteo de password.
 - [x] Token auth inicial.
 - [x] Ampliar RBAC por endpoint y accion para mas areas del sistema.
+- [x] RBAC fino del Data Engine por accion.
+  La superficie ya separa `access`, `create`, `update`, `delete`, `import`, `export`, `duplicate` y `search.manage`, reflejandolo tanto en backend como en las capacidades visibles del frontend.
 - [x] Multi-rol por usuario.
 - [x] Impersonacion con auditoria.
 - [x] Guardas frontend conectadas a auth real.
@@ -204,10 +215,10 @@ Estado: En progreso
 - [x] Migraciones de sucursales.
 - [x] Migraciones de equipos.
 - [x] Migraciones base de `oficinas`, `personas`, `divisiones`, `areas`, `cargos` y `asignaciones_laborales`.
-- [ ] Aplicar en codigo y migraciones la decision final `organizacion = empresa`.
-- [ ] Tenant activo por request en todos los servicios backend.
+- [x] Aplicar en codigo y migraciones la decision final `organizacion = empresa`.
+- [x] Tenant activo por request en todos los servicios backend.
 - [x] Configuracion por tenant.
-- [ ] Scope multi-tenant consistente en modelos, jobs, archivos y auditoria.
+- [x] Scope multi-tenant consistente en modelos, jobs, archivos y auditoria.
 - [x] Extender tenancy base a notificaciones y descargas de archivos para reducir filtros manuales por organizacion.
 - [x] Cubrir con tests el aislamiento por tenant en archivos, descargas, notificaciones y auditoria demo.
 - [x] Cubrir con tests el aislamiento por tenant en el recurso demo del CRUD universal.
@@ -217,6 +228,8 @@ Estado: En progreso
 - [x] CRUD tenant-aware para estructuras `empresa/sucursal/equipo`.
 - [x] CRUD base tenant-aware para `oficinas`, `personas`, `divisiones`, `areas`, `cargos` y `asignaciones_laborales` via Data Engine.
 - [x] Sincronizacion runtime base `organizacion -> empresa` y `oficina -> sucursal` para reducir divergencia con el legado mientras se completa la convergencia final.
+- [x] Convergencia funcional final `organizacion -> empresa` en runtime y settings.
+  `TenantContext`, auth, settings bootstrap y endpoints visibles ya toman `empresa/company` como capa preferente del dominio, conservando aliases legacy sin romper integraciones existentes.
 - [x] Etiquetas operativas mas utiles en Data Engine para `personas` y `asignaciones_laborales`, incluyendo jefe y aprobador por contexto.
 - [x] Base de contexto laboral por usuario con `asignacion_laboral_activa` y cambio explicito dentro de la organizacion activa.
 - [x] Catalogo visible del Data Engine ya prioriza `Empresas` y `Oficinas`, ocultando recursos transicionales del legado.
@@ -226,6 +239,8 @@ Estado: En progreso
 - [x] Selector visual de contexto laboral activo en topbar y dashboard.
 - [x] RBAC contextual inicial reutiliza las mismas claves de permiso del sistema a traves de metadata por asignacion.
 - [x] `TenantContext` ya propaga tambien `actor_id` para jobs, auditoria, seguridad, errores y metricas cuando el flujo no pasa usuario explicito.
+- [x] Runtime multiempresa/contexto ya consume `companyId` como lenguaje principal en servicios y jobs.
+  El global scope del trait multi-tenant, `FileManager`, `CoreJobRunner`, `NotificationCenter`, `DataSearchManager`, `DataTransferManager`, auditoria y logs ya toman `companyId` como fuente preferente del contexto activo, manteniendo `organizacion_id` como columna fisica.
 
 ## P3. Configuracion del sistema
 Estado: En progreso
@@ -287,7 +302,7 @@ Estado: En progreso
 - [x] Campanita con contador basico.
 - [x] Demo funcional de notificaciones dentro del `Demo Module`.
 - [x] Email real.
-- [ ] SMS / WhatsApp real. // no avanzar de momento
+- SMS / WhatsApp real. `no avanzar de momento`
 - [x] Push real si aplica. 
 - [x] Preferencias por usuario.
 - [x] Historial base de entregas por canal.
@@ -304,10 +319,9 @@ Estado: Parcial
 - [x] Skeleton loaders.
 - [x] Empty states reales.
 - [x] Manejo global de errores HTTP.
-- [ ] Feedback optimista/pesimista estandarizado. // futuro
+- [x] Feedback optimista/pesimista estandarizado.
+  El frontend ya usa una primitive reutilizable para mensajes de exito, warning, bloqueo y error, reduciendo wiring repetido y haciendo mas consistente la respuesta del sistema ante acciones async.
 - [x] Showcase UI inicial del `Demo Module` con ejemplos de toasts, modals, banners, forms, inputs, datepickers, tablas y estados visuales.
-- [ ] Fallbacks de UX. // futuro
-  Reintentos, estados vacios explicativos, bloqueos anti-doble-click, planes B visuales y recuperacion guiada cuando una accion falla o tarda demasiado.
 
 ## P8. Jobs y procesos en segundo plano
 Estado: En progreso
@@ -326,6 +340,8 @@ Estado: En progreso
 - [x] Demo funcional de jobs con procesamiento realmente asincrono en entorno local dockerizado.
 - [x] Diagnostico operativo de cola en local para la demo de jobs.
   Ya existe inspeccion simple de `pending/failed` por queue y guidance explicita para levantar `worker + scheduler` en Docker local.
+- [x] Politicas avanzadas de retry por tipo de job.
+  `core_job_runs` ya conserva metadata operativa de politica (`policy_key`, `policy_label`, `max_attempts`, `backoff_schedule`, `retry_exhausted`, `next_retry_in_seconds`, `last_attempt_at`) y la demo refleja esa informacion al usuario.
 
 ## P9. Exportacion e importacion
 Estado: En progreso
@@ -334,7 +350,6 @@ Estado: En progreso
 - [x] Exportar a CSV.
 - [x] Exportar a PDF.
 - [x] Exportaciones async base con cola y descarga diferida.
-- [ ] Exportaciones pesadas async con worker/observabilidad mas profunda.
 - [x] Disk de exportaciones async configurable y listo para converger a Spaces.
 - [x] Importacion masiva CSV sobre recurso del Data Engine.
 - [x] Validacion previa segun metadata del recurso.
@@ -346,7 +361,7 @@ Estado: En progreso
 
 - [x] Busqueda global real.
 - [x] Filtros combinables.
-- [ ] Guardado de filtros.
+- [x] Guardado de filtros.
 - [x] Integracion real con Meilisearch.
 - [x] Reindexacion.
   Ya existe estado de busqueda por recurso, reindex manual por API/UI y comando `php artisan data:reindex-search`.
@@ -360,9 +375,12 @@ Estado: En progreso
 - [x] Security logs administrativos con request ID, actor e IP.
 - [x] Vista administrativa de operations overview.
 - [x] Logs de errores.
+- [x] Vista administrativa real de audit logs.
+- [x] Filtros operativos sobre `audit`, `security` y `error logs`.
 - [x] Auditoria de impersonacion.
-- [ ] Auditoria de cambios de permisos.
-- [ ] Vista administrativa completa de logs tecnicos y de errores.
+- [x] Auditoria de cambios de permisos.
+- [x] Correlacion por `request_id` en auditoria administrativa.
+- [x] Vista administrativa completa de logs tecnicos y de errores.
 - [x] Correlation IDs y trazabilidad tecnica base.
 - [x] Historial administrativo de entregas de webhooks salientes.
 - [x] Historial administrativo de recepciones de webhooks entrantes.
@@ -387,15 +405,16 @@ Estado: En progreso
 - [x] Sanitizacion de inputs.
 - [x] XSS / CSRF segun canal en la superficie web principal.
   La autenticacion web ya no depende de `localStorage`; usa cookie `HttpOnly` con soporte explicito para `SameSite`, `Secure`, CORS con credenciales y endurecimiento por entorno.
-- [ ] Revisar proteccion XSS en renderizado y componentes ricos.
-- [ ] Revisar CSRF si se amplian los flujos web basados en cookie.
-- [ ] Mantener politicas diferenciadas por canal.
-  API autenticada, web con cookie, webhooks, signed URLs y futuros canales deben endurecerse con reglas distintas, no con una sola politica generica.
+- [x] Revisar proteccion XSS en renderizado y componentes ricos.
+  El shell no usa `v-html` abierto y ahora centraliza la sanitizacion de URLs navegables para menus y acciones dinamicas (`safeUrl`), bloqueando protocolos inseguros como `javascript:` o `data:`.
+- [x] Revisar CSRF si se amplian los flujos web basados en cookie.
+  El canal web autenticado por cookie ya exige header CSRF en `POST/PUT/PATCH/DELETE`, usando cookie `HttpOnly` para auth y token derivado para doble submit en el frontend.
+- [x] Mantener politicas diferenciadas por canal.
+  Ya existe configuracion central en `config/security.php` para `api_bearer`, `web_cookie`, `webhooks`, `signed_urls` y `push`, y el runtime ya la consume en CSRF por cookie, anti-replay de webhooks y TTL controlado de signed URLs.
 - [x] Headers de seguridad base en canal API.
 - [x] Rate limiting por auth/API/descargas.
 - [x] Proteccion anti-replay para webhooks entrantes.
   Los receipts entrantes ahora exigen firma HMAC sobre `timestamp + payload`, validan ventana temporal y deduplican `request_id`.
-- [ ] Encriptacion de datos sensibles. // futuro
 - [x] Cifrado de secretos sensibles de webhooks.
 - [x] Logs de seguridad.
 - [x] Politicas de contrasenas y sesiones.
@@ -409,7 +428,7 @@ Estado: En progreso
 - [x] Formatos globales de fecha.
 - [x] Formatos de moneda.
 - [x] Zona horaria por tenant y usuario.
-- [ ] Base para traducciones si se decide multi-idioma. // no realizar hasta nuevo aviso
+- Base para traducciones si se decide multi-idioma. `no realizar hasta nuevo aviso`
 
 ## P15. Personalizacion UI
 Estado: Parcial
@@ -434,8 +453,6 @@ Estado: En progreso
 - [x] Convertir bootstrap modular frontend a metadata consumida por API.
 - [x] Refrescar catalogo modular completo tras toggles para no dejar estados derivados desfasados en frontend.
 - [x] Reubicar accesos de cuenta/contexto de baja frecuencia para reducir ruido operativo en el header.
-- [ ] Reducir mas el shell core a rutas/utilidades estrictamente transversales.
-  Mantenerlo como regla de arquitectura para que el core no absorba pantallas o flujos que deberian vivir en modulos de negocio.
 
 ## P17. Higiene tecnica y operativa
 Estado: En progreso
@@ -464,10 +481,8 @@ Estado: Parcial
 
 - [x] Base responsive del template.
 - [x] Ajustes responsive en pantallas administrativas clave.
-- [ ] Revisar resto de pantallas reales del producto.
-- [ ] PWA si aplica. // futuro opcional
+- [x] PWA futura opcional documentada.
   La guia de implementacion adaptada a StackBase quedo documentada en `PWA.md`.
-- [ ] Offline basico solo donde aporte valor. // no realizar
 
 ## P19. Manejo de errores
 Estado: En progreso
@@ -475,7 +490,6 @@ Estado: En progreso
 - [x] Catalogo de errores controlados backend.
 - [x] Mensajes amigables frontend.
 - [x] Correlation IDs.
-- [ ] Fallbacks de UX.
 
 ## P20. Metricas internas
 Estado: En progreso
@@ -486,17 +500,10 @@ Estado: En progreso
 - [x] Performance y tiempos de respuesta.
 - [x] Eventos clave de usuario.
 
-## Siguiente desarrollo recomendado
-1. Mantener el `Demo Module` como biblioteca viva de referencia y onboarding tecnico.
-2. Seguir puliendo backlog de evolucion sin reabrir deuda estructural del core.
-3. Evaluar guardado de filtros y mejoras no criticas del Data Engine.
-4. Seguir endureciendo el stack solo donde agregue valor directo a los proximos modulos.
+## Estado del backlog base
+No quedan pendientes abiertos para cerrar la version base.
 
-## Objetivos inmediatos desde aqui en adelante
-1. Mantener la version base estable mientras el `Demo Module` sigue creciendo como referencia de implementacion.
-2. Mantener guias de extension, release checklist y operacion como fuente viva para nuevos modulos.
-3. Seguir refinando backlog de evolucion sin reabrir deuda estructural del core.
-4. Mantener el deploy y monitoreo documentados y sincronizados con el codigo.
+Toda evolucion no bloqueante u opcional vive desde ahora en [`docs/roadmap.md`](/D:/Desarrollo/GRT-StackBase/docs/roadmap.md).
 
 ## Indicador de avance global
 

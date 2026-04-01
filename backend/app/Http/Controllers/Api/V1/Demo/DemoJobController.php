@@ -147,6 +147,13 @@ class DemoJobController extends Controller
             );
         }
 
+        if (($jobRun->metadata['retry_exhausted'] ?? false) === true) {
+            return $this->errorResponse(
+                message: 'Este job ya agoto su politica de reintentos.',
+                status: Response::HTTP_UNPROCESSABLE_ENTITY,
+            );
+        }
+
         $jobRun->forceFill([
             'status' => 'pending',
             'started_at' => null,
@@ -155,6 +162,11 @@ class DemoJobController extends Controller
             'error_message' => null,
             'result_payload' => null,
             'dispatched_at' => now(),
+            'metadata' => array_merge($jobRun->metadata ?? [], [
+                'retriable' => true,
+                'retry_exhausted' => false,
+                'next_retry_in_seconds' => null,
+            ]),
         ])->save();
 
         ProcessDemoJobRun::dispatch($jobRun->id);
@@ -201,15 +213,21 @@ class DemoJobController extends Controller
             'attempts' => $run->attempts,
             'requested_payload' => $run->requested_payload,
             'result_payload' => $run->result_payload,
+            'metadata' => $run->metadata,
             'error_message' => $run->error_message,
             'requested_by' => $run->requester?->name,
             'requested_by_id' => $run->requested_by,
             'organizacion_id' => $run->organizacion_id,
             'empresa_id' => $run->organizacion_id,
             'company_id' => $run->organizacion_id,
-            'max_tries' => 3,
-            'backoff_schedule' => [5, 15],
-            'can_retry' => in_array($run->status, ['failed', 'pending'], true),
+            'policy_key' => $run->metadata['key'] ?? 'demo-fast-feedback',
+            'policy_label' => $run->metadata['label'] ?? 'Demo Fast Feedback',
+            'max_tries' => $run->metadata['max_attempts'] ?? 3,
+            'backoff_schedule' => $run->metadata['backoff_schedule'] ?? [5, 15],
+            'retry_exhausted' => (bool) ($run->metadata['retry_exhausted'] ?? false),
+            'next_retry_in_seconds' => $run->metadata['next_retry_in_seconds'] ?? null,
+            'last_attempt_at' => $run->metadata['last_attempt_at'] ?? null,
+            'can_retry' => in_array($run->status, ['failed', 'pending'], true) && (bool) ($run->metadata['retriable'] ?? true),
             'dispatched_at' => $run->dispatched_at?->toIso8601String(),
             'started_at' => $run->started_at?->toIso8601String(),
             'finished_at' => $run->finished_at?->toIso8601String(),

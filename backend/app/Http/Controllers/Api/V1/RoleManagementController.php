@@ -61,6 +61,7 @@ class RoleManagementController extends Controller
 
         $role->syncPermissions($payload['permissions'] ?? []);
         app(PermissionRegistrar::class)->forgetCachedPermissions();
+        $role->load('permissions:id,name');
 
         $this->auditLogger->record(
             eventKey: 'role.created',
@@ -89,12 +90,20 @@ class RoleManagementController extends Controller
             'permissions.*' => ['string', Rule::exists('permissions', 'name')],
         ])->validate();
 
+        $previousName = $role->name;
+        $previousPermissions = $role->permissions()->pluck('name')->sort()->values()->all();
+
         $role->forceFill([
             'name' => $payload['name'],
         ])->save();
 
         $role->syncPermissions($payload['permissions'] ?? []);
         app(PermissionRegistrar::class)->forgetCachedPermissions();
+        $role->load('permissions:id,name');
+
+        $currentPermissions = $role->permissions->pluck('name')->sort()->values()->all();
+        $addedPermissions = array_values(array_diff($currentPermissions, $previousPermissions));
+        $removedPermissions = array_values(array_diff($previousPermissions, $currentPermissions));
 
         $this->auditLogger->record(
             eventKey: 'role.updated',
@@ -105,7 +114,11 @@ class RoleManagementController extends Controller
             sourceModule: 'core-platform',
             context: [
                 'role' => $role->name,
-                'permissions' => $role->permissions->pluck('name')->values()->all(),
+                'previous_name' => $previousName,
+                'permissions' => $currentPermissions,
+                'previous_permissions' => $previousPermissions,
+                'added_permissions' => $addedPermissions,
+                'removed_permissions' => $removedPermissions,
             ],
         );
 
@@ -117,11 +130,13 @@ class RoleManagementController extends Controller
             context: [
                 'role_id' => $role->id,
                 'role_name' => $role->name,
+                'added_permissions' => $addedPermissions,
+                'removed_permissions' => $removedPermissions,
             ],
         );
 
         return $this->successResponse(
-            data: $this->transformRole($role->fresh('permissions:id,name')),
+            data: $this->transformRole($role),
             message: 'Rol actualizado correctamente',
         );
     }

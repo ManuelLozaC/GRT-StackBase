@@ -94,5 +94,6 @@ Reglas del flujo actual:
 - corre `migrate --force`, no `migrate:fresh`
 - evita `db:seed --force` en cada release
 - usa `platform:ensure-bootstrap` para garantizar bootstrap sin resetear credenciales
+- ese comando tambien refresca roles y permisos base leyendo el manifest actual del proyecto, incluso si existia cache vieja de configuracion
 - compila frontend con `docker-compose.prod.yml`
 - reindexa todos los recursos con busqueda activa mediante `data:reindex-search`

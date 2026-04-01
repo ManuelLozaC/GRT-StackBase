@@ -86,7 +86,10 @@ class ModuleManagementTest extends TestCase
 
     public function test_it_can_read_and_update_module_settings(): void
     {
-        $token = $this->issueToken(true);
+        $token = $this->issueTokenWithPermissions([
+            'modules.view',
+            'modules.manage',
+        ]);
 
         $this
             ->withHeader('Authorization', 'Bearer '.$token)
@@ -122,14 +125,28 @@ class ModuleManagementTest extends TestCase
         $user = User::factory()->create();
 
         if ($withPermission) {
-            $permission = Permission::query()->firstOrCreate([
-                'name' => 'modules.manage',
-                'guard_name' => 'web',
-            ]);
-
-            $user->givePermissionTo($permission);
+            $user->givePermissionTo($this->permission('modules.manage'));
         }
 
         return app(AccessTokenService::class)->createForUser($user, 'phpunit');
+    }
+
+    protected function issueTokenWithPermissions(array $permissions): string
+    {
+        $user = User::factory()->create();
+
+        foreach ($permissions as $permission) {
+            $user->givePermissionTo($this->permission($permission));
+        }
+
+        return app(AccessTokenService::class)->createForUser($user, 'phpunit');
+    }
+
+    protected function permission(string $name): Permission
+    {
+        return Permission::query()->firstOrCreate([
+            'name' => $name,
+            'guard_name' => 'web',
+        ]);
     }
 }

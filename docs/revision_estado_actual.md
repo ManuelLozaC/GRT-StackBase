@@ -20,11 +20,25 @@ La base actual ya cumple con lo principal que se definio durante el proyecto:
 - busqueda real con Meilisearch y reindex manual por recurso desde API/UI/Artisan
 - deploy productivo endurecido: preserva `APP_KEY`, evita reseed destructivo, compila frontend a `dist` y reindexa todos los recursos buscables
 - endurecimiento de seguridad base: autenticacion web con cookie `HttpOnly`, login con throttling mas estricto y webhooks con proteccion anti-replay
+- endurecimiento adicional del canal web: los metodos mutables autenticados por cookie ya exigen header CSRF, y las URLs dinamicas navegables del frontend pasan por sanitizacion central para evitar esquemas inseguros
+- politicas diferenciadas por canal ya formalizadas: `api bearer`, `web cookie`, `webhooks`, `signed URLs` y `push` ya no dependen de una sola regla generica, sino de configuracion central adaptada al riesgo y al tipo de transporte
 - `TenantContext` mas expresivo: ya propaga alias de `empresa` y `asignacion_laboral_activa` en runtime, y la navegacion administrativa respeta permisos finos reales en menu y rutas
+- convergencia funcional `organizacion = empresa` ya aterrizada en runtime visible: auth, settings y `TenantContext` usan `empresa/company` como lenguaje principal, manteniendo compatibilidad legacy solo donde hace falta
+- runtime multiempresa/contexto ya es mas consistente en backend: servicios transversales y jobs restauran/consumen `companyId` como fuente preferente del contexto activo, aunque la persistencia siga usando `organizacion_id` por compatibilidad
 - RBAC del core mas maduro: el shell ya separa permisos de `view` y `manage` para `modules`, `settings`, `integrations`, `users` y `roles`, evitando regalar acciones mutables solo por abrir una pantalla
+- contrato modular mas estricto: `module settings` ya diferencia lectura (`modules.view`) de mutacion (`modules.manage`), OpenAPI queda como documentacion tecnica autenticada y el catalogo modular evita registrar rutas ambiguas cuando falta `permissionKey` explicita
+- Data Engine ya no es una superficie `todo o nada`: separa `access`, `create`, `update`, `delete`, `import`, `export`, `duplicate` y `search.manage`, y el frontend refleja esas capacidades reales por recurso
 - demo de jobs mas operativa en local: ya muestra estado de cola, `worker_hint`, auto-poll y pending counts sobre `database queue`
+- jobs mas maduros para flujos reales: `core_job_runs` ya conserva politica de retry por tipo (`policy_key`, `max_attempts`, `backoff_schedule`, `retry_exhausted`, `next_retry_in_seconds`, `last_attempt_at`) y la demo expone esa lectura operativa
 - suite frontend ya cubre stores, guards y componentes criticos como topbar, login, settings y administracion de usuarios
 - shell endurecido con permisos minimos para `demo`, `data engine`, `documentacion tecnica` y `API tokens`
+- `ModuleRegistry` ya no escribe metadata por simple lectura del catalogo; la sincronizacion del manifest hacia persistencia ocurre solo en flujos explicitos de bootstrap, listados administrativos y escrituras relacionadas
+- vistas administrativas reales de `audit`, `security` y `error logs`, con filtros operativos para soporte e investigacion, mas correlacion por `request_id` y diffs de cambios de permisos/roles
+- Data Engine ya recuerda por recurso columnas, busqueda, filtros, orden y tamano de pagina
+- catalogos universales del core ya quedaron cerrados de forma explicita y documentada
+- la regla de arquitectura del shell core ya quedo formalizada para que nuevos modulos no vuelvan a inflar la base con pantallas de negocio
+- el `Demo Module` ya esta curado en tutoriales guiados, capacidades tecnicas del core y patrones UI/reuse
+- el frontend ya cuenta con una primitive pequena de feedback para reducir wiring repetido de toasts de exito, warning y error en acciones operativas
 - bootstrap oficial inicial
 - tenancy base
 - RBAC base y permisos contextuales iniciales
@@ -59,7 +73,6 @@ La base actual ya cumple con lo principal que se definio durante el proyecto:
 ### Requerimientos que quedan como evolucion, no como bloqueo de cierre base
 
 - ampliar pruebas frontend
-- endurecer tenancy transversal en cada superficie restante
 - seguir refinando experiencias avanzadas de archivos sobre una base ya funcional
 - observabilidad, backups y despliegue automatizado
 
@@ -72,6 +85,7 @@ La base actual ya cumple con lo principal que se definio durante el proyecto:
 - Data Engine con import/export, transfers, relaciones mas profundas, duplicado y `custom_fields` reutilizables
 - settings por ambito
 - webhooks, audit, logs, metrics y operaciones
+- superficies administrativas de trazabilidad mas utiles para investigacion del tenant activo
 - base de archivos y jobs reusable
 
 ### Frontend
@@ -91,7 +105,7 @@ La base actual ya cumple con lo principal que se definio durante el proyecto:
 
 ## Debilidades vigentes
 
-### P1. Demo Module ya es una fortaleza, y ahora entra en una etapa de curaduria fina
+### P1. Demo Module ya es una fortaleza, y ahora entra en etapa de evolucion, no de deuda
 
 Hoy `demo-platform` ya cubre una porcion importante de lo esperado:
 
@@ -116,9 +130,13 @@ El siguiente nivel ya no es "tener demos", sino:
 - seguir puliendo microcopy, criterio de uso y notas de implementacion
 - mantener coherencia visual y pedagogica a medida que el modulo siga creciendo
 
-### P1. La convergencia total `organizacion = empresa` ya no bloquea, pero todavia conviene seguir limpiando residuales tecnicos
+### P1. La convergencia `organizacion = empresa` ya puede considerarse cerrada a nivel funcional
 
-La decision ya esta clara y mayormente aplicada, pero conviene seguir reduciendo naming legacy residual en capas internas.
+La capa visible del sistema ya piensa en `empresa` como concepto principal. El naming `organizacion` queda como alias tecnico de compatibilidad en tablas, relaciones y algunos servicios internos para evitar refactors destructivos sin valor de negocio.
+
+### P1. El runtime tenant/contexto ya quedo razonablemente consistente para la base actual
+
+Los servicios del core y los jobs principales ya restauran y consumen `companyId` como lenguaje preferente del contexto activo. A nivel de storage seguimos usando `organizacion_id`, pero ya no se arrastra ese naming como fuente principal de decision en runtime. Eso baja bastante el riesgo de divergencia entre auth, jobs, archivos, notificaciones, auditoria y data engine.
 
 ### P1. La red de pruebas frontend ya cubre el shell critico, pero todavia puede seguir creciendo
 
@@ -147,9 +165,8 @@ La base ya tiene cobertura sobre stores, guards, topbar, login, settings y admin
 
 La version base ya esta cerrada y usable. Desde aqui el proyecto entra en una etapa nueva:
 
-- endurecimiento
 - onboarding de nuevos proyectos
-- expansion del `Demo Module` como biblioteca viva
-- evolucion operativa del stack
+- evolucion guiada del `Demo Module`
+- mejoras opcionales y de roadmap sin reabrir deuda fundacional
 
-El backlog vivo permanece en [`docs/pendientes.md`](/D:/Desarrollo/GRT-StackBase/docs/pendientes.md).
+La deuda base ya esta cerrada. La evolucion futura vive en [`docs/roadmap.md`](/D:/Desarrollo/GRT-StackBase/docs/roadmap.md).

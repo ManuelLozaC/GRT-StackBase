@@ -38,6 +38,8 @@ Resolver una sola vez las capacidades transversales del producto y reutilizarlas
 - deploy productivo endurecido: sin regenerar `APP_KEY`, sin `db:seed --force`, con frontend compilado a `dist` y reindexacion completa
 - `Demo Module` expandido como biblioteca viva de ejemplos tecnicos, UI y recipes de pantalla
 - `Demo Module` ya incluye tutorial guiado para crear un modulo nuevo
+- catalogos universales del core ya definidos explicitamente para no reinventar dominio base en cada modulo
+- regla de arquitectura del shell core formalizada para que negocio viva en modulos y no en la base transversal
 
 ## Fuente de verdad documental
 
@@ -46,6 +48,7 @@ Resolver una sola vez las capacidades transversales del producto y reutilizarlas
 - plan de cierre: [docs/plan_trabajo_finalizacion.md](./docs/plan_trabajo_finalizacion.md)
 - arquitectura base: [docs/stackbase.md](./docs/stackbase.md)
 - dominio vigente: [docs/modelo_dominio.md](./docs/modelo_dominio.md)
+- roadmap futuro no bloqueante: [docs/roadmap.md](./docs/roadmap.md)
 - contrato modular: [docs/contrato_modulos.md](./docs/contrato_modulos.md)
 - guia de nuevo modulo: [docs/guia_nuevo_modulo.md](./docs/guia_nuevo_modulo.md)
 - tutorial guiado modulo noticias: [docs/tutorial_modulo_noticias.md](./docs/tutorial_modulo_noticias.md)
@@ -74,9 +77,8 @@ npm run lint
 npm run build
 ```
 
-## Siguiente foco
+## Estado del cierre base
 
-- refinamiento continuo del `Demo Module` como biblioteca viva del stack
-- endurecimiento transversal de tenancy, observabilidad y seguridad operativa
-- automatizacion progresiva de despliegue, backups y operacion sobre Droplets
-- evolucion del core y de los modulos sin inflar la base fundacional
+La version base puede considerarse cerrada para arrancar modulos reales.
+
+Lo siguiente ya no es deuda fundacional del stack, sino evolucion opcional o guiada desde `roadmap.md`.

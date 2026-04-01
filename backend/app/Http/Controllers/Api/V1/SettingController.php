@@ -47,22 +47,32 @@ class SettingController extends Controller
 
     public function organization(Request $request): JsonResponse
     {
+        return $this->company($request);
+    }
+
+    public function company(Request $request): JsonResponse
+    {
         /** @var User $user */
         $user = $request->user();
 
         return $this->successResponse(
-            data: $this->settings->forScope('organization', $user->organizacion_activa_id),
+            data: $this->settings->forScope('company', $user->activeCompanyId()),
             message: 'Settings de empresa listados',
         );
     }
 
     public function updateOrganization(Request $request): JsonResponse
     {
+        return $this->updateCompany($request);
+    }
+
+    public function updateCompany(Request $request): JsonResponse
+    {
         /** @var User $user */
         $user = $request->user();
 
         return $this->successResponse(
-            data: $this->settings->update('organization', $request->all(), $user->organizacion_activa_id),
+            data: $this->settings->update('company', $request->all(), $user->activeCompanyId()),
             message: 'Settings de empresa actualizados',
         );
     }

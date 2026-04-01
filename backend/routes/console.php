@@ -75,6 +75,7 @@ Artisan::command('platform:ensure-bootstrap', function () {
         ->exists();
 
     $this->call(RolePermissionSeeder::class);
+    app(\App\Core\Modules\ModuleRegistry::class)->syncManifestToPersistence();
 
     if (! $bootstrapUserExists) {
         $this->call(InstalacionBaseSeeder::class);

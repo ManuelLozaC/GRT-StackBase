@@ -165,6 +165,32 @@ La documentacion del dominio ya asume la decision final `organizacion = empresa`
 - estado
 - metadata
 
+## Catalogos universales del core
+
+Antes de crear un modulo nuevo, StackBase ya da por cerrados estos catalogos como parte del dominio transversal:
+
+- `Empresas`
+- `Oficinas`
+- `Equipos`
+- `Personas`
+- `Divisiones`
+- `Areas`
+- `Cargos`
+- `Asignaciones laborales`
+
+Todos ellos son transversales porque sirven como estructura base del cliente y no imponen un flujo de negocio especifico.
+
+La definicion operativa tambien vive en [`backend/config/core_catalogs.php`](/D:/Desarrollo/GRT-StackBase/backend/config/core_catalogs.php).
+
+No deben entrar al core por defecto:
+
+- `Leads`
+- `Noticias`
+- `Tickets`
+- `Pedidos`
+- `Oportunidades`
+- cualquier entidad que necesite flujo, SLA, aprobaciones o UX propia
+
 ## Reglas de modelado
 
 - IDs internos numericos

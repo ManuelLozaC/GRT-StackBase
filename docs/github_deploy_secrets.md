@@ -56,6 +56,11 @@ Crear estas variables en:
   Ejemplo:
   `https://tu-dominio.com/api/v1/health`
 
+Nota:
+
+- si no defines `HEALTHCHECK_URL`, el workflow `External Health Monitor` ya no falla; se omite con mensaje informativo
+- si la defines, el workflow valida el JSON publico y si algun check sale distinto de `ok`, entonces si marcara error
+
 ## Contenido minimo sugerido de `ROOT_ENV_FILE`
 
 Este archivo alimenta `docker-compose.yml`.
@@ -165,15 +170,16 @@ Antes del primer deploy, el Droplet debe tener:
 - no usar el workflow para resetear passwords administrativas
 - la cuenta bootstrap solo se crea si no existe
 - los roles y permisos base si se refrescan en cada deploy para mantener consistencia
+- el refresh de RBAC usa el manifest real de modulos/permisos del repositorio, evitando resincronizar contra una cache vieja
 
 ## Observabilidad externa base
 
-`external-health-monitor.yml` corre cada 15 minutos y falla si:
+`external-health-monitor.yml` corre cada 15 minutos y, cuando `HEALTHCHECK_URL` esta configurado, falla si:
 
 - la URL publica no responde
 - algun check del JSON de health sale distinto de `ok`
 
-Eso deja un monitor externo minimo sin depender todavia de herramientas pagas.
+Si `HEALTHCHECK_URL` no existe todavia en GitHub Variables, el workflow se omite sin marcar error. Eso evita ruido mientras aun no esta listo el entorno productivo.
 
 ## Recomendaciones operativas
 

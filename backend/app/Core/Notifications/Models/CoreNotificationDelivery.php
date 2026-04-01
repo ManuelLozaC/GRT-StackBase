@@ -40,6 +40,16 @@ class CoreNotificationDelivery extends Model
         return $this->belongsTo(Organizacion::class);
     }
 
+    public function empresa(): BelongsTo
+    {
+        return $this->organizacion();
+    }
+
+    public function company(): BelongsTo
+    {
+        return $this->organizacion();
+    }
+
     public function notification(): BelongsTo
     {
         return $this->belongsTo(CoreNotification::class, 'notification_id');

@@ -61,6 +61,16 @@ class CoreDataTransferRun extends Model
         return $this->belongsTo(Organizacion::class);
     }
 
+    public function empresa(): BelongsTo
+    {
+        return $this->organizacion();
+    }
+
+    public function company(): BelongsTo
+    {
+        return $this->organizacion();
+    }
+
     public function requester(): BelongsTo
     {
         return $this->belongsTo(User::class, 'requested_by');

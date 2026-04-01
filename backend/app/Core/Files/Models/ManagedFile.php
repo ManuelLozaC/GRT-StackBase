@@ -57,6 +57,16 @@ class ManagedFile extends Model
         return $this->belongsTo(Organizacion::class);
     }
 
+    public function empresa(): BelongsTo
+    {
+        return $this->organizacion();
+    }
+
+    public function company(): BelongsTo
+    {
+        return $this->organizacion();
+    }
+
     public function uploader(): BelongsTo
     {
         return $this->belongsTo(User::class, 'uploaded_by');

@@ -23,7 +23,7 @@ class SecurityLogger
         array $context = [],
         ?int $organizationId = null,
     ): CoreSecurityLog {
-        $resolvedOrganizationId = $organizationId ?? $this->tenantContext->organizationId($actor);
+        $resolvedOrganizationId = $organizationId ?? $this->tenantContext->companyId($actor);
         $resolvedActorId = $actor?->id ?? $this->tenantContext->actorId();
 
         if (! $this->enabledFor($severity)) {

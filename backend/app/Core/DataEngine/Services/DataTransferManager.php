@@ -63,7 +63,7 @@ class DataTransferManager
                 'fields' => $fields->pluck('key')->all(),
                 'format' => $format,
             ],
-            organizationId: $this->tenantContext->organizationId($actor),
+            organizationId: $this->tenantContext->companyId($actor),
         );
 
         return [
@@ -300,7 +300,7 @@ class DataTransferManager
                     'transfer_run_id' => $run->id,
                     'error' => $exception->getMessage(),
                 ],
-                organizationId: $this->tenantContext->organizationId($actor),
+                organizationId: $this->tenantContext->companyId($actor),
             );
 
             throw $exception;
@@ -338,7 +338,7 @@ class DataTransferManager
                 'records_processed' => $run->records_processed,
                 'records_failed' => $run->records_failed,
             ],
-            organizationId: $this->tenantContext->organizationId($actor),
+            organizationId: $this->tenantContext->companyId($actor),
         );
 
         return $run->fresh();

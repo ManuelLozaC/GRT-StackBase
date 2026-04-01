@@ -65,7 +65,7 @@ class ProcessEmailNotificationDelivery implements ShouldQueue
             return;
         }
 
-        $tenantContext->setOrganizationId($delivery->organizacion_id);
+        $tenantContext->setCompanyId($delivery->organizacion_id);
 
         try {
             $result = $emailService->sendNow(
